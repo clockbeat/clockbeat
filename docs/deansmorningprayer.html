@@ -1,0 +1,35 @@
+<html>
+
+<head>
+  <title>Dean's Morning Prayer</title>
+  <meta http-equiv="refresh" content="21600">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+</head>
+
+<body>
+  <div id="main">
+
+
+
+  </div>
+
+  <script>
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    let main = document.getElementById("main");
+
+    let now = new Date();
+
+    let link = `https://www.youtube.com/results?search_query=canterbury+cathedral+morning+prayer+${now.getDate()}+${monthNames[now.getMonth()]}+${now.getFullYear() - 2}`;
+
+    let el = document.createElement("a");
+    el.href = link;
+    el.innerHTML = `Morning Prayer ${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear() - 2}`;
+    main.appendChild(el);
+
+  </script>
+
+</body>

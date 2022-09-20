@@ -40,6 +40,9 @@ reload.onclick = function(e) {
 
 input.oninput = function (e) {
     const chr = input.value;
+    if (chr.toUpperCase() == chr.toLowerCase()) {
+        return;
+    }
     input.value = "";
     if (selected.className == "") {
         let chars = document.querySelectorAll("tr.a td");

@@ -80,6 +80,8 @@ function applyTdOnClick(c, td, tr, r) {
                     tx.innerHTML = "";
                     tx.className = "";
                 }
+                // tr.remove();
+                // table.target.appendChild(el);
                 td.innerHTML = "&#9776;";
                 tr.className = "";
             } else {

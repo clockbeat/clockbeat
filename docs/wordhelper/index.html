@@ -3,14 +3,33 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="wordhelper.css">
+    <script>
+        try {
+            if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+                window.addEventListener("load", () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(reg => console.log("Service worker registered"))
+                        .catch(err => console.error(`Service Worker Error: ${err}`));
+                });
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    </script>
 
 </head>
 
-<body>
+<body style="user-select: none;">
     <input id="input" type="text" value="" />
-        <div id="reload" style="font-size: 2em; color: rgb(209, 209, 209); cursor: pointer; display: block; position: absolute; right: 5">&#10006;</div>
+    <div id="reload"
+        style="font-size: 2em; cursor: pointer; display: block; position: absolute; right: 5; color: rgb(209, 209, 209);">
+        &#10006;</div>
     <div id="main"></div>
-
+    <div style="font-size: 2em; width: 100%; text-align: center; color: rgb(209, 209, 209);">
+        <div id="left" style="float: left; cursor: pointer;">&lt;</div>
+        <div id="right" style="float: right; cursor: pointer;">&gt;</div>
+        <div id="boxes">&#9632;&#9633;</div>
+    </div>
     <script src="wordhelper.js"></script>
 </body>
 

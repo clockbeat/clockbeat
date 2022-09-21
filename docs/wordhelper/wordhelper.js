@@ -2,21 +2,76 @@
 let main = document.getElementById("main");
 let input = document.getElementById("input");
 let reload = document.getElementById("reload");
-
+let boxes = document.getElementById("boxes");
+let left = document.getElementById("left");
+let right = document.getElementById("right");
 let table = addET(main, "table");
 let selected;
+let nextKey = 0;
+let keyList = [];
+let black = "&#9632;";
+let white = "&#9633;";
+let currentKey = localStorage.getItem("currentKey") ?? "html1";
+let html = localStorage.getItem(currentKey);
 
-let html = localStorage.getItem("html");
+let lsKeys = Object.keys(localStorage);
+if (lsKeys.length > 0) {
+    lsKeys.forEach(key => {
+        if (key.startsWith("html")) {
+            keyList.push(key);
+            let num = parseInt(key.substring(4, 99));
+            nextKey = (num < nextKey) ? nextKey : num;
+        }
+    });
+}
+if (!keyList.includes(currentKey)) {
+    keyList.push(currentKey);
+    let num = parseInt(currentKey.substring(4, 99));
+    nextKey = (num < nextKey) ? nextKey : num;
+} 
+keyList.sort((a, b) => {
+    let an = parseInt(a.substring(4, 99));
+    let bn = parseInt(b.substring(4, 99));
+    return an - bn;
+});
+
+nextKey++;
+
+let keyChars = "";
+keyList.forEach(key => {
+    keyChars += (currentKey === key) ? black : white;
+});
+boxes.innerHTML = keyChars;
+
+if (keyList.length < 2 || currentKey === keyList[0]) {
+    left.style.visibility = "hidden";
+} else {
+    left.onclick = e => {
+        save();
+        let ix = keyList.indexOf(currentKey);
+        localStorage.setItem("currentKey", keyList[ix-1]);
+        location.reload();
+    }
+}
+
+right.onclick = e => {
+    save();
+    let ix = keyList.indexOf(currentKey);
+    if (ix == keyList.length - 1) {
+        localStorage.setItem("currentKey", "html" + nextKey);
+    } else  {
+        localStorage.setItem("currentKey", keyList[ix +1]);
+    }
+    location.reload();
+}
+
 
 if (html) {
     table.innerHTML = html;
     let tds = Array.from(document.getElementsByTagName("td"));
     tds.forEach(td => {
         if (td.id[0] == "r") {
-            let col = td.id[3];
-            let row = td.id[1];
-            applyTdOnClick(col, td, td.parentElement, row);
-            console.log(col);
+            applyTdOnClick(td);
         }
     });
 } else {
@@ -28,67 +83,75 @@ if (html) {
             let td = addET(tr, "td");
             td.id = "r" + r + "c" + c;
             td.innerHTML = "";
-            applyTdOnClick(c, td, tr, r);
+            applyTdOnClick(td);
+            if (c == 5) {
+                td.className = "del";
+                td.innerHTML = "&#9776;";
+            }
         }
     }
+    save();
 }
 
-reload.onclick = function(e) {
-    localStorage.removeItem("html");
+reload.onclick = function (e) {
+    localStorage.removeItem(currentKey);
+    const ix = keyList.indexOf(currentKey);
+    keyList.splice(ix, 1);
+    if (keyList.length > 0) {
+        localStorage.setItem("currentKey", keyList[Math.max(0, ix-1)]);
+    } else {
+        localStorage.clear();
+    }
     location.reload();
 }
 
 input.oninput = function (e) {
-    const chr = input.value;
-    if (chr.toUpperCase() == chr.toLowerCase()) {
+    const chr = input.value.toUpperCase();
+    input.blur();
+    if (chr == chr.toLowerCase()) {
         return;
     }
     input.value = "";
     if (selected.className == "") {
-        let chars = document.querySelectorAll("tr.a td");
-        let ok = true;
-        chars.forEach(ch => {
-            if (ch.innerHTML == chr) {
-                ok = false;
-            }
-        });
-        if (!ok) {
+        if (Array.from(document.querySelectorAll("tr.a td")).find(tc => {
+            return (tc.innerHTML === chr);
+        })) {
             return;
         }
-        const tdid = selected.id.substring(0, 2);
-        let tr = document.getElementById(tdid);
-        let tx = document.getElementById(tdid + "c5");
-        tx.innerHTML = "&#10006;";
+        let tr = selected.parentElement;
+        document.getElementById(tr.id + "c5").innerHTML = "&#10006;";
         tr.className = "a";
         for (let n = 0; n < 5; n++) {
-            let td = document.getElementById(tdid + "c" + n);
+            let td = document.getElementById(tr.id + "c" + n);
             td.innerHTML = chr;
         }
     } else {
         selected.innerHTML = chr;
     }
-    input.blur();
     save();
 }
 
-function applyTdOnClick(c, td, tr, r) {
+function applyTdOnClick(td) {
+    let {r, c} = splitTdId(td.id);
+    let tr = td.parentElement;
     if (c == 5) {
-        td.className = "del";
-        td.innerHTML = "&#9776;";
         td.onclick = e => {
-            if (tr.className == "a") {
+            if (tr.className == "") {
+                tr.className = "b";
+                td.innerHTML = "&#10006;"
+            } else {
                 console.log(r, "del");
                 for (let cx = 0; cx < 5; cx++) {
                     let tx = document.getElementById("r" + r + "c" + cx);
                     tx.innerHTML = "";
                     tx.className = "";
                 }
-                // tr.remove();
-                // table.target.appendChild(el);
+                if (tr.className == "a") {
+                    tr.remove();
+                    table.appendChild(tr);
+                }
                 td.innerHTML = "&#9776;";
                 tr.className = "";
-            } else {
-                tr.className = "b";
             }
             save();
         };
@@ -100,27 +163,28 @@ function applyTdOnClick(c, td, tr, r) {
             if (tr.className == "") {
                 input.focus();
             } else if (tr.className == "a") {
-                let cn = selected.className;
-                let type;
-                if (cn) {
-                    type = parseInt(cn.substring(1, 2));
+                if (selected.className) {
+                    selected.className = "";
                 } else {
-                    type = 0;
+                    selected.className = "absent";
                 }
-                type = (type + 1) % 2;
-                selected.className = "S" + type;
             } else if (tr.className == "b") {
-                if (selected.className == "") {
-                    selected.className = "S" + 2;
-                    input.focus();
-                } else {
+                if (selected.className) {
                     selected.className = "";
                     selected.innerHTML = "";
+                } else {
+                    selected.className = "found";
+                    input.focus();
                 }
             }
             save();
         };
     }
+}
+
+function splitTdId(id) {
+    let arr = id.split(/r|c/);
+    return {r: parseInt(arr[1]), c: parseInt(arr[2])};
 }
 
 function addET(target, type) {
@@ -130,5 +194,9 @@ function addET(target, type) {
 }
 
 function save() {
-    localStorage.setItem("html", table.innerHTML);
+    if (!currentKey) {
+        currentKey = "html" + nextKey;
+    }
+    localStorage.setItem(currentKey, table.innerHTML);
+    localStorage.setItem("currentKey", currentKey);
 }

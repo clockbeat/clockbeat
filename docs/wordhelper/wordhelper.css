@@ -29,12 +29,12 @@ td {
     user-select: none;
 }
 
-td.S1 {
+td.absent {
     background-color: rgb(247, 226, 132);
     color:rgb(240, 219, 124);
 }
 
-td.S2 {
+td.found {
     background-color: rgb(142, 233, 106);
     color:black;
 }
@@ -53,4 +53,9 @@ input {
 
 tr.b td{
     border-bottom-color: black;
+}
+
+#boxesc {
+    display: flex;
+    flex-direction: row;
 }

@@ -29,7 +29,7 @@ td {
     user-select: none;
 }
 
-td.absent {
+td.absent, td.selected {
     background-color: rgb(247, 226, 132);
     color:rgb(240, 219, 124);
 }

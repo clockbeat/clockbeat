@@ -112,7 +112,7 @@ input.oninput = function (e) {
         return;
     }
     input.value = "";
-    if (selected.className == "") {
+    if (selected.className == "" || selected.className == "selected") {
         if (Array.from(document.querySelectorAll("tr.a td")).find(tc => {
             return (tc.innerHTML === chr);
         })) {
@@ -124,6 +124,9 @@ input.oninput = function (e) {
         for (let n = 0; n < 5; n++) {
             let td = document.getElementById(tr.id + "c" + n);
             td.innerHTML = chr;
+        }
+        if (selected.className == "selected") {
+            selected.className = "absent";
         }
     } else {
         selected.innerHTML = chr;
@@ -159,8 +162,12 @@ function applyTdOnClick(td) {
         td.onclick = e => {
             console.log(r, c);
             input.value = "";
+            if (selected && selected.className == "selected") {
+                selected.className = "";
+            }
             selected = td;
             if (tr.className == "") {
+                selected.className = "selected";
                 input.focus();
             } else if (tr.className == "a") {
                 if (selected.className) {

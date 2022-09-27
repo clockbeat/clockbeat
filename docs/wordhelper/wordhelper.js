@@ -5,6 +5,8 @@ let reload = document.getElementById("reload");
 let boxes = document.getElementById("boxes");
 let left = document.getElementById("left");
 let right = document.getElementById("right");
+let wakelock = document.getElementById("wakelock");
+let wakelockSentinel;
 let table = addET(main, "table");
 let selected;
 let nextKey = 0;
@@ -63,6 +65,22 @@ right.onclick = e => {
         localStorage.setItem("currentKey", keyList[ix +1]);
     }
     location.reload();
+}
+
+wakelock.onclick = async e => {
+    if (!wakelockSentinel) {
+    try {
+        wakelockSentinel = await navigator.wakeLock.request('screen');
+        wakelock.className = "wakeon";
+      } catch (err) {
+        // the wake lock request fails - usually system related, such being low on battery
+        console.log(`${err.name}, ${err.message}`);
+      }    
+    } else {
+        wakelockSentinel.release();
+        wakelock.className = "wakeoff";
+        wakelockSentinel = null;
+    }
 }
 
 

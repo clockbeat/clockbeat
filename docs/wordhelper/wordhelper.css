@@ -59,3 +59,11 @@ tr.b td{
     display: flex;
     flex-direction: row;
 }
+
+.wakeoff {
+    filter: grayscale();
+}
+
+.wakeon {
+    filter: none;
+}

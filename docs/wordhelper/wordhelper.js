@@ -16,6 +16,13 @@ let white = "&#9633;";
 let currentKey = localStorage.getItem("currentKey") ?? "html1";
 let html = localStorage.getItem(currentKey);
 
+if (localStorage.getItem("wakelock") == "on") {
+    (async () => {
+        wakelockSentinel = await navigator.wakeLock.request('screen');
+        wakelock.className = "wakeon";
+    })();
+}
+
 let lsKeys = Object.keys(localStorage);
 if (lsKeys.length > 0) {
     lsKeys.forEach(key => {
@@ -30,7 +37,7 @@ if (!keyList.includes(currentKey)) {
     keyList.push(currentKey);
     let num = parseInt(currentKey.substring(4, 99));
     nextKey = (num < nextKey) ? nextKey : num;
-} 
+}
 keyList.sort((a, b) => {
     let an = parseInt(a.substring(4, 99));
     let bn = parseInt(b.substring(4, 99));
@@ -51,7 +58,7 @@ if (keyList.length < 2 || currentKey === keyList[0]) {
     left.onclick = e => {
         save();
         let ix = keyList.indexOf(currentKey);
-        localStorage.setItem("currentKey", keyList[ix-1]);
+        localStorage.setItem("currentKey", keyList[ix - 1]);
         location.reload();
     }
 }
@@ -61,25 +68,27 @@ right.onclick = e => {
     let ix = keyList.indexOf(currentKey);
     if (ix == keyList.length - 1) {
         localStorage.setItem("currentKey", "html" + nextKey);
-    } else  {
-        localStorage.setItem("currentKey", keyList[ix +1]);
+    } else {
+        localStorage.setItem("currentKey", keyList[ix + 1]);
     }
     location.reload();
 }
 
 wakelock.onclick = async e => {
     if (!wakelockSentinel) {
-    try {
-        wakelockSentinel = await navigator.wakeLock.request('screen');
-        wakelock.className = "wakeon";
-      } catch (err) {
-        // the wake lock request fails - usually system related, such being low on battery
-        console.log(`${err.name}, ${err.message}`);
-      }    
+        try {
+            wakelockSentinel = await navigator.wakeLock.request('screen');
+            wakelock.className = "wakeon";
+            localStorage.setItem("wakelock", "on");
+        } catch (err) {
+            // the wake lock request fails - usually system related, such being low on battery
+            console.log(`${err.name}, ${err.message}`);
+        }
     } else {
         wakelockSentinel.release();
         wakelock.className = "wakeoff";
         wakelockSentinel = null;
+        localStorage.setItem("wakelock", "off");
     }
 }
 
@@ -116,9 +125,12 @@ reload.onclick = function (e) {
     const ix = keyList.indexOf(currentKey);
     keyList.splice(ix, 1);
     if (keyList.length > 0) {
-        localStorage.setItem("currentKey", keyList[Math.max(0, ix-1)]);
+        localStorage.setItem("currentKey", keyList[Math.max(0, ix - 1)]);
     } else {
         localStorage.clear();
+        if (wakelockSentinel) {
+            localStorage.setItem("wakelock", "on");
+        }
     }
     location.reload();
 }

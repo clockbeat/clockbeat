@@ -776,6 +776,8 @@
       "July", "August", "September", "October", "November", "December"
     ];
 
+    const dayOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
     let main = document.getElementById("main");
 
     for (let n = 20; n >= 0; n--) {
@@ -786,12 +788,13 @@
       month = month < 10 ? "0" + month : month;
 
       let dateKey = `${now.getFullYear() - 2}-${month}-${day}`;
+      let dateThen = new Date(dateKey);
 
       let link = videos[dateKey];
 
       let el = document.createElement("a");
       el.href = link;
-      el.innerHTML = `Morning Prayer ${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear() - 2}`;
+      el.innerHTML = `Morning Prayer ${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear() - 2} ${dayOfWeek[dateThen.getDay()]}`;
       main.appendChild(el);
       let br = document.createElement("br");
       main.appendChild(br);

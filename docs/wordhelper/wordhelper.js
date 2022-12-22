@@ -11,6 +11,7 @@ let table = addET(main, "table");
 let selected;
 let nextKey = 0;
 let keyList = [];
+let solved = [0, 0, 0, 0, 0];
 let black = "&#9632;";
 let white = "&#9633;";
 let currentKey = localStorage.getItem("currentKey") ?? "html1";
@@ -114,6 +115,10 @@ if (html) {
             if (c == 5) {
                 td.className = "del";
                 td.innerHTML = "&#9776;";
+                if (r == 0) {
+                    tr.className = "b";
+                    td.innerHTML = "&#10006;"
+                }
             }
         }
     }
@@ -142,10 +147,16 @@ input.oninput = function (e) {
         return;
     }
     input.value = "";
+    let match;
     if (selected.className == "" || selected.className == "selected") {
-        if (Array.from(document.querySelectorAll("tr.a td")).find(tc => {
+        if (match = Array.from(document.querySelectorAll("tr.a td")).find(tc => {
             return (tc.innerHTML === chr);
         })) {
+            let equiv = document.getElementById(match.parentElement.id + "c" + selected.id.split("c")[1]);
+            equiv.className = "absent";
+            if (selected && selected.className == "selected") {
+                selected.className = "";
+            }
             return;
         }
         let tr = selected.parentElement;
@@ -231,9 +242,31 @@ function addET(target, type) {
 }
 
 function save() {
+    processSolved();
     if (!currentKey) {
         currentKey = "html" + nextKey;
     }
     localStorage.setItem(currentKey, table.innerHTML);
     localStorage.setItem("currentKey", currentKey);
+}
+
+function processSolved() {
+    solved = [0, 0, 0, 0, 0];
+    for (let r = 0; r < 12; r++) {
+        let row = table.querySelectorAll("tr").item(r);
+        for (let c = 0; c < 5; c++) {
+            let td = row.querySelectorAll("td").item(c);
+            if (row.className == "b") {
+                if (td.className == "found") {
+                    solved[c] = Math.max(solved[c], 1);
+                } else {
+                    solved[c] = 2;
+                }
+            } else if (row.className == "a") {
+                if (solved[c] == 1) {
+                    td.className = "absent";
+                }
+            }
+        }
+    }
 }

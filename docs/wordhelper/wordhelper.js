@@ -172,6 +172,7 @@ input.oninput = function (e) {
     } else {
         selected.innerHTML = chr;
     }
+    selected = null;
     save();
 }
 
@@ -203,7 +204,7 @@ function applyTdOnClick(td) {
         td.onclick = e => {
             console.log(r, c);
             input.value = "";
-            if (selected && selected.className == "selected") {
+            if (selected && (selected.className == "selected" || selected.className == "found")) {
                 selected.className = "";
             }
             selected = td;
@@ -263,8 +264,10 @@ function processSolved() {
                     solved[c] = 2;
                 }
             } else if (row.className == "a") {
-                if (solved[c] == 1) {
-                    td.className = "absent";
+                if (solved[c] == 1 && td.className != "absent") {
+                    td.className = "unusable";
+                } else if (td.className == "unusable") {
+                    td.className = "";
                 }
             }
         }

@@ -47,12 +47,6 @@ keyList.sort((a, b) => {
 
 nextKey++;
 
-let keyChars = "";
-keyList.forEach(key => {
-    keyChars += (currentKey === key) ? black : white;
-});
-boxes.innerHTML = keyChars;
-
 if (keyList.length < 2 || currentKey === keyList[0]) {
     left.style.visibility = "hidden";
 } else {
@@ -124,6 +118,19 @@ if (html) {
     }
     save();
 }
+
+boxes.innerHTML = "";
+keyList.forEach(key => {
+    let sp = document.createElement("span");
+    let thekey = key;
+    sp.innerHTML = (currentKey === key) ? black : white;
+    sp.onclick = e => {
+        localStorage.setItem("currentKey", thekey);
+        location.reload();
+    };
+    sp.style.margin = "auto";
+    boxes.appendChild(sp);
+});
 
 reload.onclick = function (e) {
     localStorage.removeItem(currentKey);

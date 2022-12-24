@@ -60,9 +60,11 @@ tr.b td{
     border-bottom-color: black;
 }
 
-#boxesc {
+#boxes {
     display: flex;
     flex-direction: row;
+    width: 40%;
+    margin: auto;
 }
 
 .wakeoff {

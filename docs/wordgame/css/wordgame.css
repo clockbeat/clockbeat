@@ -55,7 +55,7 @@ input {
 #boxes {
     display: flex;
     flex-direction: row;
-    width: 80%;
+    width: 70%;
     margin: auto;
 }
 
@@ -76,12 +76,12 @@ input {
 }
 
 #keyboard {
-    width: calc(20 * 1.2em);
+    width: calc(20 * 1em);
     max-width: 100%;
     padding: 1px;
     padding-top: 1em;
     display: grid;
-    grid-template-columns: repeat(20, 1rem);
+    grid-template-columns: repeat(20, 0.8rem);
     grid-template-rows: repeat(3, 2.5rem);
     grid-gap: 0.2em;
     margin: auto;

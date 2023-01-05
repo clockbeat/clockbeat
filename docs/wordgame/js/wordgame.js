@@ -1,8 +1,9 @@
 
 let main = document.getElementById("main");
-//let input = document.getElementById("input");
+let keyboard = document.getElementById("keyboard");
 let reload = document.getElementById("reload");
 let boxes = document.getElementById("boxes");
+let pageselect = document.getElementById("pageselect");
 let left = document.getElementById("left");
 let right = document.getElementById("right");
 let wakelock = document.getElementById("wakelock");
@@ -21,6 +22,7 @@ let solutionsLs = localStorage.getItem("solutions") ?? "[]";
 let solutions = JSON.parse(solutionsLs);
 let rowCount = 12;
 let cellCount = 5;
+let gameOver = false;
 
 console.clear();
 
@@ -78,7 +80,9 @@ boxes.innerHTML = "";
 //makeOverview();
 
 save();
-refreshPage();
+if (!gameOver) {
+    refreshPage();
+}
 
 //--------------------------------------------------------
 
@@ -111,15 +115,12 @@ wakelock.onclick = async e => {
 
 document.onkeydown = function (e) {
     if (e.key === "Enter") {
-        if (goodInput.length == cellCount && guesses.length < rowCount) {
-            guesses.push(goodInput);
-            //input.value = 
-            goodInput = "";
-            refreshPage();
-            save();
-        }
+        applyWord();
+        refreshPage();
+        save();
     } else if (e.key === "Backspace") {
         goodInput = goodInput.substring(0, goodInput.length - 1);
+        applyWord();
         refreshPage();
         save();
     } else if (e.key.toLowerCase() == e.key.toUpperCase() || e.key.length != 1) {
@@ -129,7 +130,6 @@ document.onkeydown = function (e) {
         goodInput += e.key.toUpperCase();
         goodInput = goodInput.substring(0, cellCount);
         refreshPage();
-        //input.value = goodInput;
         save();
     }
 }
@@ -170,22 +170,33 @@ function keyboardPress(e) {
     goodInput += e.target.innerHTML.toUpperCase();
     goodInput = goodInput.substring(0, cellCount);
     refreshPage();
-    //input.value = goodInput;
     save();
 }
 
 function specialPress(type) {
     if (type == 2 && goodInput.length > 0) {
         goodInput = goodInput.substring(0, goodInput.length - 1);
+        applyWord();
     }
-    if (type == 3 && goodInput.length == cellCount && guesses.length < rowCount) {
-        guesses.push(goodInput);
-        //input.value = 
-        goodInput = "";
+    if (type == 3) {
+        applyWord();
     }
     refreshPage();
-    //input.value = goodInput;
     save();
+}
+
+function applyWord() {
+    let row = document.getElementById("r" + guesses.length);
+    row.className = "";
+    if (goodInput.length != cellCount || guesses.length >= rowCount) {
+        return;
+    }
+    if (validWords.includes(goodInput.toLowerCase())) {
+        guesses.push(goodInput);
+        goodInput = "";
+        return;
+    }
+    row.className = "bad";
 }
 
 function splitTdId(id) {
@@ -201,8 +212,32 @@ function addET(target, type) {
 
 function save() {
     localStorage.setItem("guesses", JSON.stringify(guesses));
-    //localStorage.setItem(currentKey, table.innerHTML);
     localStorage.setItem("currentKey", pageNumber);
+    if (guesses.length == rowCount) {
+        gameOver = true;
+        pageselect.className = "gameover";
+        keyboard.className = "gameover";
+        for (let p = 0; p < pageCount; p++) {
+            let {pageDone} = calculatePage(p);
+            let sol = solutions[p];
+            for (let c = 0; c < cellCount; c++) {
+                let cell = document.getElementById("r" + p + "c" + c);
+                cell.innerHTML = sol[c];
+                if (pageDone) {
+                    cell.className = "found";
+                } else {
+                    cell.className = "";
+                }
+            }
+        }
+        for (let p = pageCount; p < rowCount; p++) {
+            for (let c = 0; c < cellCount; c++) {
+                let cell = document.getElementById("r" + p + "c" + c);
+                cell.innerHTML = "";
+                cell.className = "";
+            }
+        }
+    }
 }
 
 function calculatePage(pagenum) {
@@ -211,7 +246,6 @@ function calculatePage(pagenum) {
     let rowResults = []; // 0=no match 1=misplaced 2=found
     let letterResults = {};
     let letterScores = {};
-    let pageSummary = [];
     guesses.forEach((guess, ix) => {
         let rowResult = [];
         rowResults.push(rowResult);
@@ -223,7 +257,7 @@ function calculatePage(pagenum) {
                 if (guess[c] == sol[c]) {
                     rowResult[c] = 2;
                     found++;
-                    letterResults[guess[c]] = 2; 
+                    letterResults[guess[c]] = 2;
                     sol[c] = "*";
                 }
             }
@@ -260,14 +294,13 @@ function calculatePage(pagenum) {
             }
         });
     });
-    console.log(letterScores);
+    //console.log(letterScores);
     let letterScore = 0;
     Object.keys(letterScores).forEach(letter => {
         letterScore += letterScores[letter];
-    });  
+    });
     //letterScore = 0 to 2*cellCount  
-    console.log(letterScore);
-    return {rowResults, letterResults, letterScore};
+    return {rowResults, letterResults, letterScore, pageDone};
 }
 
 function refreshPage() {
@@ -276,27 +309,18 @@ function refreshPage() {
         pageResults.push(calculatePage(p));
     }
 
-    let {rowResults, letterResults, letterScore} = pageResults[pageNumber];
+    let {rowResults, letterResults, letterScore, pageDone} = pageResults[pageNumber];
     let r = guesses.length;
-    let pageDone = false;
-    let found = 0;
     rowResults.forEach((result, ix) => {
-        if (!pageDone) {
-            found = 0;
-            for (let c = 0; c < cellCount; c++) {
-                let cell = document.getElementById("r" + ix + "c" + c);
-                cell.innerHTML = guesses[ix][c] ?? "";
-                if (result[c] == 2) {
-                    cell.className = "found";
-                    found++;
-                } else if (result[c] == 1) {
-                    cell.className = "misplaced";
-                } else {
-                    cell.className = "wrong";
-                }
-            }
-            if (found == cellCount) {
-                pageDone = true;
+        for (let c = 0; c < cellCount; c++) {
+            let cell = document.getElementById("r" + ix + "c" + c);
+            cell.innerHTML = guesses[ix][c] ?? "";
+            if (result[c] == 2) {
+                cell.className = "found";
+            } else if (result[c] == 1) {
+                cell.className = "misplaced";
+            } else {
+                cell.className = "wrong";
             }
         }
     });

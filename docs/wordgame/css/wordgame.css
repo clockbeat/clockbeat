@@ -47,9 +47,22 @@ td {
     color: white;
 }
 
+.bad {
+    background-color: rgb(255, 171, 171);
+    color: white;
+}
+
 input {
     opacity: 0;
     height: 0px;
+}
+
+#pageselect {
+    font-size: 1.5em;
+    width: 100%; 
+    text-align: center; 
+    color: rgb(170, 170, 170); 
+    padding-top: 1rem;
 }
 
 #boxes {
@@ -76,7 +89,7 @@ input {
 }
 
 #keyboard {
-    width: calc(20 * 1em);
+    width: calc(20 * 1rem);
     max-width: 100%;
     padding: 1px;
     padding-top: 1em;
@@ -109,4 +122,12 @@ input {
     padding-top: 0.6rem;
     background-color: rgb(143, 142, 142);
     color: white;
+}
+
+#pageselect.gameover {
+    display: none;
+}
+
+#keyboard.gameover {
+    display: none;
 }

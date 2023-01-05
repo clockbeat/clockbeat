@@ -1,4 +1,5 @@
-const cacheName = "v4";
+importScripts("version.js");
+let cacheName = swversion;
 
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets
@@ -15,7 +16,7 @@ self.addEventListener("activate", (e) => {
     );
 });
 
-["index.html", "wordgame.js", "wordgame.css"].forEach(url => {
+["index.html", "js/wordgame.js", "js/validwords.js", "js/solutionwords.js", "css/wordgame.css"].forEach(url => {
     updateCache(url);
 });
 

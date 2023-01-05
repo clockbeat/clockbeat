@@ -1,0 +1,46 @@
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/wordgame.css">
+    <script>
+        try {
+            if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+                window.addEventListener("load", () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(reg => console.log("Service worker registered"))
+                        .catch(err => console.error(`Service Worker Error: ${err}`));
+                });
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    </script>
+    <script src="js/validwords.js"></script>
+    <script src="js/solutionwords.js"></script>
+
+</head>
+
+
+
+<body style="user-select: none;">
+    <div id="reload"
+        style="font-size: 2em; cursor: pointer; display: block; position: absolute; right: 5; color: rgb(209, 209, 209);">
+        &#10006;</div>
+    <div id="wakelock" class="wakeoff"
+        style="font-size: 2em; cursor: pointer; display: block; position: absolute; left: 5; color: rgb(209, 209, 209);">
+        💡</div>
+    <div id="main"></div>
+    <div id="keyboard"></div>
+    <div style="font-size: 2em; width: 100%; text-align: center; color: rgb(170, 170, 170); padding-top: 1rem;">
+        <div style="max-width: 12em; margin: auto">
+            <div id="left" style="float: left; cursor: pointer;">&lt;</div>
+            <div id="right" style="float: right; cursor: pointer;">&gt;</div>
+            <div id="boxes">&#9632;&#9633;</div>
+        </div>
+    </div>
+
+    <script src="js/wordgame.js"></script>
+</body>
+
+</html>

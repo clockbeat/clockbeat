@@ -26,6 +26,12 @@ let gameOver = false;
 
 console.clear();
 
+// solutionWords.forEach(word => {
+//     if (!validWords.includes(word)) {
+//         console.log("Missing " + word);
+//     }
+// });
+
 if (solutions.length == 0) {
     makeSolutions();
 }
@@ -137,6 +143,7 @@ document.onkeydown = function (e) {
 //-------------------------------------------------------------------
 
 function makeOverview(pageResults) {
+    let foundCount = 0;
     boxes.innerHTML = "";
     for (let p = 0; p < pageCount; p++) {
         let letterScore = pageResults[p].letterScore / (cellCount * 2); //0 to 1
@@ -149,6 +156,7 @@ function makeOverview(pageResults) {
         }
         if (letterScore == 1) {
             sp.innerHTML = tick;
+            foundCount++;
         }
         sp.onclick = e => {
             localStorage.setItem("currentKey", p);
@@ -163,6 +171,10 @@ function makeOverview(pageResults) {
         }
         sp.style.backgroundColor = color;
         boxes.appendChild(sp);
+    }
+    if (foundCount >= pageCount) {
+        gameOver = true;
+        save();
     }
 }
 
@@ -214,6 +226,9 @@ function save() {
     localStorage.setItem("guesses", JSON.stringify(guesses));
     localStorage.setItem("currentKey", pageNumber);
     if (guesses.length == rowCount) {
+        gameOver = true;
+    }
+    if (gameOver) {
         gameOver = true;
         pageselect.className = "gameover";
         keyboard.className = "gameover";
@@ -311,12 +326,16 @@ function refreshPage() {
 
     let {rowResults, letterResults, letterScore, pageDone} = pageResults[pageNumber];
     let r = guesses.length;
+    let foundCount = 0;
     rowResults.forEach((result, ix) => {
+        if (foundCount >= cellCount) return;
+        foundCount = 0;
         for (let c = 0; c < cellCount; c++) {
             let cell = document.getElementById("r" + ix + "c" + c);
             cell.innerHTML = guesses[ix][c] ?? "";
             if (result[c] == 2) {
                 cell.className = "found";
+                foundCount++;
             } else if (result[c] == 1) {
                 cell.className = "misplaced";
             } else {

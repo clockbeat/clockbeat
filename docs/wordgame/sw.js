@@ -1,5 +1,4 @@
-importScripts("version.js");
-let cacheName = swversion;
+let cacheName = /*time!*/ "63b9523c";
 
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets

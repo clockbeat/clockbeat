@@ -152,7 +152,7 @@ function makeOverview(pageResults) {
         if (pageNumber == p) {
             sp.style.borderStyle = "solid";
             sp.style.borderWidth = "3px";
-            sp.style.borderColor = "black";
+            sp.style.borderColor = "#bb00bb";
         }
         if (letterScore == 1) {
             sp.innerHTML = tick;

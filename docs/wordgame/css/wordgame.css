@@ -128,7 +128,7 @@ input {
     color: white;
 }
 
-.bad {
+.bad td{
     background-color: rgb(255, 171, 171);
-    color: white;
+    color: rgb(0, 0, 0);
 }

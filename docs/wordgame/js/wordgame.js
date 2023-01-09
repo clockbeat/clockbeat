@@ -165,7 +165,7 @@ function makeOverview(pageResults) {
         sp.style.margin = "auto";
         sp.className = "box";
         let g = letterScore;
-        let color = `hsl(${54 + (g * 60)} 100% ${75 - (g * 50)}%)`; //green = 114
+        let color = `hsl(${54 + (g * 60)} 100% ${100 - (g * 70)}%)`; //green = 114
         if (letterScore == 0) {
             color = "#ffffff";
         }

@@ -14,17 +14,19 @@ let keyList = [];
 let solved = [0, 0, 0, 0, 0];
 let black = "&#9632;";
 let white = "&#9633;";
-let currentKey = localStorage.getItem("currentKey") ?? "html1";
-let html = localStorage.getItem(currentKey);
+let storageName = "wordhelper";
+let storage = new Storage(storageName);
+let currentKey = storage.getItem("currentKey") ?? "html1";
+let html = storage.getItem(currentKey);
 
-if (localStorage.getItem("wakelock") == "on") {
+if (storage.getItem("wakelock") == "on") {
     (async () => {
         wakelockSentinel = await navigator.wakeLock.request('screen');
         wakelock.className = "wakeon";
     })();
 }
 
-let lsKeys = Object.keys(localStorage);
+let lsKeys = storage.keys();
 if (lsKeys.length > 0) {
     lsKeys.forEach(key => {
         if (key.startsWith("html")) {
@@ -53,7 +55,7 @@ if (keyList.length < 2 || currentKey === keyList[0]) {
     left.onclick = e => {
         save();
         let ix = keyList.indexOf(currentKey);
-        localStorage.setItem("currentKey", keyList[ix - 1]);
+        storage.setItem("currentKey", keyList[ix - 1]);
         location.reload();
     }
 }
@@ -62,9 +64,9 @@ right.onclick = e => {
     save();
     let ix = keyList.indexOf(currentKey);
     if (ix == keyList.length - 1) {
-        localStorage.setItem("currentKey", "html" + nextKey);
+        storage.setItem("currentKey", "html" + nextKey);
     } else {
-        localStorage.setItem("currentKey", keyList[ix + 1]);
+        storage.setItem("currentKey", keyList[ix + 1]);
     }
     location.reload();
 }
@@ -74,7 +76,7 @@ wakelock.onclick = async e => {
         try {
             wakelockSentinel = await navigator.wakeLock.request('screen');
             wakelock.className = "wakeon";
-            localStorage.setItem("wakelock", "on");
+            storage.setItem("wakelock", "on");
         } catch (err) {
             // the wake lock request fails - usually system related, such being low on battery
             console.log(`${err.name}, ${err.message}`);
@@ -83,7 +85,7 @@ wakelock.onclick = async e => {
         wakelockSentinel.release();
         wakelock.className = "wakeoff";
         wakelockSentinel = null;
-        localStorage.setItem("wakelock", "off");
+        storage.setItem("wakelock", "off");
     }
 }
 
@@ -125,7 +127,7 @@ keyList.forEach(key => {
     let thekey = key;
     sp.innerHTML = (currentKey === key) ? black : white;
     sp.onclick = e => {
-        localStorage.setItem("currentKey", thekey);
+        storage.setItem("currentKey", thekey);
         location.reload();
     };
     sp.style.margin = "auto";
@@ -133,15 +135,15 @@ keyList.forEach(key => {
 });
 
 reload.onclick = function (e) {
-    localStorage.removeItem(currentKey);
+    storage.removeItem(currentKey);
     const ix = keyList.indexOf(currentKey);
     keyList.splice(ix, 1);
     if (keyList.length > 0) {
-        localStorage.setItem("currentKey", keyList[Math.max(0, ix - 1)]);
+        storage.setItem("currentKey", keyList[Math.max(0, ix - 1)]);
     } else {
-        localStorage.clear();
+        storage.clear();
         if (wakelockSentinel) {
-            localStorage.setItem("wakelock", "on");
+            storage.setItem("wakelock", "on");
         }
     }
     location.reload();
@@ -254,8 +256,8 @@ function save() {
     if (!currentKey) {
         currentKey = "html" + nextKey;
     }
-    localStorage.setItem(currentKey, table.innerHTML);
-    localStorage.setItem("currentKey", currentKey);
+    storage.setItem(currentKey, table.innerHTML);
+    storage.setItem("currentKey", currentKey);
 }
 
 function processSolved() {

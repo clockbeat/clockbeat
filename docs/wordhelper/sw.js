@@ -1,4 +1,4 @@
-const cacheName = "v4";
+const cacheName = "v5";
 
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets

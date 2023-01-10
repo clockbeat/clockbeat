@@ -13,12 +13,14 @@ let keyList = [];
 let black = "&#9632;";
 let white = "&#9633;";
 let tick = "&#10003;";
-let guessesLs = localStorage.getItem("guesses") ?? "[]";
+let storageName = "wordgame-oct";
+let storage = new Storage(storageName);
+let guessesLs = storage.getItem("guesses") ?? "[]";
 let guesses = JSON.parse(guessesLs);
-let pageNumber = localStorage.getItem("currentKey") ?? "0";
+let pageNumber = storage.getItem("currentKey") ?? "0";
 let goodInput = "";
 let pageCount = 8;
-let solutionsLs = localStorage.getItem("solutions") ?? "[]";
+let solutionsLs = storage.getItem("solutions") ?? "[]";
 let solutions = JSON.parse(solutionsLs);
 let rowCount = 12;
 let cellCount = 5;
@@ -36,7 +38,7 @@ if (solutions.length == 0) {
     makeSolutions();
 }
 
-if (localStorage.getItem("wakelock") == "on") {
+if (storage.getItem("wakelock") == "on") {
     (async () => {
         wakelockSentinel = await navigator.wakeLock.request('screen');
         wakelock.className = "wakeon";
@@ -50,7 +52,7 @@ if (pageNumber == 0) {
         save();
         if (pageNumber > 0) {
             pageNumber--;
-            localStorage.setItem("currentKey", pageNumber);
+            storage.setItem("currentKey", pageNumber);
             location.reload();
         }
     }
@@ -63,7 +65,7 @@ if (pageNumber == pageCount - 1) {
         save();
         if (pageNumber < pageCount - 1) {
             pageNumber++;
-            localStorage.setItem("currentKey", pageNumber);
+            storage.setItem("currentKey", pageNumber);
             location.reload();
         }
         location.reload();
@@ -93,11 +95,11 @@ if (!gameOver) {
 //--------------------------------------------------------
 
 reload.onclick = function (e) {
-    localStorage.clear();
+    storage.clear();
     if (wakelockSentinel) {
-        localStorage.setItem("wakelock", "on");
+        storage.setItem("wakelock", "on");
     }
-    localStorage.setItem("solutions", "[]");
+    storage.setItem("solutions", "[]");
     location.reload();
 }
 
@@ -106,7 +108,7 @@ wakelock.onclick = async e => {
         try {
             wakelockSentinel = await navigator.wakeLock.request('screen');
             wakelock.className = "wakeon";
-            localStorage.setItem("wakelock", "on");
+            storage.setItem("wakelock", "on");
         } catch (err) {
             // the wake lock request fails - usually system related, such being low on battery
             console.log(`${err.name}, ${err.message}`);
@@ -115,7 +117,7 @@ wakelock.onclick = async e => {
         wakelockSentinel.release();
         wakelock.className = "wakeoff";
         wakelockSentinel = null;
-        localStorage.setItem("wakelock", "off");
+        storage.setItem("wakelock", "off");
     }
 }
 
@@ -159,7 +161,7 @@ function makeOverview(pageResults) {
             foundCount++;
         }
         sp.onclick = e => {
-            localStorage.setItem("currentKey", p);
+            storage.setItem("currentKey", p);
             location.reload();
         };
         sp.style.margin = "auto";
@@ -223,8 +225,8 @@ function addET(target, type) {
 }
 
 function save() {
-    localStorage.setItem("guesses", JSON.stringify(guesses));
-    localStorage.setItem("currentKey", pageNumber);
+    storage.setItem("guesses", JSON.stringify(guesses));
+    storage.setItem("currentKey", pageNumber);
     if (guesses.length == rowCount) {
         gameOver = true;
     }
@@ -361,7 +363,7 @@ function makeSolutions() {
         solutions.push(solutionWords[pos]);
         rand = Math.random();
     }
-    localStorage.setItem("solutions", JSON.stringify(solutions));
+    storage.setItem("solutions", JSON.stringify(solutions));
 }
 
 function makeKeyboard(letterResults) {

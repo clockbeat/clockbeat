@@ -15,7 +15,7 @@ let solved = [0, 0, 0, 0, 0];
 let black = "&#9632;";
 let white = "&#9633;";
 let storageName = "wordhelper";
-let storage = new Storage(storageName);
+let storage = new CbStorage(storageName);
 let currentKey = storage.getItem("currentKey") ?? "html1";
 let html = storage.getItem(currentKey);
 

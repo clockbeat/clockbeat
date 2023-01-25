@@ -34,6 +34,10 @@ td {
     text-transform: uppercase;
     user-select: none;
     background-color: #ffffff;
+    color: rgb(109, 109, 109);
+    transform: rotateX(0deg);
+    transition-property: background-color, color, transform;
+    transition-duration: 1s;
 }
 
 input {
@@ -113,19 +117,20 @@ input {
 
 .misplaced {
     background-color: rgb(247, 226, 132);
-    border-color: rgb(247, 226, 132);
     color: black;
+    transform: rotateX(360deg);
 }
 
 .found {
     background-color: rgb(142, 233, 106);
-    border-color: rgb(142, 233, 106);
     color: black;
+    transform: rotateX(360deg);
 }
 
 .wrong {
     background-color: rgb(187, 187, 187);
     color: white;
+    transform: rotateX(0deg);
 }
 
 .bad td{

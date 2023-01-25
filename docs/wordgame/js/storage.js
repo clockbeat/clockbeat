@@ -1,4 +1,4 @@
-let Storage = function(storageName) {
+let CbStorage = function(storageName) {
     let storage = JSON.parse(localStorage.getItem(storageName) ?? "{}");
 
     this.keys = function() {
@@ -11,6 +11,11 @@ let Storage = function(storageName) {
 
     this.setItem = function(key, value) {
         storage[key] = value;
+        this.save();
+    }
+
+    this.removeItem = function(key) {
+        delete storage[key];
         this.save();
     }
 

@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "63bda092";
+let cacheName = /*time!*/ "63d17948";
 
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets

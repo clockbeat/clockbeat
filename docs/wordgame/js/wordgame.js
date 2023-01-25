@@ -14,7 +14,7 @@ let black = "&#9632;";
 let white = "&#9633;";
 let tick = "&#10003;";
 let storageName = "wordgame-oct";
-let storage = new Storage(storageName);
+let storage = new CbStorage(storageName);
 let guessesLs = storage.getItem("guesses") ?? "[]";
 let guesses = JSON.parse(guessesLs);
 let pageNumber = storage.getItem("currentKey") ?? "0";
@@ -25,8 +25,6 @@ let solutions = JSON.parse(solutionsLs);
 let rowCount = 12;
 let cellCount = 5;
 let gameOver = false;
-
-console.clear();
 
 // solutionWords.forEach(word => {
 //     if (!validWords.includes(word)) {

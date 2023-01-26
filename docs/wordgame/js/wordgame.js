@@ -78,6 +78,7 @@ for (let r = 0; r < rowCount; r++) {
         let td = addET(tr, "td");
         td.id = "r" + r + "c" + c;
         td.innerHTML = "";
+        td.style.transitionDelay = (c*2)/(cellCount + 1) + "s";
     }
 }
 

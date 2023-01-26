@@ -37,7 +37,7 @@ td {
     color: rgb(109, 109, 109);
     transform: rotateX(0deg);
     transition-property: background-color, color, transform;
-    transition-duration: 1s;
+    transition-duration: 2s;
 }
 
 input {
@@ -130,7 +130,7 @@ input {
 .wrong {
     background-color: rgb(187, 187, 187);
     color: white;
-    transform: rotateX(0deg);
+    transform: rotateX(360deg);
 }
 
 .bad td{

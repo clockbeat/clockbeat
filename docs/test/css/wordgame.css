@@ -1,0 +1,167 @@
+:root {
+    font-family: sans-serif;
+    box-sizing: border-box;
+    background-color: #385d7c;
+    --myred: rgb(255, 171, 171);
+    --myyellow: rgb(247, 226, 132);
+    --mygreen: rgb(142, 233, 106);
+    --mygrey: rgb(187, 187, 187);
+    --cells: 100;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+table {
+    display: flex;
+    flex-direction: column;
+    padding-top: 5px;
+}
+
+tr {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+td {
+    align-items: center;
+    display: flex;
+    flex: 1 1;
+    justify-content: center;
+    border-spacing: 2px;
+    margin: 1px;
+    height: 1.8rem;
+    max-width: 2rem;
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    user-select: none;
+    background-color: #ffffff;
+    color: rgb(109, 109, 109);
+    transform: rotateX(0deg);
+    transition-property: background-color, color, transform;
+    transition-duration: 2s;
+}
+
+input {
+    opacity: 0;
+    height: 0px;
+}
+
+#pageselect {
+    font-size: 1.5em;
+    width: 100%; 
+    text-align: center; 
+    padding-top: 0.5rem;
+}
+
+#boxes {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin: auto;
+}
+
+.box {
+    background-color: var(--mygrey);
+    width: 1.5em;
+    margin: auto;
+    display: flex;
+    height: 1.5em;
+    flex-direction: column;
+    border-width: 3px;
+    border-color: #385d7c;
+    border-style: solid;
+}
+
+.boxbar {
+    display: block;
+    width: 100%;
+}
+
+.wakeoff {
+    filter: grayscale();
+}
+
+.wakeon {
+    filter: none;
+}
+
+#keyboard {
+    width: calc(20 * 1.1rem);
+    max-width: 100%;
+    padding-top: 0.5em;
+    display: grid;
+    grid-template-columns: repeat(20, 1rem);
+    grid-template-rows: repeat(3, 2.5rem);
+    grid-gap: 0.1em;
+    margin: auto;
+}
+
+.key {
+    border-radius: 5px;
+    grid-column: span 2;
+    text-align: center;
+    padding-top: 0.6rem;
+    background-color: #fffde7;
+}
+
+.indent1 {
+    grid-column: span 1;
+    border: none;
+}
+
+.indent2,
+.indent3 {
+    grid-column: span 3;
+    border-radius: 5px;
+    text-align: center;
+    padding-top: 0.6rem;
+    background-color: #cfcda8;
+}
+
+#pageselect.gameover {
+    display: none;
+}
+
+#keyboard.gameover {
+    display: none;
+}
+
+.misplaced {
+    background-color: var(--myyellow);
+    color: black;
+    transform: rotateX(360deg);
+}
+
+.found {
+    background-color: var(--mygreen);
+    color: black;
+    transform: rotateX(360deg);
+}
+
+.wrong {
+    background-color: var(--mygrey);
+    color: white;
+    transform: rotateX(360deg);
+}
+
+.bad td, .badstat {
+    background-color: var(--myred);
+    color: black;
+}
+
+.good td, .goodstat {
+    background-color: var(--mygreen);
+    color: black;
+}
+
+.foundbar {
+    background-color: var(--mygreen);
+}
+
+.matchedbar {
+    background-color: var(--myyellow);
+}

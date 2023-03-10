@@ -1,4 +1,6 @@
-const cacheName = "v5";
+let cacheName = /*time!*/ "640b69b6";
+
+const contentToCache = ["index.html", "wordhelper.js", "storage.js", "wordhelper.css"];
 
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets
@@ -13,11 +15,25 @@ self.addEventListener("activate", (e) => {
             );
         })
     );
+    e.waitUntil(
+        (async () => {
+            if ("navigationPreload" in self.registration) {
+                await self.registration.navigationPreload.enable();
+            }
+        })()
+    );
+    self.clients.claim();
 });
 
-["index.html", "wordhelper.js", "wordhelper.css"].forEach(url => {
-    updateCache(url);
-});
+self.addEventListener("install", (e) => {
+    e.waitUntil(
+      (async () => {
+        const cache = await caches.open(cacheName);
+        console.log("Caching all content");
+        await cache.addAll(contentToCache);
+      })()
+    );
+  });
 
 async function updateCache(request) {
     const cachedResponse = await caches.match(request);
@@ -25,21 +41,42 @@ async function updateCache(request) {
         return cachedResponse;
     }
 
-    const response = await fetch(request);
+    try {
+        const response = await fetch(request);
 
-    if (!response || response.status !== 200 || response.type !== 'basic') {
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+            return response;
+        }
+
+        const cache = await caches.open(cacheName)
+        await cache.put(request, response.clone());
         return response;
+    } catch (e) {
+        return new Response();
     }
-
-    const cache = await caches.open(cacheName)
-    await cache.put(request, response.clone());
-    return response;
 }
 
 self.addEventListener("fetch", (e) => {
     e.respondWith((async () => {
+
+        try {
+            const preloadResponse = await e.preloadResponse;
+            if (preloadResponse) {
+                return preloadResponse;
+            }
+        } catch { }
+
         let request = e.request;
         let response = await updateCache(request);
         return response;
     })());
+});
+
+self.addEventListener('message', (event) => {
+    console.log("to sw", event.data);
+    const msg = event.data;
+    if (msg.type == "name") {
+        msg.reply = cacheName;
+        event.source.postMessage(msg);
+    }
 });

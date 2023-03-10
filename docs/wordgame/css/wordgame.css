@@ -2,6 +2,11 @@
     font-family: sans-serif;
     box-sizing: border-box;
     background-color: #385d7c;
+    --myred: rgb(255, 171, 171);
+    --myyellow: rgb(247, 226, 132);
+    --mygreen: rgb(142, 233, 106);
+    --mygrey: rgb(187, 187, 187);
+    --cells: 100;
 }
 
 body {
@@ -49,21 +54,31 @@ input {
     font-size: 1.5em;
     width: 100%; 
     text-align: center; 
-    color: rgb(209, 209, 209); 
     padding-top: 0.5rem;
 }
 
 #boxes {
     display: flex;
     flex-direction: row;
-    width: 70%;
+    width: 100%;
     margin: auto;
 }
 
 .box {
-    color: rgb(221, 221, 221);
-    width: 1em;
-    margin: 3px;
+    background-color: var(--mygrey);
+    width: 1.5em;
+    margin: auto;
+    display: flex;
+    height: 1.5em;
+    flex-direction: column;
+    border-width: 3px;
+    border-color: #385d7c;
+    border-style: solid;
+}
+
+.boxbar {
+    display: block;
+    width: 100%;
 }
 
 .wakeoff {
@@ -116,24 +131,37 @@ input {
 }
 
 .misplaced {
-    background-color: rgb(247, 226, 132);
+    background-color: var(--myyellow);
     color: black;
     transform: rotateX(360deg);
 }
 
 .found {
-    background-color: rgb(142, 233, 106);
+    background-color: var(--mygreen);
     color: black;
     transform: rotateX(360deg);
 }
 
 .wrong {
-    background-color: rgb(187, 187, 187);
+    background-color: var(--mygrey);
     color: white;
     transform: rotateX(360deg);
 }
 
-.bad td{
-    background-color: rgb(255, 171, 171);
-    color: rgb(0, 0, 0);
+.bad td, .badstat {
+    background-color: var(--myred);
+    color: black;
+}
+
+.good td, .goodstat {
+    background-color: var(--mygreen);
+    color: black;
+}
+
+.foundbar {
+    background-color: var(--mygreen);
+}
+
+.matchedbar {
+    background-color: var(--myyellow);
 }

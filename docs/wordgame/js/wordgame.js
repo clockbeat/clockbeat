@@ -1,11 +1,10 @@
-
+let root = document.querySelector(':root');
 let main = document.getElementById("main");
 let keyboard = document.getElementById("keyboard");
 let reload = document.getElementById("reload");
+let statsLink = document.getElementById("stats");
 let boxes = document.getElementById("boxes");
 let pageselect = document.getElementById("pageselect");
-let left = document.getElementById("left");
-let right = document.getElementById("right");
 let wakelock = document.getElementById("wakelock");
 let wakelockSentinel;
 let table = addET(main, "table");
@@ -14,23 +13,18 @@ let black = "&#9632;";
 let white = "&#9633;";
 let tick = "&#10003;";
 let storageName = "wordgame-oct";
+let statsStore = new CbStorage("stats");
 let storage = new CbStorage(storageName);
-let guessesLs = storage.getItem("guesses") ?? "[]";
-let guesses = JSON.parse(guessesLs);
+let guesses = storage.getItem("guesses") ?? [];
 let pageNumber = storage.getItem("currentKey") ?? "0";
 let goodInput = "";
 let pageCount = 8;
-let solutionsLs = storage.getItem("solutions") ?? "[]";
-let solutions = JSON.parse(solutionsLs);
+let solutions = storage.getItem("solutions") ?? [];
 let rowCount = 12;
 let cellCount = 5;
 let gameOver = false;
 
-// solutionWords.forEach(word => {
-//     if (!validWords.includes(word)) {
-//         console.log("Missing " + word);
-//     }
-// });
+root.style.setProperty("--cells", cellCount);
 
 if (solutions.length == 0) {
     makeSolutions();
@@ -38,55 +32,30 @@ if (solutions.length == 0) {
 
 if (storage.getItem("wakelock") == "on") {
     (async () => {
-        wakelockSentinel = await navigator.wakeLock.request('screen');
-        wakelock.className = "wakeon";
+        try {
+            wakelockSentinel = await navigator.wakeLock.request('screen');
+            wakelock.className = "wakeon";
+        } catch (err) {
+            console.log(`${err.name}, ${err.message}`);
+        }
     })();
-}
-
-if (pageNumber == 0) {
-    left.style.visibility = "hidden";
-} else {
-    left.onclick = e => {
-        save();
-        if (pageNumber > 0) {
-            pageNumber--;
-            storage.setItem("currentKey", pageNumber);
-            location.reload();
-        }
-    }
-}
-
-if (pageNumber == pageCount - 1) {
-    right.style.visibility = "hidden";
-} else {
-    right.onclick = e => {
-        save();
-        if (pageNumber < pageCount - 1) {
-            pageNumber++;
-            storage.setItem("currentKey", pageNumber);
-            location.reload();
-        }
-        location.reload();
-    }
 }
 
 for (let r = 0; r < rowCount; r++) {
     let tr = addET(table, "tr");
-    tr.className = "";
     tr.id = "r" + r;
     for (let c = 0; c < cellCount; c++) {
         let td = addET(tr, "td");
         td.id = "r" + r + "c" + c;
         td.innerHTML = "";
-        td.style.transitionDelay = (c*2)/(cellCount + 1) + "s";
+        td.style.transitionDelay = (c * 2) / (cellCount + 1) + "s";
     }
 }
 
 boxes.innerHTML = "";
 
-//makeOverview();
-
 save();
+
 if (!gameOver) {
     refreshPage();
 }
@@ -98,8 +67,12 @@ reload.onclick = function (e) {
     if (wakelockSentinel) {
         storage.setItem("wakelock", "on");
     }
-    storage.setItem("solutions", "[]");
+    storage.setItem("solutions", []);
     location.reload();
+}
+
+stats.onclick = function (e) {
+    location.href = "stats.html?type=" + storageName;
 }
 
 wakelock.onclick = async e => {
@@ -146,32 +119,31 @@ document.onkeydown = function (e) {
 function makeOverview(pageResults) {
     let foundCount = 0;
     boxes.innerHTML = "";
+    let barMult = 100 / cellCount;
     for (let p = 0; p < pageCount; p++) {
-        let letterScore = pageResults[p].letterScore / (cellCount * 2); //0 to 1
-        let sp = document.createElement("div");
-        sp.innerHTML = "&nbsp;";
-        if (pageNumber == p) {
-            sp.style.borderStyle = "solid";
-            sp.style.borderWidth = "3px";
-            sp.style.borderColor = "#bb00bb";
-        }
-        if (letterScore == 1) {
-            sp.innerHTML = tick;
-            foundCount++;
-        }
+        let letterHints = pageResults[p].letterHints.total;
+        let sp = addET(boxes, "div", "box");
         sp.onclick = e => {
             storage.setItem("currentKey", p);
             location.reload();
         };
-        sp.style.margin = "auto";
-        sp.className = "box";
-        let g = letterScore;
-        let color = `hsl(${54 + (g * 60)} 100% ${100 - (g * 70)}%)`; //green = 114
-        if (letterScore == 0) {
-            color = "#ffffff";
+        if (pageNumber == p) {
+            sp.style.borderColor = "#bb00bb";
         }
-        sp.style.backgroundColor = color;
-        boxes.appendChild(sp);
+        let matchedbar = addET(sp, "div", "boxbar");
+        matchedbar.style.height = (letterHints.matchedOnly * barMult) +  "%";
+        matchedbar.className = "matchedbar";
+
+        let foundbar = addET(sp, "div", "boxbar");
+        foundbar.style.height = (letterHints.found * barMult) +  "%";
+        foundbar.className = "foundbar";
+
+        if (letterHints.found == cellCount) {
+            foundbar.innerHTML = tick;
+            foundCount++;
+        }
+
+        //boxes.appendChild(sp);
     }
     if (foundCount >= pageCount) {
         gameOver = true;
@@ -204,6 +176,11 @@ function applyWord() {
     if (goodInput.length != cellCount || guesses.length >= rowCount) {
         return;
     }
+    if (goodInput.toLowerCase() === "swswz") {
+        if (swk) {
+            swk.postMessage({type:"name"});
+        }
+    }
     if (validWords.includes(goodInput.toLowerCase())) {
         guesses.push(goodInput);
         goodInput = "";
@@ -217,20 +194,24 @@ function splitTdId(id) {
     return {r: parseInt(arr[1]), c: parseInt(arr[2])};
 }
 
-function addET(target, type) {
+function addET(target, type, className) {
     const el = document.createElement(type);
+    if (className) {
+        el.className = className;
+    }
     target.appendChild(el);
     return el;
 }
 
 function save() {
-    storage.setItem("guesses", JSON.stringify(guesses));
+    storage.setItem("guesses", guesses);
     storage.setItem("currentKey", pageNumber);
     if (guesses.length == rowCount) {
         gameOver = true;
     }
     if (gameOver) {
-        gameOver = true;
+        let sols = solutions.join("");
+        let balance = rowCount - guesses.length;
         pageselect.className = "gameover";
         keyboard.className = "gameover";
         for (let p = 0; p < pageCount; p++) {
@@ -245,6 +226,9 @@ function save() {
                     cell.className = "";
                 }
             }
+            if (pageDone) {
+                balance += 1;
+            }
         }
         for (let p = pageCount; p < rowCount; p++) {
             for (let c = 0; c < cellCount; c++) {
@@ -253,70 +237,85 @@ function save() {
                 cell.className = "";
             }
         }
+        let stats = statsStore.getItem(storageName) ?? {scores: Array(rowCount + 1).fill(0), pageCount};
+        if (stats["last"] !== sols) {
+            stats["last"] = sols;
+            stats.scores[balance]++;
+            statsStore.setItem(storageName, stats);
+        }
     }
 }
 
 function calculatePage(pagenum) {
-    let found = 0;
+    let foundCount = 0;
     let pageDone = false;
     let rowResults = []; // 0=no match 1=misplaced 2=found
     let letterResults = {};
-    let letterScores = {};
+    let letterHints = {};
+    let solution = solutions[pagenum].toUpperCase().split("");
     guesses.forEach((guess, ix) => {
+        let matchedLetters = {};
         let rowResult = [];
+        let workGuess = [...guess];
         rowResults.push(rowResult);
         if (!pageDone) {
-            let sol = solutions[pagenum].toUpperCase().split("");
-            found = 0;
+            let sol = [...solution];
+            foundCount = 0;
             for (let c = 0; c < cellCount; c++) {
                 rowResult[c] = 0;
-                if (guess[c] == sol[c]) {
+                if (workGuess[c] == sol[c]) {
                     rowResult[c] = 2;
-                    found++;
-                    letterResults[guess[c]] = 2;
+                    foundCount++;
+                    letterResults[workGuess[c]] = 2;
                     sol[c] = "*";
+                    matchedLetters[workGuess[c]] = (matchedLetters[workGuess[c]] ?? 0) + 1;
+                    workGuess[c] = "?";
                 }
             }
-            if (found == cellCount) {
+            let foundLetters = Object.assign({}, matchedLetters);
+            if (foundCount == cellCount) {
                 pageDone = true;
             }
             for (let c = 0; c < cellCount; c++) {
-                const hit = sol.indexOf(guess[c]);
+                const char = workGuess[c];
+                const hit = sol.indexOf(char);
                 if (hit >= 0) {
                     if (rowResult[c] == 0) {
                         rowResult[c] = 1;
                     }
-                    if (!letterResults[guess[c]]) {
-                        letterResults[guess[c]] = 1;
+                    if (!letterResults[char]) {
+                        letterResults[char] = 1;
                     }
                     sol[hit] = "*";
+                    matchedLetters[char] = (matchedLetters[char] ?? 0) + 1;
                 } else {
-                    if (letterResults[guess[c]] === undefined) {
-                        letterResults[guess[c]] = 0;
+                    if (letterResults[char] === undefined) {
+                        letterResults[char] = 0;
                     }
                 }
             }
+            Object.keys(matchedLetters).forEach(char => {
+                if (!letterHints[char]) {
+                    letterHints[char] = {matched: 0, found: 0};
+                }
+                if (letterHints[char].matched < matchedLetters[char]) {
+                    letterHints[char].matched = matchedLetters[char]
+                }
+                if (letterHints[char].found < foundLetters[char]) {
+                    letterHints[char].found = foundLetters[char]
+                }
+            });
         }
-        let score = {};
-        rowResult.forEach((c, ix) => {
-            if (c > 0) {
-                let letter = guess[ix];
-                score[letter] = (score[letter] ?? 0) + c;
-            }
-        });
-        Object.keys(score).forEach(letter => {
-            if ((letterScores[letter] ?? 0) < score[letter]) {
-                letterScores[letter] = score[letter];
-            }
-        });
     });
-    //console.log(letterScores);
-    let letterScore = 0;
-    Object.keys(letterScores).forEach(letter => {
-        letterScore += letterScores[letter];
+    let keys = Object.keys(letterHints);
+    letterHints.total = {matched: 0, found: 0};
+    keys.forEach(key => {
+        letterHints.total.matched += letterHints[key].matched;
+        letterHints.total.found += letterHints[key].found;
     });
-    //letterScore = 0 to 2*cellCount  
-    return {rowResults, letterResults, letterScore, pageDone};
+    letterHints.total.matchedOnly = letterHints.total.matched - letterHints.total.found;
+    //console.log(pagenum, letterHints);
+    return {rowResults, letterResults, letterHints, pageDone};
 }
 
 function refreshPage() {
@@ -325,7 +324,7 @@ function refreshPage() {
         pageResults.push(calculatePage(p));
     }
 
-    let {rowResults, letterResults, letterScore, pageDone} = pageResults[pageNumber];
+    let {rowResults, letterResults, pageDone} = pageResults[pageNumber];
     let r = guesses.length;
     let foundCount = 0;
     rowResults.forEach((result, ix) => {
@@ -362,7 +361,7 @@ function makeSolutions() {
         solutions.push(solutionWords[pos]);
         rand = Math.random();
     }
-    storage.setItem("solutions", JSON.stringify(solutions));
+    storage.setItem("solutions", solutions);
 }
 
 function makeKeyboard(letterResults) {

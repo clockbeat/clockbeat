@@ -4,13 +4,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/wordgame.css">
     <script>
+        var swk;
         try {
             console.clear();
             if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
                 window.addEventListener("load", () => {
-                    navigator.serviceWorker.register('/sw.js')
+                    navigator.serviceWorker.register('sw.js')
                         .then(reg => console.log("Service worker registered"))
                         .catch(err => console.error(`Service Worker Error: ${err}`));
+
+
+                    navigator.serviceWorker.ready.then((registration) => {
+                        swk = registration.active;
+
+                        navigator.serviceWorker.addEventListener("message", msg => {
+                            console.log("from sw", msg.data);
+                            document.body.innerHTML = msg.data.reply;
+                            document.body.style.backgroundColor = "white";
+                        });
+                    });
                 });
             }
         } catch (e) {
@@ -32,16 +44,18 @@
     <div id="wakelock" class="wakeoff"
         style="font-size: 2em; cursor: pointer; display: block; position: absolute; left: 5; top: 7; color: rgb(209, 209, 209);">
         💡</div>
+
+    <div id="stats"
+        style="font-size: 1.5em; cursor: pointer; display: block; position: absolute; left: 10; top: 60; color: rgb(209, 209, 209);">
+        &#128202;</div>
+
     <div id="main"></div>
-    <div id="keyboard"></div>
     <div id="pageselect">
         <div style="max-width: 20rem; margin: auto">
-            <div id="left" style="float: left; cursor: pointer;">&lt;</div>
-            <div id="right" style="float: right; cursor: pointer;">&gt;</div>
             <div id="boxes">&#9632;&#9633;</div>
         </div>
     </div>
-
+    <div id="keyboard"></div>
     <script src="js/wordgame.js"></script>
 </body>
 

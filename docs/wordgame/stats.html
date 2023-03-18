@@ -31,14 +31,16 @@
         let mult = 100 / largest;
         stats.scores.forEach((stat, ix) => {
             let row = addET(statsTable, "tr");
-            let rowd = addET(row, "td");
-            rowd.style.maxWidth = "15rem";
-            rowd.style.justifyContent = "left";
-            rowd.style.backgroundColor = "#fff0";
+            let rowd = addET(row, "td"); 
+            rowd.className = "stats";
             let bar = addET(rowd, "div");
             bar.style.width = (stat * mult) + "%";
             bar.innerHTML = ix;
             bar.className = (ix < stats.pageCount) ? "badstat" : "goodstat";
+            let count = addET(bar, "div");
+            count.style.position = "absolute";
+            count.style.right = "0";
+            count.innerHTML = stat;
         });
 
 

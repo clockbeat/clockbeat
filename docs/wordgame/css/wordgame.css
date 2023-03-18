@@ -45,6 +45,12 @@ td {
     transition-duration: 2s;
 }
 
+td.stats {
+    max-width: 15rem;
+    justify-content: left;
+    background-color: #fff0;
+}
+
 input {
     opacity: 0;
     height: 0px;
@@ -90,13 +96,13 @@ input {
 }
 
 #keyboard {
-    width: calc(20 * 1.1rem);
-    max-width: 100%;
+    width: 100%;
+    max-width: 30em;
     padding-top: 0.5em;
     display: grid;
-    grid-template-columns: repeat(20, 1rem);
+    grid-template-columns: repeat(20, 4.5%);
     grid-template-rows: repeat(3, 2.5rem);
-    grid-gap: 0.1em;
+    gap: 0.2em 0.5%;
     margin: auto;
 }
 

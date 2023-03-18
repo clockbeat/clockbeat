@@ -23,6 +23,14 @@ let solutions = storage.getItem("solutions") ?? [];
 let rowCount = 12;
 let cellCount = 5;
 let gameOver = false;
+let moveitMapping = new moveit(main, {
+    start: e => {return true;},
+    end: dragged
+});
+
+if (pageNumber >= pageCount) {
+    pageNumber = pageCount -1;
+}
 
 root.style.setProperty("--cells", cellCount);
 
@@ -116,6 +124,26 @@ document.onkeydown = function (e) {
 
 //-------------------------------------------------------------------
 
+function dragged(e) {
+		//"this" is moveit
+        //console.log(this);
+		let xmove = (this.x - this.downpos.x);
+        let xdist = Math.abs(xmove - (innerWidth * 0.02));
+        let ydist = Math.abs(this.y - this.downpos.y - (innerWidth * 0.02));
+        let oldPage = pageNumber;
+        if (ydist > xdist) return;
+        if (xmove > innerWidth * 0.02) {
+            pageNumber = Math.min(pageCount - 1, pageNumber + 1);
+        }
+        if (xmove < -innerWidth * 0.02) {
+            pageNumber = Math.max(0, pageNumber - 1);
+        }
+        if (oldPage != pageNumber) {
+            storage.setItem("currentKey", pageNumber);
+            location.reload();
+        }
+}
+
 function makeOverview(pageResults) {
     let foundCount = 0;
     boxes.innerHTML = "";
@@ -130,13 +158,14 @@ function makeOverview(pageResults) {
         if (pageNumber == p) {
             sp.style.borderColor = "#bb00bb";
         }
-        let matchedbar = addET(sp, "div", "boxbar");
-        matchedbar.style.height = (letterHints.matchedOnly * barMult) +  "%";
-        matchedbar.className = "matchedbar";
 
         let foundbar = addET(sp, "div", "boxbar");
-        foundbar.style.height = (letterHints.found * barMult) +  "%";
+        foundbar.style.height = (letterHints.found * barMult) + "%";
         foundbar.className = "foundbar";
+
+        let matchedbar = addET(sp, "div", "boxbar");
+        matchedbar.style.height = (letterHints.matchedOnly * barMult) + "%";
+        matchedbar.className = "matchedbar";
 
         if (letterHints.found == cellCount) {
             foundbar.innerHTML = tick;
@@ -178,7 +207,7 @@ function applyWord() {
     }
     if (goodInput.toLowerCase() === "swswz") {
         if (swk) {
-            swk.postMessage({type:"name"});
+            swk.postMessage({type: "name"});
         }
     }
     if (validWords.includes(goodInput.toLowerCase())) {
@@ -252,6 +281,7 @@ function calculatePage(pagenum) {
     let rowResults = []; // 0=no match 1=misplaced 2=found
     let letterResults = {};
     let letterHints = {};
+    let partSolved = new Array(cellCount).fill("");
     let solution = solutions[pagenum].toUpperCase().split("");
     guesses.forEach((guess, ix) => {
         let matchedLetters = {};
@@ -270,6 +300,7 @@ function calculatePage(pagenum) {
                     sol[c] = "*";
                     matchedLetters[workGuess[c]] = (matchedLetters[workGuess[c]] ?? 0) + 1;
                     workGuess[c] = "?";
+                    partSolved[c] = solution[c];
                 }
             }
             let foundLetters = Object.assign({}, matchedLetters);
@@ -301,20 +332,23 @@ function calculatePage(pagenum) {
                 if (letterHints[char].matched < matchedLetters[char]) {
                     letterHints[char].matched = matchedLetters[char]
                 }
-                if (letterHints[char].found < foundLetters[char]) {
-                    letterHints[char].found = foundLetters[char]
-                }
+                letterHints[char].found = 0;
             });
         }
     });
     let keys = Object.keys(letterHints);
     letterHints.total = {matched: 0, found: 0};
+    partSolved.forEach(char => {
+        if (char) {
+            letterHints[char].found += 1;
+        }
+    });
     keys.forEach(key => {
         letterHints.total.matched += letterHints[key].matched;
         letterHints.total.found += letterHints[key].found;
     });
     letterHints.total.matchedOnly = letterHints.total.matched - letterHints.total.found;
-    //console.log(pagenum, letterHints);
+    //console.log(pagenum, partSolved.join(""), letterHints);
     return {rowResults, letterResults, letterHints, pageDone};
 }
 
@@ -355,12 +389,11 @@ function refreshPage() {
 
 function makeSolutions() {
     solutions = [];
-    let rand = Math.random();
     for (let p = 0; p < pageCount; p++) {
-        let pos = Math.round(solutionWords.length * rand);
+        let pos = Math.floor(solutionWords.length * Math.random());
         solutions.push(solutionWords[pos]);
-        rand = Math.random();
     }
+    //solutions = ["eerie", "tooth", "civic","eerie", "tooth", "civic", "eerie", "tooth"];
     storage.setItem("solutions", solutions);
 }
 

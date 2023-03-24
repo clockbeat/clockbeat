@@ -167,7 +167,7 @@ function makeOverview(pageResults) {
         matchedbar.style.height = (letterHints.matchedOnly * barMult) + "%";
         matchedbar.className = "matchedbar";
 
-        if (letterHints.found == cellCount) {
+        if (pageResults[p].pageDone) {
             foundbar.innerHTML = tick;
             foundCount++;
         }

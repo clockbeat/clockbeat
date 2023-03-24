@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "6415e9eb";
+let cacheName = /*time!*/ "641dbe76";
 
 const contentToCache = ["index.html", "js/wordgame.js", "js/validwords.js", "js/solutionwords.js", "css/wordgame.css"];
 

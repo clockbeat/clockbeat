@@ -20,6 +20,10 @@ function runIt() {
 
     let canvas = document.getElementById("canvas");
     let ctx = canvas.getContext("2d");
+    let width = 1;
+    let height = 1;
+    let reportDiv = document.getElementById("report");
+    let brightness = 127;
 
     navigator.getUserMedia({
         video: {
@@ -31,42 +35,25 @@ function runIt() {
         video.onloadedmetadata = function (e) {
             let settings = localMediaStream.getTracks()[0].getSettings();
             console.log(e, settings);
-            canvas.width = settings.width;
-            canvas.height = settings.height;
+            width = canvas.width = settings.width;
+            height = canvas.height = settings.height;
         };
         video.srcObject = localMediaStream;
 
         function step() {
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            let data = ctx.getImageData(0,0,width, height);
+            for (let p = 0; p<data.data.length; p+=4) {
+                let r = data.data[p + 0];
+                let g = data.data[p + 1];
+                let b = data.data[p + 2];
+                brightness = (brightness * 0.9999) + (((0.2126*r) + (0.7152*g) + (0.0722*b)) * 0.0001); 
+                //https://en.wikipedia.org/wiki/Relative_luminance
+                reportDiv.innerText = Math.floor(brightness);
+            }
             requestAnimationFrame(step);
           }
           requestAnimationFrame(step);
-
-        // let frame_counter = 0;
-
-        // const track = localMediaStream.getVideoTracks()[0];
-        // const media_processor = new MediaStreamTrackProcessor(track);
-
-        // const reader = media_processor.readable.getReader();
-        // while (true) {
-        //     reader.read().then(result => {
-        //         debugger
-        //         if (!result.done) {
-
-        //             let frame = result.value;
-        //             if (encoder.encodeQueueSize > 2) {
-        //                 // Too many frames in flight, encoder is overwhelmed
-        //                 // let's drop this frame.
-        //                 frame.close();
-        //             } else {
-        //                 frame_counter++;
-        //                 const insert_keyframe = frame_counter % 150 === 0;
-        //                 encoder.encode(frame, {keyFrame: insert_keyframe});
-        //                 frame.close();
-        //             }
-        //         }
-        //     });
-        // }
 
     }, errorCallback);
 

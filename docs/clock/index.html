@@ -7,12 +7,17 @@
 	<script src="clock.js"></script>
 </head>
 
-<body>
-	<input type="button" value="report" onclick="runIt()">
-	<div id="clock" style="border: 1px solid; display: inline-block;"></div>
-	<video autoplay></video>
-	<canvas id="canvas"></canvas>
-	<div id="report"></div>
+<body style="background-color: black; max-height: 80vh; overflow: hidden;">
+	<!--input type="button" value="report" onclick="runIt()"-->
+	<video autoplay style="display: none; position: absolute; top: 0;" ></video>
+	<div id="clockhead" style="font: 8vw sans-serif; color: white; text-align: right;"></div>
+	<div id="clock" style="font: 40vw serif; color: white; text-align: center; margin-top: -8vw; "></div>
+	<!--canvas id="canvas"></canvas> margin-bottom: -16vw;
+	<div id="report" style="color: white;"></div-->
+
+	<script>
+		runIt();
+	</script>
 
 </body>
 

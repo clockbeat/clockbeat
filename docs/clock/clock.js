@@ -18,20 +18,24 @@ function runIt() {
         console.log('Rejected!', e);
     };
 
-    let canvas = document.getElementById("canvas");
+    let canvas = new OffscreenCanvas(1, 1);// document.getElementById("canvas");
     let ctx = canvas.getContext("2d");
     let width = 1;
     let height = 1;
     let reportDiv = document.getElementById("report");
     let brightness = 127;
+    let clockDiv = document.getElementById("clock");
+    let clockHead = document.getElementById("clockhead");
+    let video = document.querySelector('video');
 
     navigator.getUserMedia({
         video: {
             width: {min: 8, ideal: 8},
-            height: {min: 8, ideal: 8}
+            height: {min: 8, ideal: 8},
+            facingMode: "user",
+            framerate: 1,
         }
     }, function (localMediaStream) {
-        var video = document.querySelector('video');
         video.onloadedmetadata = function (e) {
             let settings = localMediaStream.getTracks()[0].getSettings();
             console.log(e, settings);
@@ -40,27 +44,67 @@ function runIt() {
         };
         video.srcObject = localMediaStream;
 
-        function step() {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            let data = ctx.getImageData(0,0,width, height);
-            for (let p = 0; p<data.data.length; p+=4) {
-                let r = data.data[p + 0];
-                let g = data.data[p + 1];
-                let b = data.data[p + 2];
-                brightness = (brightness * 0.9999) + (((0.2126*r) + (0.7152*g) + (0.0722*b)) * 0.0001); 
-                //https://en.wikipedia.org/wiki/Relative_luminance
-                reportDiv.innerText = Math.floor(brightness);
-            }
-            requestAnimationFrame(step);
-          }
-          requestAnimationFrame(step);
+        // function step() {
+
+        //     requestAnimationFrame(step);
+        // }
+        // requestAnimationFrame(step);
 
     }, errorCallback);
 
+    let oldTime = "";
 
+    function currentTime() {
+        let date = new Date();
+        let hh = date.getHours();
+        let mm = date.getMinutes();
+        let session = "AM";
+        let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+        if (hh == 0) {
+            hh = 12;
+        }
+        if (hh > 12) {
+            hh = hh - 12;
+            session = "PM";
+        }
+
+        //hh = (hh < 10) ? "0" + hh : hh;
+        mm = (mm < 10) ? "0" + mm : mm;
+
+        let time = hh + ":" + mm;
+
+        if (oldTime !== time) {
+            clockDiv.innerText = time;
+            clockHead.innerText = days[date.getDay()] + "   " + session;
+            oldTime = time;
+        }
+
+        let r = 0, g = 0, b = 0, c = 0;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        let data = ctx.getImageData(0, 0, width, height);
+        for (let p = 0; p < data.data.length; p += 4) {
+            r += data.data[p + 0];
+            g += data.data[p + 1];
+            b += data.data[p + 2];
+            c++;
+        }
+        c /= 0.625
+        r /= c; g /= c; b /= c;
+
+        r += 96; b += 96; g += 96;
+        //reportDiv.innerText = `rgb(${r}, ${g}, ${b})`;
+        clockDiv.style.color = `rgb(${r}, ${g}, ${b})`;
+
+        setTimeout(function () {currentTime()}, 1000);
+    }
+    currentTime();
 
 
 }
+
+// brightness = (brightness * 0.9) + (((0.2126 * r) + (0.7152 * g) + (0.0722 * b)) * 0.1);
+//https://en.wikipedia.org/wiki/Relative_luminance
 
 function Clock(div, width, height, options) {
     let canvas = document.createElement("canvas");

@@ -24,6 +24,7 @@ let alarmPlay = false;
 let audio = new Audio("bong.mp3");
 let page = {};
 let userInteract = false;
+let wakeLock;
 
 document.onpointerdown = e => {
     userInteract = true;
@@ -36,6 +37,14 @@ function runIt() {
     document.querySelectorAll("*[id]").forEach((val) => {
         page[val.id] = val;
     });
+
+    document.addEventListener("visibilitychange", async () => {
+        if (wakeLock !== null && document.visibilityState === "visible") {
+            setWakelock();
+        }
+    });
+
+    setWakelock();
 
     for (let col = 0; col < 2; col++) {
         page["from" + col].value = colors[col].from;
@@ -91,22 +100,34 @@ function runIt() {
 
         r += 96; b += 96; g += 96;
         //reportDiv.innerText = `rgb(${r}, ${g}, ${b})`;
-        document.body.style.color = colors[currentColor].color;
-        document.body.style.backgroundColor = colors[currentColor].bg;
+        page.main.style.color = colors[currentColor].color;
+        page.main.style.backgroundColor = colors[currentColor].bg;
 
         if (userInteract || !alarmOn) {
             if (alarmPlay) {
                 audio.play();
             }
         } else {
-            document.body.style.color = flash ? "black" : "white";
+            page.main.style.color = flash ? "black" : "white";
             flash = (flash + 1) % 2;
-            document.body.style.backgroundColor = flash ? "black" : "white";
+            page.main.style.backgroundColor = flash ? "black" : "white";
         }
 
         setTimeout(function () {currentTime()}, 1000);
     }
     currentTime();
+}
+
+let setWakelock = async () => {
+    try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        console.log("Wake Lock set");
+        wakeLock.addEventListener("release", () => {
+            console.log("Wake Lock released");
+        });
+    } catch (err) {
+        console.log(`${err.name}, ${err.message}`);
+    }
 }
 
 function store() {

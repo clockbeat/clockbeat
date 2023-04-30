@@ -5,16 +5,33 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<script src="clock.js"></script>
+	<style media="all">
+		input[type=checkbox]:checked + label {
+			background-color: red;
+		}
+	</style>
 </head>
 
-<body style="background-color: black; max-height: 80vh; overflow: hidden;">
-	<!--input type="button" value="report" onclick="runIt()"-->
-	<video autoplay style="display: none; position: absolute; top: 0;" ></video>
-	<div id="clockhead" style="font: 8vw sans-serif; color: white; text-align: right;"></div>
-	<div id="clock" style="font: 40vw serif; color: white; text-align: center; margin-top: -8vw; "></div>
-	<!--canvas id="canvas"></canvas> margin-bottom: -16vw;
-	<div id="report" style="color: white;"></div-->
+<body style="background-color: black; color: white; font-family: sans-serif; padding-bottom: 3vw; user-select: none;">
+	<video autoplay style="display: none; position: absolute; top: 0;"></video>
+	<div id="clockhead" style="font-size: 8vw; text-align: right;"></div>
+	<div id="clock"
+		style="font-size: 36vw; text-align: center; margin-top: -6vw; margin-bottom: -2vw; font-weight: bold;"></div>
 
+	<input id="alarm" type="checkbox" value="" oninput="setAlarm(event.target.checked, 0)" style="display: none;">
+	<label id="alarmlabel" for="alarm" style="font-size: 2em;">Alarm <span id="alarmtimetext"></span></label>
+	<br><br><br><br>Alarm Time <input id="alarmtime" type="time" value="" onchange="setAlarmTime(event.target.value, 0);"
+		style="font-size: 2em; background-color: transparent; color: white; border: none;">&nbsp;&nbsp;
+
+
+	<br><br><br><br>From <input id="from0" type="time" value="" oninput="setColorTime(event.target.value, 0)">
+	Text <input id="color0" type="color" value="#ffffff" oninput="setColor(event.target.value, 0);">
+	Background <input id="bg0" type="color" value="#000000" oninput="setBg(event.target.value, 0);">
+	<br>From <input id="from1" type="time" value="" oninput="setColorTime(event.target.value, 1)">
+	Text <input id="color1" type="color" value="#ffffff" oninput="setColor(event.target.value, 1);">
+	Background <input id="bg1" type="color" value="#000000" oninput="setBg(event.target.value, 1);">
+
+	<input type="button" value="Full screen" onclick="goToWork(event.target.value);" style="float: right;">
 	<script>
 		runIt();
 	</script>

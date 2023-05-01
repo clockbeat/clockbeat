@@ -86,6 +86,14 @@ function runIt() {
         page.main.style.color = colors[currentColor].color;
         page.main.style.backgroundColor = colors[currentColor].bg;
 
+        if (page.disablealarm.checked) {
+            page.alarmlabel.style.display = "none";
+            page.alarm.checked = false;
+            setAlarm(false);
+        } else {
+            page.alarmlabel.style.display = "block";
+        }
+
         if (userInteract || !alarmOn) {
             if (alarmPlay) {
                 audio.play();
@@ -105,15 +113,11 @@ function formatTime(hh, mm) {
     let session = "AM";
     let hhx = (hh < 10) ? "0" + hh : hh;
 
-    if (hh == 0) {
-        hh = 12;
-    }
-
-    if (hh > 12) {
-        hh = hh - 12;
+    if (hh >= 12) {
         session = "PM";
     }
 
+    hh = (hh % 12) || 12;
     mm = (mm < 10) ? "0" + mm : mm;
 
     let time = hh + ":" + mm;
@@ -156,12 +160,14 @@ let setWakelock = async () => {
     }
 }
 
-function store() {
+function store(doScroll) {
     localStorage.setItem("clock", JSON.stringify({colors, currentColor, alarmOn, alarmTime}));
-    window.setTimeout(() => {
-        window.scroll({top: 0, left: 0, behavior: "smooth"});
-        calcCurrentColor();
-    }, 3000);
+    if (doScroll !== false) {
+        window.setTimeout(() => {
+            window.scroll({top: 0, left: 0, behavior: "smooth"});
+            calcCurrentColor();
+        }, 3000);
+    }
 }
 
 function setColor(val, ix) {
@@ -198,7 +204,7 @@ function setAlarm(checked) {
     if (!alarmOn) {
         alarmPlay = false;
     }
-    store();
+    store(false);
 }
 
 function setAlarmTime(val) {

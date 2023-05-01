@@ -15,14 +15,21 @@
 		input[type=time] {
 			font-size: 2em;
 		}
+
+		input[type=checkbox] {
+			transform: scale(2);
+		}
+
 	</style>
 </head>
 
 <body style="font-family: sans-serif; padding-bottom: 3vw; user-select: none; margin: 0;">
 	<div id="main" style="min-height: 100vh; margin: 0;">
+
 		<input id="alarm" type="checkbox" value="" oninput="setAlarm(event.target.checked, 0)" style="display: none;">
-		<label id="alarmlabel" for="alarm" style="font-size: 3vw; padding: 0.4em; float: left;">Alarm <span
+		<label id="alarmlabel" for="alarm" style="font-size: 3vw; padding: 0.4em; display: block; position: absolute; top: 0; left: 0;">Alarm <span
 				id="alarmtimetext"></span></label>
+
 		<div id="clockhead" style="font-size: 8vw; text-align: right; padding-right: 0.5em;"></div>
 		<div id="clock"
 			style="font-size: 36vw; text-align: center; margin-top: -6vw; margin-bottom: -2vw; font-weight: bold;">
@@ -30,7 +37,8 @@
 	</div>
 	<div id="settings" style="padding: 1vw;  margin-bottom: 4vw;">
 		<br><br><br>Alarm Time <input id="alarmtime" type="time" value=""
-			onchange="setAlarmTime(event.target.value, 0);">&nbsp;&nbsp;
+			onchange="setAlarmTime(event.target.value, 0);">
+			Disable <input id="disablealarm" type="checkbox">
 
 		<input type="button" value="Full screen" onclick="goToWork(event.target.value);"
 			style="float: right; font-size: 4vw; min-height: 6vw;">

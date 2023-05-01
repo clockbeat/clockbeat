@@ -9,6 +9,7 @@
 		input[type=checkbox]:checked+label {
 			background-color: red;
 			color: white;
+			mix-blend-mode: difference;
 		}
 
 		input[type=time] {
@@ -19,14 +20,13 @@
 
 <body style="font-family: sans-serif; padding-bottom: 3vw; user-select: none; margin: 0;">
 	<div id="main" style="min-height: 100vh; margin: 0;">
+		<input id="alarm" type="checkbox" value="" oninput="setAlarm(event.target.checked, 0)" style="display: none;">
+		<label id="alarmlabel" for="alarm" style="font-size: 3vw; padding: 0.4em; float: left;">Alarm <span
+				id="alarmtimetext"></span></label>
 		<div id="clockhead" style="font-size: 8vw; text-align: right; padding-right: 0.5em;"></div>
 		<div id="clock"
 			style="font-size: 36vw; text-align: center; margin-top: -6vw; margin-bottom: -2vw; font-weight: bold;">
 		</div>
-
-		<input id="alarm" type="checkbox" value="" oninput="setAlarm(event.target.checked, 0)" style="display: none;">
-		<label id="alarmlabel" for="alarm" style="font-size: 5vw; padding: 0.2em;">Alarm <span
-				id="alarmtimetext"></span></label>
 	</div>
 	<div id="settings" style="padding: 1vw;  margin-bottom: 4vw;">
 		<br><br><br>Alarm Time <input id="alarmtime" type="time" value=""

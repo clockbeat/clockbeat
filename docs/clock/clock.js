@@ -53,33 +53,20 @@ function runIt() {
     }
     page.alarm.checked = alarmOn;
     page.alarmtime.value = page.alarmtimetext.innerHTML = alarmTime;
-
+    setAlarm(alarmOn);
 
     let oldTime = "";
     let flash = 0;
+
+    calcCurrentColor();
 
     function currentTime() {
         let date = new Date();
         let hh = date.getHours();
         let mm = date.getMinutes();
-        let session = "AM";
         let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
-        let hhx = (hh < 10) ? "0" + hh : hh;
-
-        if (hh == 0) {
-            hh = 12;
-        }
-
-        if (hh > 12) {
-            hh = hh - 12;
-            session = "PM";
-        }
-
-        mm = (mm < 10) ? "0" + mm : mm;
-
-        let time = hh + ":" + mm;
-        let timeForAlarm = hhx + ":" + mm;
+        let {time, timeForAlarm, session} = formatTime(hh, mm);
 
         if (oldTime !== time) {
             page.clock.innerText = time;
@@ -96,10 +83,6 @@ function runIt() {
             }
         }
 
-        let r = 0, g = 0, b = 0, c = 0;
-
-        r += 96; b += 96; g += 96;
-        //reportDiv.innerText = `rgb(${r}, ${g}, ${b})`;
         page.main.style.color = colors[currentColor].color;
         page.main.style.backgroundColor = colors[currentColor].bg;
 
@@ -118,6 +101,49 @@ function runIt() {
     currentTime();
 }
 
+function formatTime(hh, mm) {
+    let session = "AM";
+    let hhx = (hh < 10) ? "0" + hh : hh;
+
+    if (hh == 0) {
+        hh = 12;
+    }
+
+    if (hh > 12) {
+        hh = hh - 12;
+        session = "PM";
+    }
+
+    mm = (mm < 10) ? "0" + mm : mm;
+
+    let time = hh + ":" + mm;
+    let timeForAlarm = hhx + ":" + mm;
+    return {time, timeForAlarm, session};
+}
+
+function calcCurrentColor() {
+    //We need to go through 24 hours to get the color now
+    let date = new Date();
+    let hhnow = date.getHours();
+    let mmnow = date.getMinutes();
+    let timeNow = formatTime(hhnow, mmnow).timeForAlarm;
+    mmnow++;
+    let timeCalc = "";
+    for (let hh = hhnow; timeNow != timeCalc; hh = (hh + 1) % 24) {
+        for (let mm = mmnow; mm < 60 && timeNow != timeCalc; mm++) {
+            timeCalc = formatTime(hh, mm).timeForAlarm;
+            for (let n = 0; n < colors.length; n++) {
+                if (colors[n].from == timeCalc) {
+                    currentColor = n;
+                    console.log(timeCalc, currentColor);
+                }
+            }
+        }
+        mmnow = 0;
+    }
+    console.log("Recalculated current = " + currentColor);
+}
+
 let setWakelock = async () => {
     try {
         wakeLock = await navigator.wakeLock.request('screen');
@@ -132,6 +158,10 @@ let setWakelock = async () => {
 
 function store() {
     localStorage.setItem("clock", JSON.stringify({colors, currentColor, alarmOn, alarmTime}));
+    window.setTimeout(() => {
+        window.scroll({top: 0, left: 0, behavior: "smooth"});
+        calcCurrentColor();
+    }, 3000);
 }
 
 function setColor(val, ix) {
@@ -154,11 +184,17 @@ function setColorTime(val, ix) {
 
 function goToWork(e) {
     document.documentElement.requestFullscreen();
+    store();
 }
 
 function setAlarm(checked) {
+    if (!!checked && !alarmTime) {
+        page.alarmtime.focus();
+        page.alarm.checked = false;
+        return;
+    }
     alarmOn = !!checked
-    page.alarmtimetext.innerText = alarmTime;
+    page.alarmtimetext.innerText = alarmTime + (alarmOn ? " On" : " Off");
     if (!alarmOn) {
         alarmPlay = false;
     }
@@ -167,5 +203,8 @@ function setAlarm(checked) {
 
 function setAlarmTime(val) {
     alarmTime = val;
-    page.alarmtimetext.innerText = alarmTime;
+    //page.alarmtimetext.innerText = alarmTime;
+    page.alarm.checked = true;
+    setAlarm(true);
+    store();
 }

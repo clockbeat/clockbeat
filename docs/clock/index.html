@@ -8,6 +8,7 @@
 	<style media="all">
 		input[type=checkbox]:checked+label {
 			background-color: red;
+			color: white;
 		}
 
 		input[type=time] {
@@ -18,26 +19,29 @@
 
 <body style="font-family: sans-serif; padding-bottom: 3vw; user-select: none; margin: 0;">
 	<div id="main" style="min-height: 100vh; margin: 0;">
-		<div id="clockhead" style="font-size: 8vw; text-align: right;"></div>
+		<div id="clockhead" style="font-size: 8vw; text-align: right; padding-right: 0.5em;"></div>
 		<div id="clock"
 			style="font-size: 36vw; text-align: center; margin-top: -6vw; margin-bottom: -2vw; font-weight: bold;">
 		</div>
 
 		<input id="alarm" type="checkbox" value="" oninput="setAlarm(event.target.checked, 0)" style="display: none;">
-		<label id="alarmlabel" for="alarm" style="font-size: 2em;">Alarm <span id="alarmtimetext"></span></label>
+		<label id="alarmlabel" for="alarm" style="font-size: 5vw; padding: 0.2em;">Alarm <span
+				id="alarmtimetext"></span></label>
 	</div>
-	<br><br><br><br>Alarm Time <input id="alarmtime" type="time" value=""
-		onchange="setAlarmTime(event.target.value, 0);" style="">&nbsp;&nbsp;
+	<div id="settings" style="padding: 1vw;  margin-bottom: 4vw;">
+		<br><br><br>Alarm Time <input id="alarmtime" type="time" value=""
+			onchange="setAlarmTime(event.target.value, 0);">&nbsp;&nbsp;
 
+		<input type="button" value="Full screen" onclick="goToWork(event.target.value);"
+			style="float: right; font-size: 4vw; min-height: 6vw;">
 
-	<br><br><br><br>From <input id="from0" type="time" value="" oninput="setColorTime(event.target.value, 0)">
-	Text <input id="color0" type="color" value="#ffffff" oninput="setColor(event.target.value, 0);">
-	Background <input id="bg0" type="color" value="#000000" oninput="setBg(event.target.value, 0);">
-	<br>From <input id="from1" type="time" value="" oninput="setColorTime(event.target.value, 1)">
-	Text <input id="color1" type="color" value="#ffffff" oninput="setColor(event.target.value, 1);">
-	Background <input id="bg1" type="color" value="#000000" oninput="setBg(event.target.value, 1);">
-
-	<input type="button" value="Full screen" onclick="goToWork(event.target.value);" style="float: right; font-size: 4vw; min-height: 6vw;">
+		<br><br><br>From <input id="from0" type="time" value="" oninput="setColorTime(event.target.value, 0)">
+		Text <input id="color0" type="color" value="#ffffff" oninput="setColor(event.target.value, 0);">
+		Background <input id="bg0" type="color" value="#000000" oninput="setBg(event.target.value, 0);">
+		<br>From <input id="from1" type="time" value="" oninput="setColorTime(event.target.value, 1)">
+		Text <input id="color1" type="color" value="#ffffff" oninput="setColor(event.target.value, 1);">
+		Background <input id="bg1" type="color" value="#000000" oninput="setBg(event.target.value, 1);">
+	</div>
 	<script>
 		runIt();
 	</script>

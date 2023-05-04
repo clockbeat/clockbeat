@@ -4,6 +4,33 @@
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+	<script>
+        var swk;
+        try {
+            console.clear();
+            if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+                window.addEventListener("load", () => {
+                    navigator.serviceWorker.register('sw.js')
+                        .then(reg => console.log("Service worker registered"))
+                        .catch(err => console.error(`Service Worker Error: ${err}`));
+
+
+                    navigator.serviceWorker.ready.then((registration) => {
+                        swk = registration.active;
+
+                        navigator.serviceWorker.addEventListener("message", msg => {
+                            console.log("from sw", msg.data);
+                            document.body.innerHTML = msg.data.reply;
+                            document.body.style.backgroundColor = "white";
+                        });
+                    });
+                });
+            }
+        } catch (e) {
+            console.error(e);
+        }		
+	</script>
 	<script src="clock.js"></script>
 	<style media="all">
 		input[type=checkbox]:checked+label {
@@ -19,7 +46,6 @@
 		input[type=checkbox] {
 			transform: scale(2);
 		}
-
 	</style>
 </head>
 
@@ -27,7 +53,8 @@
 	<div id="main" style="min-height: 100vh; margin: 0;">
 
 		<input id="alarm" type="checkbox" value="" oninput="setAlarm(event.target.checked, 0)" style="display: none;">
-		<label id="alarmlabel" for="alarm" style="font-size: 3vw; padding: 0.4em; display: block; position: absolute; top: 0; left: 0;">Alarm <span
+		<label id="alarmlabel" for="alarm"
+			style="font-size: 3vw; padding: 0.4em; display: block; position: absolute; top: 0; left: 0;">Alarm <span
 				id="alarmtimetext"></span></label>
 
 		<div id="clockhead" style="font-size: 8vw; text-align: right; padding-right: 0.5em;"></div>
@@ -38,7 +65,7 @@
 	<div id="settings" style="padding: 1vw;  margin-bottom: 4vw;">
 		<br><br><br>Alarm Time <input id="alarmtime" type="time" value=""
 			onchange="setAlarmTime(event.target.value, 0);">
-			Disable <input id="disablealarm" type="checkbox">
+		Disable <input id="disablealarm" type="checkbox">
 
 		<input type="button" value="Full screen" onclick="goToWork(event.target.value);"
 			style="float: right; font-size: 4vw; min-height: 6vw;">

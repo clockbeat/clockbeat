@@ -5,6 +5,7 @@
   "display": "fullscreen",
   "theme_color": "#ffffff",
   "background_color":"#000000",
+  "orientation":  "any",
   "icons": [
     {
       "src": "clock.svg",

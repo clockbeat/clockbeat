@@ -2,7 +2,7 @@
   "name": "Clock",
   "short_name": "Clock",
   "start_url": "/clock/",
-  "display": "fullscreen",
+  "display": "standalone",
   "theme_color": "#ffffff",
   "background_color":"#000000",
   "orientation":  "any",

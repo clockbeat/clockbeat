@@ -9,13 +9,8 @@ let {colors, currentColor, alarmOn, alarmTime} = ls ?? {
     colors: [
         {
             from: "00:00",
-            color: "white",
-            bg: "black"
-        },
-        {
-            from: "00:00",
-            color: "white",
-            bg: "black"
+            color: "#ffffff",
+            bg: "#000000"
         }
     ], currentColor: 0, alarmOn: false, alarmTime: ""
 };
@@ -25,6 +20,7 @@ let audio = new Audio("bong.mp3");
 let page = {};
 let userInteract = false;
 let wakeLock;
+let scrollTimeout;
 
 document.onpointerdown = e => {
     userInteract = true;
@@ -46,11 +42,7 @@ function runIt() {
 
     setWakelock();
 
-    for (let col = 0; col < 2; col++) {
-        page["from" + col].value = colors[col].from;
-        page["color" + col].value = colors[col].color;
-        page["bg" + col].value = colors[col].bg;
-    }
+    setColorChoices();
     page.alarm.checked = alarmOn;
     page.alarmtime.value = page.alarmtimetext.innerHTML = alarmTime;
     setAlarm(alarmOn);
@@ -148,6 +140,47 @@ function calcCurrentColor() {
     console.log("Recalculated current = " + currentColor);
 }
 
+function setColorChoices() {
+    page.choices.innerHTML = "";
+    for (let col = 0; col < colors.length; col++) {
+        let from = colors[col].from;
+        let color = colors[col].color;
+        let bg = colors[col].bg;
+        page.choices.innerHTML += `
+        <br><span id="spa${col}"> From <input id="from${col}" type="time" value="${from}" oninput="setColorTime(event.target.value, ${col})"></span>
+        Text <input id="color${col}" type="color" value="${color}" oninput="setColor(event.target.value, ${col});">
+        Background <input id="bg${col}" type="color" value="${bg}" oninput="setBg(event.target.value, ${col});">
+        <input id="del${col}" type="button" value="x" onclick="deleteColor(${col});">
+    `;
+    page.choices.className = "len" + colors.length;
+    }
+}
+
+function addColor() {
+    colors.push({
+        from: "00:00",
+        color: "#ffffff",
+        bg: "#000000"
+    });
+    setColorChoices();
+    calcCurrentColor();
+    store();
+}
+
+function deleteColor(col) {
+    if (colors.length > 1) {
+        colors.splice(col, 1);
+        setColorChoices();
+        calcCurrentColor();
+        store();
+    }
+}
+
+
+function colorChoices(col, from, text, bg) {
+    return
+}
+
 let setWakelock = async () => {
     try {
         wakeLock = await navigator.wakeLock.request('screen');
@@ -163,10 +196,11 @@ let setWakelock = async () => {
 function store(doScroll) {
     localStorage.setItem("clock", JSON.stringify({colors, currentColor, alarmOn, alarmTime}));
     if (doScroll !== false) {
-        window.setTimeout(() => {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = window.setTimeout(() => {
             window.scroll({top: 0, left: 0, behavior: "smooth"});
             calcCurrentColor();
-        }, 3000);
+        }, 5000);
     }
 }
 

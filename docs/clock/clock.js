@@ -5,7 +5,7 @@ if (ls) {
     ls = JSON.parse(ls);
 }
 
-let {colors, currentColor, alarmOn, alarmTime} = ls ?? {
+let {colors, currentColor, alarmOn, alarmTime, weatherKey, latitude, longitude} = ls ?? {
     colors: [
         {
             from: "00:00",
@@ -73,6 +73,8 @@ function runIt() {
                     currentColor = n;
                 }
             }
+
+            getWeather();
         }
 
         page.main.style.color = colors[currentColor].color;
@@ -131,13 +133,13 @@ function calcCurrentColor() {
             for (let n = 0; n < colors.length; n++) {
                 if (colors[n].from == timeCalc) {
                     currentColor = n;
-                    console.log(timeCalc, currentColor);
+                    //console.log(timeCalc, currentColor);
                 }
             }
         }
         mmnow = 0;
     }
-    console.log("Recalculated current = " + currentColor);
+    //console.log("Recalculated current = " + currentColor);
 }
 
 function setColorChoices() {
@@ -152,7 +154,7 @@ function setColorChoices() {
         Background <input id="bg${col}" type="color" value="${bg}" oninput="setBg(event.target.value, ${col});">
         <input id="del${col}" type="button" value="x" onclick="deleteColor(${col});">
     `;
-    page.choices.className = "len" + colors.length;
+        page.choices.className = "len" + colors.length;
     }
 }
 
@@ -194,7 +196,7 @@ let setWakelock = async () => {
 }
 
 function store(doScroll) {
-    localStorage.setItem("clock", JSON.stringify({colors, currentColor, alarmOn, alarmTime}));
+    localStorage.setItem("clock", JSON.stringify({colors, currentColor, alarmOn, alarmTime, weatherKey, latitude, longitude}));
     if (doScroll !== false) {
         clearTimeout(scrollTimeout);
         scrollTimeout = window.setTimeout(() => {
@@ -247,4 +249,38 @@ function setAlarmTime(val) {
     page.alarm.checked = true;
     setAlarm(true);
     store();
+}
+
+function setWeatherKey(val) {
+    weatherKey = val;
+    if (val && val.length > 20) {
+        getLocation();
+    }
+    store();
+}
+
+function getLocation() {
+    navigator.geolocation.getCurrentPosition(position => {
+        //console.log(position);
+        latitude = position.coords.latitude + (Math.random() / 100);
+        longitude = position.coords.longitude + (Math.random() / 100);;
+        store();
+    });
+}
+
+function getWeather() {
+    if (weatherKey && latitude && longitude) {
+        let url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${weatherKey}`;
+        fetch(url).then(response => {
+            response.json().then(data => {
+                console.log(data);
+                let weather = data.weather[0].description;
+                if (data.wind.speed > 32) {
+                    weather += "&nbsp;&nbsp;windy";
+                }
+                weather += "&nbsp;&nbsp;" + Math.round(data.main.feels_like) + "&deg;";
+                page.weather.innerHTML = weather;
+            });
+        });
+    }
 }

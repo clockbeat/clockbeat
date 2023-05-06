@@ -59,6 +59,9 @@
 		#choices.len1 #del0 {
 			display: none;
 		}
+		.small {
+			font-size: 50%;
+		}
 	</style>
 </head>
 
@@ -72,8 +75,9 @@
 
 		<div id="clockhead" style="font-size: 8vw; text-align: right; padding-right: 0.5em;"></div>
 		<div id="clock"
-			style="font-size: 36vw; text-align: center; margin-top: -4vw; margin-bottom: -2vw; font-weight: bold;">
+			style="font-size: 36vw; text-align: center; margin-top: -4vw; margin-bottom: -4vw; font-weight: bold;">
 		</div>
+		<div id="weather" style="font-size: 6vw; padding-left: 0.5em;"></div>
 	</div>
 	<div id="settings" style="padding: 1vw;  margin-bottom: 4vw;">
 		<br><br><br>Alarm Time <input id="alarmtime" type="time" value=""
@@ -85,11 +89,12 @@
 			<br><br><br>
 		<div id="choices" class="len1"></div>
 		<br><br>Add color <input type="button" value="+" onclick="addColor();">
+		<br><br>openweathermap key <input type="text" onchange="setWeatherKey(event.target.value);"> <input type="button" value="relocate" onclick="getLocation();">
 	</div>
 	<script>
 		runIt();
 	</script>
-	<div style="font-size: 0.7em; font-style: oblique; float: right">V5a</div>
+	<div style="font-size: 0.7em; font-style: oblique; float: right; margin-right: 1em;">V6</div>
 	<br><br><br>
 </body>
 

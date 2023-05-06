@@ -273,12 +273,9 @@ function getWeather() {
         let url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${weatherKey}`;
         fetch(url).then(response => {
             response.json().then(data => {
-                console.log(data);
-                let weather = data.weather[0].description;
-                if (data.wind.speed > 32) {
-                    weather += "&nbsp;&nbsp;windy";
-                }
-                weather += "&nbsp;&nbsp;" + Math.round(data.main.feels_like) + "&deg;";
+                //console.log(data);
+                let weather = Math.round(data.main.feels_like) + "&deg;";
+                weather += "&nbsp;" + data.weather[0].description;
                 page.weather.innerHTML = weather;
             });
         });

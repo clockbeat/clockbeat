@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "645631dd";
+let cacheName = /*time!*/ "64568532";
 
 const contentToCache = ["index.html", "clock.js", "bong.mp3", "clock.svg", "manifest.json"];
 

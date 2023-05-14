@@ -21,6 +21,7 @@ let page = {};
 let userInteract = false;
 let wakeLock;
 let scrollTimeout;
+let alternateDisplay = false;
 
 document.onpointerdown = e => {
     userInteract = true;
@@ -44,13 +45,16 @@ function runIt() {
 
     setColorChoices();
     page.alarm.checked = alarmOn;
-    page.alarmtime.value = page.alarmtimetext.innerHTML = alarmTime;
     setAlarm(alarmOn);
 
     let oldTime = "";
     let flash = 0;
 
+    let altTimer = 0;
+
     calcCurrentColor();
+
+    getWeather();
 
     function currentTime() {
         let date = new Date();
@@ -75,6 +79,8 @@ function runIt() {
             }
 
             getWeather();
+
+            altTimer = 0;
         }
 
         page.main.style.color = colors[currentColor].color;
@@ -98,9 +104,25 @@ function runIt() {
             page.main.style.backgroundColor = flash ? "black" : "white";
         }
 
+        if (alternateDisplay) {
+            showAlt(altTimer);
+            altTimer++;
+        }
+
         setTimeout(function () {currentTime()}, 1000);
     }
     currentTime();
+}
+
+function showAlt(timer) {
+    if (timer % 60 == 30 - 3) {
+        page.clock.style.opacity = 0;
+        page.weather.style.opacity = 1;
+    }
+    if (timer % 60 == 30 + 3) {
+        page.clock.style.opacity = 1;
+        page.weather.style.opacity = 0;
+    }
 }
 
 function formatTime(hh, mm) {
@@ -236,7 +258,7 @@ function setAlarm(checked) {
         return;
     }
     alarmOn = !!checked
-    page.alarmtimetext.innerText = alarmTime + (alarmOn ? " On" : " Off");
+    page.alarmlabel.innerText = "Alarm " + alarmTime + (alarmOn ? " On" : " Off");
     if (!alarmOn) {
         alarmPlay = false;
     }
@@ -245,7 +267,6 @@ function setAlarm(checked) {
 
 function setAlarmTime(val) {
     alarmTime = val;
-    //page.alarmtimetext.innerText = alarmTime;
     page.alarm.checked = true;
     setAlarm(true);
     store();
@@ -268,16 +289,73 @@ function getLocation() {
     });
 }
 
+function clearLocation() {
+        latitude = "";
+        longitude = "";
+        store();
+}
+
+function resetWeatherKey(msg) {
+    page.weatherkey.value = msg ?? "";
+    weatherKey = "";
+    alternateDisplay = false;
+    store();
+}
+
 function getWeather() {
     if (weatherKey && latitude && longitude) {
-        let url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${weatherKey}`;
-        fetch(url).then(response => {
+        alternateDisplay = true;
+        let current = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${weatherKey}`;
+        fetch(current).then(response => {
             response.json().then(data => {
-                //console.log(data);
-                let weather = Math.round(data.main.feels_like) + "&deg;";
-                weather += "&nbsp;" + data.weather[0].description;
-                page.weather.innerHTML = weather;
+                if (data.cod == 401) {
+                    resetWeatherKey("bad key");
+                    return;
+                }
+                let weather = Math.round(data.main.temp) + "&deg;";
+                page.temp.innerHTML = weather;
+                page.curImg.src = getIcon(data);
+            });
+        });
+        let forecast = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&units=metric&appid=${weatherKey}`;
+        fetch(forecast).then(response => {
+            response.json().then(data => {
+                if (data.cod == 401) {
+                    resetWeatherKey("bad key");
+                    return;
+                }
+                page.fc.innerHTML = "";
+                for (let n = 0; n < 3; n++) {
+                    let div = document.createElement("div");
+                    div.style.display = "inline-block";
+                    div.style.whiteSpace = "nowrap";
+                    let img = document.createElement("img");
+                    img.style.width = "10vw";
+                    img.src = getIcon(data.list[n + 1]);
+                    let dt = new Date(data.list[n + 1].dt * 1000);
+                    let {time} = formatTime(dt.getHours(), dt.getMinutes());
+                    let tm = document.createElement("span");
+                    tm.innerHTML = time;
+                    tm.style.fontSize = "3vw";
+                    tm.style.verticalAlign = "top";
+                    div.appendChild(img);
+                    div.appendChild(tm);
+                    page.fc.appendChild(div);
+                }
             });
         });
     }
+
+    function getIcon(data) {
+        let iconName = "w" + data.weather[0].icon;
+        if (!weatherIcons[iconName]) {
+            iconName = iconName.replace("n", "d"); //use day eqiv to night
+        }
+        let icon = weatherIcons[iconName];
+        if (!icon)
+            debugger;
+        return "data:image/svg+xml;utf8," + weatherIcons[iconName];
+    }
 }
+
+

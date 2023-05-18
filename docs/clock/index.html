@@ -31,7 +31,7 @@
 			console.error(e);
 		}		
 	</script>
-	<script src="weathericons.js"></script>
+	<script src="suntimes.js"></script>
 	<script src="clock.js"></script>
 	<style>
 		input[type=checkbox]:checked+label {
@@ -68,47 +68,32 @@
 </head>
 
 <body style="font-family: sans-serif; padding-bottom: 3vw; user-select: none; margin: 0;">
-	<div id="main" style="min-height: 110vh; margin: 0; font-weight: bold;">
+	<div id="main" style="min-height: 110vh; margin: 0; font-weight: bold; transition: color, background-color 10s;">
+		<div id="clockhead" style="font-size: 10vw; text-align: right; padding-right: 0.5em;"></div>
+		<div style="position: relative; font-size: 36vw; text-align: center; margin-top: -4vw; margin-bottom: -4vw;">
+			<div id="clock" style="width: 100%; "></div>
+		</div>
 
 		<input id="alarm" type="checkbox" value="" oninput="setAlarm(event.target.checked, 0)" style="display: none;">
 		<label id="alarmlabel" for="alarm"
-			style="font-size: 3vw; padding: 0.5em; display: block; position: absolute; top: 0; left: 0;"><span
+			style="font-size: 3vw; padding: 0.3em; display: block; position: absolute; top: 0; left: 0; max-width: 10vw;"><span
 				id="alarmtimetext"></span></label>
-
-		<div id="clockhead" style="font-size: 10vw; text-align: right; padding-right: 0.5em;"></div>
-		<div style="position: relative; font-size: 36vw; text-align: center; margin-top: -4vw; margin-bottom: -4vw;  ">
-			<div id="clock" style="width: 100%; transition: opacity 1s linear; opacity: 1;">
-			</div>
-			<div id="weather"
-				style="position: absolute; width: 100%; top: 5vw; transition: opacity 1s linear; opacity: 0; ">
-				<div style="display: inline-block; width: 20vw; vertical-align: top;">
-					<image id="curImg" style="width: 20vw; padding-top: 5vw;"></image>
-				</div><!--
-				--><span id="temp" style="font-size: 26vw; vertical-align: top;"></span>
-				<div id="fc" style="display: inline-block; vertical-align: top; text-align: left; width: 15vw;">
-				</div>
-
-			</div>
-		</div>
 	</div>
 	<div id="settings" style="padding: 1vw;  margin-bottom: 4vw;">
-		<br><br><br>Alarm Time <input id="alarmtime" type="time" value=""
+		<input id="runit" type="button" value="&#9658;" onclick="goToWork(event.target.value);"
+		style="position: absolute; top: 10vw; left: 20vw; font-size: 20vw;">
+		<br><br>Alarm Time <input id="alarmtime" type="time" value=""
 			onchange="setAlarmTime(event.target.value, 0);">
 		Disable <input id="disablealarm" type="checkbox">
-
-		<input type="button" value="Full screen" onclick="goToWork(event.target.value);"
-			style="float: right; font-size: 4vw; min-height: 6vw;">
-		<br><br><br>
-		<div id="choices" class="len1"></div>
-		<br><br>Add color <input type="button" value="+" onclick="addColor();">
-		<br><br>openweathermap key <input id="weatherkey" type="text" onchange="setWeatherKey(event.target.value);"> 
-		<input type="button" value="relocate" onclick="getLocation();">
-		<input type="button" value="clear" onclick="clearLocation();">
+		<br><br><br>24 hour display <input id="hr24" type="checkbox" onchange="change24hr(event.target.checked)" >
+		<br><br><div id="choices" class="len1"></div>
+		<br><br>Add color change <input type="button" value="Timed" onclick="addColor();"> <input type="button" value="Dawn" onclick="addColor('dawn');"> <input type="button" value="Dusk" onclick="addColor('dusk');">
+		<br><br><div id="location" style="display: none;">Location <input type="button" value="Clear" onclick="locationAction('clear');"> <input type="button" value="Change" onclick="locationAction('change');"> </div>
 	</div>
 	<script>
-		runIt();
+		//runIt();
 	</script>
-	<div style="font-size: 0.7em; font-style: oblique; float: right; margin-right: 1em;">V7</div>
+	<div style="font-size: 0.7em; font-style: oblique; float: right; margin-right: 1em;">V8</div>
 	<br><br><br>
 </body>
 

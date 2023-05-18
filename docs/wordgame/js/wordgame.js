@@ -101,6 +101,12 @@ wakelock.onclick = async e => {
     }
 }
 
+document.addEventListener("visibilitychange", async () => {
+    if (wakelockSentinel !== null && document.visibilityState === "visible") {
+        wakelockSentinel = await navigator.wakeLock.request('screen');
+    }
+});
+
 document.onkeydown = function (e) {
     if (e.key === "Enter") {
         applyWord();
@@ -156,7 +162,7 @@ function makeOverview(pageResults) {
             location.reload();
         };
         if (pageNumber == p) {
-            sp.style.borderColor = "#bb00bb";
+            sp.style.borderColor = "#ffffff";
         }
 
         let foundbar = addET(sp, "div", "boxbar");

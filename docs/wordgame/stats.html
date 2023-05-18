@@ -29,18 +29,14 @@
         let statsTable = document.getElementById("stats");
         let largest = [...stats.scores].sort((a, b) => b - a)[0];
         let mult = 100 / largest;
-        stats.scores.forEach((stat, ix) => {
+        stats.scores.toReversed().forEach((stat, ix) => {
             let row = addET(statsTable, "tr");
             let rowd = addET(row, "td"); 
             rowd.className = "stats";
             let bar = addET(rowd, "div");
             bar.style.width = (stat * mult) + "%";
-            bar.innerHTML = ix;
-            bar.className = (ix < stats.pageCount) ? "badstat" : "goodstat";
-            let count = addET(bar, "div");
-            count.style.position = "absolute";
-            count.style.right = "0";
-            count.innerHTML = stat;
+            bar.innerHTML = stat > 0 ? stat : "&nbsp;";
+            bar.className = (stats.scores.length - ix <= stats.pageCount) ? "badstat" : "goodstat";
         });
 
 

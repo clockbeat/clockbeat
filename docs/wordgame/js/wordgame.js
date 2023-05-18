@@ -29,7 +29,7 @@ let moveitMapping = new moveit(main, {
 });
 
 if (pageNumber >= pageCount) {
-    pageNumber = pageCount -1;
+    pageNumber = pageCount - 1;
 }
 
 root.style.setProperty("--cells", cellCount);
@@ -131,23 +131,23 @@ document.onkeydown = function (e) {
 //-------------------------------------------------------------------
 
 function dragged(e) {
-		//"this" is moveit
-        //console.log(this);
-		let xmove = (this.x - this.downpos.x);
-        let xdist = Math.abs(xmove - (innerWidth * 0.02));
-        let ydist = Math.abs(this.y - this.downpos.y - (innerWidth * 0.02));
-        let oldPage = pageNumber;
-        if (ydist > xdist) return;
-        if (xmove > innerWidth * 0.02) {
-            pageNumber = Math.min(pageCount - 1, pageNumber + 1);
-        }
-        if (xmove < -innerWidth * 0.02) {
-            pageNumber = Math.max(0, pageNumber - 1);
-        }
-        if (oldPage != pageNumber) {
-            storage.setItem("currentKey", pageNumber);
-            location.reload();
-        }
+    //"this" is moveit
+    //console.log(this);
+    let xmove = (this.x - this.downpos.x);
+    let xdist = Math.abs(xmove - (innerWidth * 0.02));
+    let ydist = Math.abs(this.y - this.downpos.y - (innerWidth * 0.02));
+    let oldPage = pageNumber;
+    if (ydist > xdist) return;
+    if (xmove > innerWidth * 0.02) {
+        pageNumber = Math.min(pageCount - 1, pageNumber + 1);
+    }
+    if (xmove < -innerWidth * 0.02) {
+        pageNumber = Math.max(0, pageNumber - 1);
+    }
+    if (oldPage != pageNumber) {
+        storage.setItem("currentKey", pageNumber);
+        location.reload();
+    }
 }
 
 function makeOverview(pageResults) {
@@ -350,6 +350,10 @@ function calculatePage(pagenum) {
         }
     });
     keys.forEach(key => {
+        if (letterHints[key].matched < letterHints[key].found) {
+            letterHints[key].matched = letterHints[key].found;
+            //fixed where dup letter found on different rows
+        }
         letterHints.total.matched += letterHints[key].matched;
         letterHints.total.found += letterHints[key].found;
     });

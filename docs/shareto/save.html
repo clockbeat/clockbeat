@@ -4,24 +4,29 @@
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
-
+	<div>
+		Title <input id="title" type="string" style="width: 90%;">
+	</div>
+	<div>
+		URL <input id="url" type="string" style="width: 90%;">
+	</div>
 
 </body>
 
 <script type="text/javascript">
-	const logLines = [
-		"Property (Typeof): Value",
-		`location (${typeof location}): ${location}`,
-	];
-	for (const prop in location) {
-		logLines.push(
-			`${prop} (${typeof location[prop]}): ${location[prop] || "n/a"}`
-		);
-	}
-	alert(logLines.join("\n"));
+	var search = location.search.substring(1);
+	let query = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}');
+	let title = document.getElementById("title");
+	let url = document.getElementById("url");
+
+	title.value = query.title;
+	url.value = query.description;
+
+	document.body.innerHTML += location;
 
 
 </script>

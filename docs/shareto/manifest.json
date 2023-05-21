@@ -1,7 +1,7 @@
 {
   "name": "Submit",
   "short_name": "Submit",
-  "start_url": "index.html",
+  "start_url": "/shareto/index.html",
   "display": "standalone",
   "theme_color": "#ffffff",
   "background_color": "#000000",

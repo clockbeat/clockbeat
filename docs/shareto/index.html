@@ -1,0 +1,46 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+	<script>
+		var swk;
+		try {
+			console.clear();
+			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+				window.addEventListener("load", () => {
+					navigator.serviceWorker.register('sw.js')
+						.then(reg => console.log("Service worker registered"))
+						.catch(err => console.error(`Service Worker Error: ${err}`));
+
+
+					navigator.serviceWorker.ready.then((registration) => {
+						swk = registration.active;
+
+						navigator.serviceWorker.addEventListener("message", msg => {
+							console.log("from sw", msg.data);
+							document.body.innerHTML = msg.data.reply;
+							document.body.style.backgroundColor = "white";
+						});
+					});
+				});
+			}
+		} catch (e) {
+			console.error(e);
+		}		
+	</script>
+	<script src="submit.js"></script>
+</head>
+
+<body>
+	<input type="button" value="report" onclick="reportOptions()">
+
+	<script type="text/javascript">
+
+	</script>
+
+</body>
+
+</html>

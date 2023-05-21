@@ -17,8 +17,8 @@
     "action": "/shareto/save.html",
     "method": "GET",
     "params": {
-      "title": "title",
-      "text": "text",
+      "title": "name",
+      "text": "description",
       "url": "link"
     }
   }

@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "6469f6fe";
+let cacheName = /*time!*/ "646a34d7";
 
 const contentToCache = ["index.html"];
 

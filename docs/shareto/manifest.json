@@ -14,9 +14,8 @@
     }
   ],
   "share_target": {
-    "action": "save.html",
+    "action": "/shareto/save.html",
     "method": "GET",
-    "enctype": "multipart/form-data",
     "params": {
       "title": "title",
       "text": "text",

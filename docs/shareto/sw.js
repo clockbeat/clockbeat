@@ -1,6 +1,6 @@
-let cacheName = /*time!*/ "646a34d7";
+let cacheName = /*time!*/ "646b9dff";
 
-const contentToCache = ["index.html"];
+const contentToCache = ["index.html", "submit.svg"];
 
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets

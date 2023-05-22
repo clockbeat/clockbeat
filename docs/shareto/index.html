@@ -5,6 +5,11 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+	<style>
+		input {
+			font-size: 3vw;
+		}
+	</style>
 	<script>
 		var swk;
 		try {
@@ -31,14 +36,29 @@
 			console.error(e);
 		}		
 	</script>
-	<script src="submit.js"></script>
 </head>
 
 <body>
-	<input type="button" value="report" onclick="reportOptions()">
-
+	<input id="sendit" type="button" onclick="sendit();">
 	<script type="text/javascript">
+		var search = location.search.substring(1);
+		let query;
+		let toCopy;
+		if (search) {
+			try {query = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')} catch (e) { };
+		}
+		if (query) {
+			toCopy = query.name + "\n" + query.description;
+			document.getElementById("sendit").value = toCopy;
+		}
 
+		function sendit() {
+			if (toCopy) {
+				navigator.clipboard.writeText(toCopy).then(() => {
+					window.open("https://news.ycombinator.com/submit", "", "noreferrer");
+				});
+			}
+		}
 	</script>
 
 </body>

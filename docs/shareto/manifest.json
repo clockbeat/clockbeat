@@ -14,12 +14,11 @@
     }
   ],
   "share_target": {
-    "action": "/shareto/save.html",
+    "action": "/shareto/index.html",
     "method": "GET",
     "params": {
       "title": "name",
-      "text": "description",
-      "url": "link"
+      "text": "description"
     }
   }
 }

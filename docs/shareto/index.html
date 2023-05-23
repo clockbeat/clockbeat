@@ -4,10 +4,22 @@
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	<style>
+		:root,
 		input {
-			font-size: 3vw;
+			font-size: 2vw;
+			font-family: sans-serif;
+			margin: 1vw;
+		}
+
+		input[type=text] {
+			width: 80%;
+		}
+
+		.error {
+			background-color: rgb(250, 207, 207);
 		}
 	</style>
 	<script>
@@ -39,25 +51,15 @@
 </head>
 
 <body>
-	<input id="sendit" type="button" onclick="sendit();">
+	Use the page options to install this web app.
+	<br>Use the icon to open the app.
+	<br>Now whenever you "share" a web page you can share it to HN.
 	<script type="text/javascript">
-		var search = location.search.substring(1);
-		let query;
-		let toCopy;
-		if (search) {
-			try {query = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g, '":"') + '"}')} catch (e) { };
-		}
-		if (query) {
-			toCopy = query.name + "\n" + query.description;
-			document.getElementById("sendit").value = toCopy;
-		}
-
-		function sendit() {
-			if (toCopy) {
-				navigator.clipboard.writeText(toCopy).then(() => {
-					window.open("https://news.ycombinator.com/submit", "", "noreferrer");
-				});
-			}
+		let search = new URLSearchParams(location.search);
+		let title = search.get("name") ?? "";
+		let url = search.get("description") ?? "";
+		if (title && url) {
+			location = "https://news.ycombinator.com/submitlink?t=" + encodeURIComponent(title) + "&u=" + encodeURIComponent(url);
 		}
 	</script>
 

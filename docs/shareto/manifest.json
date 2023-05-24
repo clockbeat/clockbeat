@@ -1,10 +1,11 @@
 {
-  "name": "Submit",
-  "short_name": "Submit",
+  "name": "ShareTo",
+  "short_name": "ShareTo",
   "start_url": "/shareto/index.html",
+  "scope": "/shareto/",
   "display": "standalone",
   "theme_color": "#ffffff",
-  "background_color": "#000000",
+  "background_color": "#777777",
   "orientation": "any",
   "icons": [
     {

@@ -7,23 +7,12 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	<style>
-		:root,
-		input {
-			font-size: 2vw;
+		:root {
 			font-family: sans-serif;
-			margin: 1vw;
-		}
-
-		input[type=text] {
-			width: 80%;
-		}
-
-		.error {
-			background-color: rgb(250, 207, 207);
+			margin: 2vw;
 		}
 	</style>
 	<script>
-		var swk;
 		try {
 			console.clear();
 			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
@@ -31,17 +20,6 @@
 					navigator.serviceWorker.register('sw.js')
 						.then(reg => console.log("Service worker registered"))
 						.catch(err => console.error(`Service Worker Error: ${err}`));
-
-
-					navigator.serviceWorker.ready.then((registration) => {
-						swk = registration.active;
-
-						navigator.serviceWorker.addEventListener("message", msg => {
-							console.log("from sw", msg.data);
-							document.body.innerHTML = msg.data.reply;
-							document.body.style.backgroundColor = "white";
-						});
-					});
 				});
 			}
 		} catch (e) {
@@ -50,16 +28,21 @@
 	</script>
 </head>
 
-<body>
-	Use the page options to install this web app.
-	<br>Use the icon to open the app.
-	<br>Now whenever you "share" a web page you can share it to HN.
+<body style="text-align: center;">
+	<image src="submit.svg"></image>
+	<br><br>Easily submit stories to HN from your mobile phone.
+	<br><br>Use the page options to install this web app and use the new icon to open the app just once.
+	<br><br>Now when you share a web page you can share it to HN.
+	<br><br>Look for the icon in the list of "share&nbsp;to".
+
 	<script type="text/javascript">
+		let dest = "https://news.ycombinator.com/submitlink?t=$title&u=$url";
 		let search = new URLSearchParams(location.search);
 		let title = search.get("name") ?? "";
 		let url = search.get("description") ?? "";
-		if (title && url) {
-			location = "https://news.ycombinator.com/submitlink?t=" + encodeURIComponent(title) + "&u=" + encodeURIComponent(url);
+		if (title || url) {
+			let loc = dest.replace("$title", encodeURIComponent(title)).replace("$url", encodeURIComponent(url));
+			location = loc;
 		}
 	</script>
 

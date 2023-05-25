@@ -31,9 +31,10 @@
 <body style="text-align: center;">
 	<image src="submit.svg"></image>
 	<br><br>Easily submit stories to HN from your mobile phone.
-	<br><br>Use the page options to install this web app and use the new icon to open the app just once.
+	<br><br>Use the page options to install this web app.
 	<br><br>Now when you share a web page you can share it to HN.
 	<br><br>Look for the icon in the list of "share&nbsp;to".
+	<br><br>Using the share option by the URL may result in getting the url only. Use the side menu share option to get url and title.
 
 	<script type="text/javascript">
 		let dest = "https://news.ycombinator.com/submitlink?t=$title&u=$url";
@@ -42,7 +43,7 @@
 		let url = search.get("description") ?? "";
 		if (title || url) {
 			let loc = dest.replace("$title", encodeURIComponent(title)).replace("$url", encodeURIComponent(url));
-			location = loc;
+			location = loc;  
 		}
 	</script>
 

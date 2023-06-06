@@ -1,7 +1,7 @@
 {
   "name": "ShareTo",
   "short_name": "ShareTo",
-  "start_url": "/shareto/index.html",
+  "start_url": "/shareto/shareto.html",
   "scope": "/shareto/",
   "display": "standalone",
   "theme_color": "#ffffff",

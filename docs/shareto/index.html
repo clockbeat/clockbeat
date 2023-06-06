@@ -9,6 +9,7 @@
 	<style>
 		:root {
 			font-family: sans-serif;
+			font-size: 100%;
 			margin: 2vw;
 		}
 	</style>
@@ -29,24 +30,11 @@
 </head>
 
 <body style="text-align: center;">
-	<image src="submit.svg"></image>
+	<image src="submit.svg" style="width: 30vw; max-width: 20vh;"></image>
 	<br><br>Easily submit stories to HN from your mobile phone.
 	<br><br>Use the page options to install this web app.
 	<br><br>Now when you share a web page you can share it to HN.
-	<br><br>Look for the icon in the list of "share&nbsp;to".
-	<br><br>Using the share option by the URL may result in getting the url only. Use the side menu share option to get url and title.
-
-	<script type="text/javascript">
-		let dest = "https://news.ycombinator.com/submitlink?t=$title&u=$url";
-		let search = new URLSearchParams(location.search);
-		let title = search.get("name") ?? "";
-		let url = search.get("description") ?? "";
-		if (title || url) {
-			let loc = dest.replace("$title", encodeURIComponent(title)).replace("$url", encodeURIComponent(url));
-			location = loc;  
-		}
-	</script>
-
+	<br><br>Using the share option next to the URL may result in getting the url only. Use the side menu share option to get url and title.
 </body>
 
 </html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+	<script src="storage.js"></script>
+	<style>
+		:root {
+			font-family: sans-serif;
+		}
+
+		div,
+		input {
+			margin: 2vw;
+			font-size: 105%;
+			width: 90vw;
+		}
+
+		textarea {
+			font-size: 120%;
+		}
+	</style>
+</head>
+
+<body style="text-align: center;">
+	<image src="submit.svg" style="width: 30vw; max-width: 20vh;"></image>
+
+	<div>Name</div>
+	<input id="name" style="width: 90vw;">
+	<div>Destination URL (use $title and $url as placeholders)</div>
+	<textarea id="url" wrap="soft" style="width: 90vw; height: 10vh;"></textarea>
+	<div><input id="add" type="button" value="Add"></div>
+	<div>&nbsp;</div>
+	<div id="destlist"></div>
+	<div>&nbsp;</div>
+		<div><a href="shareto.html">Share to</a></div>
+
+	<script type="text/javascript">
+		console.clear();
+		const page = {};
+		const all = document.querySelectorAll("*[id]");
+		all.forEach((val) => {
+			page[val.id] = val;
+		});
+
+		const storage = new CbStorage("shareto");
+		let dests = storage.require("destinations", []);
+		refreshList();
+
+		page.add.onclick = e => {
+			let val = {};
+			val.name = page.name.value;
+			val.url = page.url.value.replace(/\r|\n|\t/g, "");
+			dests.push(val);
+			storage.save();
+			refreshList();
+			page.name.value = "";
+			page.url.value = "";
+		}
+
+		function refreshList() {
+			dests = storage.getItem("destinations");
+			page.destlist.innerHTML = "";
+			dests.forEach((dest, ix) => {
+				let div = document.createElement("div");
+				let del = document.createElement("span");
+				div.style.overflowWrap = "anywhere";
+				del.style.border = "solid 1px";
+				del.style.cursor = "pointer";
+				del.innerHTML = "&#x2715;";
+				del.onclick = e => {
+					console.log(ix);
+					let ds = storage.getItem("destinations");
+					ds.splice(ix, 1);
+					storage.save();
+					refreshList();
+				}
+				div.innerHTML = dest.name + " " + dest.url + "&nbsp;";
+				div.appendChild(del);
+				page.destlist.appendChild(div);
+			});
+		}
+
+	</script>
+
+</body>
+
+</html>

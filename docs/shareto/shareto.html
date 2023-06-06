@@ -44,7 +44,7 @@
 			page[val.id] = val;
 		});
 		let storage = new CbStorage("shareto");
-		let dests = storage.require("destinations", {});
+		let dests = storage.require("destinations", []);
 		page.buts.innerHTML = "";
 		dests.forEach(dest => {
 			let inp = document.createElement("input");

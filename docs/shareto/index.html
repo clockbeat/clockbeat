@@ -31,12 +31,20 @@
 
 <body style="text-align: center;">
 	<image src="submit.svg" style="width: 30vw; max-width: 20vh;"></image>
-	<br><br>Easily submit stories to HN from your mobile phone.
-	<br><br>Use the page options to install this web app.
-	<br><br>Now when you share a web page you can share it to HN.
-	<br><br>Using the share option next to the URL may result in getting the url only. Use the side menu share option to get url and title.
+	<br><br>Easily submit stories to other sites from your mobile phone.
+	<br><br>
+	<script>
+		if (window.matchMedia('(display-mode: standalone)').matches) {
+			document.body.innerHTML += "The app is installed";
+		} else {
+			document.body.innerHTML += "** Use the page options to install this web app **<br>It won't work until you do.";
+		}
+	</script>
+	<br><br>When you share a web page you can share it to another web site.
+	<br><br>Using the share option next to the URL may result in getting the url only. Use the side menu share option to
+	get url and title.
 	<br><br><br><br>
-	<div><a href="destinations.html">Add destination</a></div>
+	<div><a href="destinations.html">Destinations</a></div>
 </body>
 
 </html>

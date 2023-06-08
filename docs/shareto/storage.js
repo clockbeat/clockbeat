@@ -35,4 +35,8 @@ let CbStorage = function(storageName) {
         }
         return storage[key];
     }
+    
+    this.toString = function() {
+        return JSON.stringify(storage);
+    }
 }

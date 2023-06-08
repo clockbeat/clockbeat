@@ -14,20 +14,13 @@
 
 		div,
 		input {
-			margin: 2vw auto 0 auto;
+			margin: 2vw;
 			font-size: 105%;
 			width: 90vw;
 		}
 
 		textarea {
-			margin: 2vw auto 0 auto;
 			font-size: 120%;
-			width: 90vw;
-		}
-
-		button {
-			width: 5em;
-			margin: 2vw auto 0 auto;
 		}
 	</style>
 </head>
@@ -36,18 +29,14 @@
 	<image src="submit.svg" style="width: 30vw; max-width: 20vh;"></image>
 
 	<div>Name</div>
-	<input id="name">
+	<input id="name" style="width: 90vw;">
 	<div>Destination URL (use $title and $url as placeholders)</div>
-	<textarea id="url" wrap="soft" style="height: 10vh;"></textarea>
-	<div><input id="apply" type="button" value="Apply"></div>
+	<textarea id="url" wrap="soft" style="width: 90vw; height: 10vh;"></textarea>
+	<div><input id="add" type="button" value="Add"></div>
 	<div>&nbsp;</div>
 	<div id="destlist"></div>
 	<div>&nbsp;</div>
-	<button id="export">Export</button>
-	<input id="import" type="file" accept=".json" style="display: none;" aria-label="load" />
-	<button id="importproxy">Load</button>
-
-	<div><a href="index.html">Home</a></div>
+		<div><a href="shareto.html">Share to</a></div>
 
 	<script type="text/javascript">
 		console.clear();
@@ -61,27 +50,15 @@
 		let dests = storage.require("destinations", []);
 		refreshList();
 
-		page.apply.onclick = e => {
-			let url = page.url.value.replace(/\r|\n|\t/g, "");
-			applyDestination(page.name.value, url);
-			page.name.value = "";
-			page.url.value = "";
-		}
-
-		function applyDestination(name, url) {
+		page.add.onclick = e => {
 			let val = {};
-			val.name = name;
-			let found = dests.find(d => {
-				return d.name == val.name;
-			});
-			if (found) {
-				val = found;
-			} else {
-				dests.push(val);
-			}
-			val.url = url;
+			val.name = page.name.value;
+			val.url = page.url.value.replace(/\r|\n|\t/g, "");
+			dests.push(val);
 			storage.save();
 			refreshList();
+			page.name.value = "";
+			page.url.value = "";
 		}
 
 		function refreshList() {
@@ -90,12 +67,9 @@
 			dests.forEach((dest, ix) => {
 				let div = document.createElement("div");
 				let del = document.createElement("span");
-				let link = document.createElement("span");
 				div.style.overflowWrap = "anywhere";
-				link.style.textDecoration = "underline";
 				del.style.border = "solid 1px";
-				div.style.cursor = "pointer";
-				del.style.marginLeft = "1em";
+				del.style.cursor = "pointer";
 				del.innerHTML = "&#x2715;";
 				del.onclick = e => {
 					console.log(ix);
@@ -103,51 +77,11 @@
 					ds.splice(ix, 1);
 					storage.save();
 					refreshList();
-					e.stopPropagation();
 				}
-				div.onclick = e => {
-					page.name.value = dest.name;
-					page.url.value = dest.url;
-				}
-				link.innerHTML = dest.name + " " + dest.url;
-				div.appendChild(link);
+				div.innerHTML = dest.name + " " + dest.url + "&nbsp;";
 				div.appendChild(del);
 				page.destlist.appendChild(div);
 			});
-		}
-
-		page.importproxy.onclick = e => {
-			page.import.click();
-		}
-
-		page.import.onchange = e => {
-			console.clear();
-			let file = page.import.files[0];
-			let reader = new FileReader();
-			reader.readAsText(file);
-			reader.onload = e => {
-				let imported = JSON.parse(reader.result);
-				console.log(imported);
-				imported.destinations.forEach(d => {
-					applyDestination(d.name, d.url)
-				});
-			}
-			page.import.value = "";
-		}
-
-
-		page.export.onclick = e => {
-			download(storage.toString(), "shareto.json");
-		}
-
-		function download(text, filename) {
-			let element = document.createElement('a');
-			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-			element.setAttribute('download', filename);
-			element.style.display = 'none';
-			document.body.appendChild(element);
-			element.click();
-			document.body.removeChild(element);
 		}
 
 	</script>

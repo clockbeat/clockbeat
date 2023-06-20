@@ -1,0 +1,30 @@
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        input:invalid {
+            background-color: rgb(250, 207, 199);
+        }
+
+    </style>
+    <script src="storage.js"></script>
+    <script src="homealert.js"></script>
+</head>
+
+<body style="background-color: black; ">
+    <div id="servermsg"></div>
+    <iframe id="video" src="frame.html" style="width: 90vw; height: 90vh; border-style: none;"></iframe>
+    <div id="overlay" style="position: absolute; top: 0; left: 0; width: 90vw; height: 90vh;padding: 10vw;">
+        <div id="urls" style="background-color: rgb(209, 206, 206); padding: 10vw; width: 60vw;">
+            <form id="urlform">
+                List <input id="plist" type="url" required style="width: 40vw;">
+                <br><br><br>Video <input id="pvid" type="url" required style="width: 40vw;">
+                <br><br><br><input id="urlbut" type="submit" value="Submit">
+            </form>
+        </div>
+    </div>
+    <script>doIt();</script>
+</body>
+
+</html>

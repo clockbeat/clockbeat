@@ -20,8 +20,13 @@
         console.clear();
         let exit = document.getElementById("exit");
         let statsStore = new CbStorage("stats");
-        let params = (new URL(document.location)).searchParams;
-        let storageName = params.get('type');
+        let hash = (new URL(document.location)).hash.substring(1);
+        let params = hash.split("&").reduce((res, item) => {
+            var parts = item.split('=');
+            res[parts[0]] = parts[1];
+            return res;
+        }, {});
+        let storageName = params['type'];
         let stats = statsStore.getItem(storageName);
         if (!stats) {
             location.href = "index.html";
@@ -31,7 +36,7 @@
         let mult = 100 / largest;
         stats.scores.toReversed().forEach((stat, ix) => {
             let row = addET(statsTable, "tr");
-            let rowd = addET(row, "td"); 
+            let rowd = addET(row, "td");
             rowd.className = "stats";
             let bar = addET(rowd, "div");
             bar.style.width = (stat * mult) + "%";

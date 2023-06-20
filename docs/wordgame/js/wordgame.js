@@ -80,7 +80,7 @@ reload.onclick = function (e) {
 }
 
 stats.onclick = function (e) {
-    location.href = "stats.html?type=" + storageName;
+    location.href = "stats.html#type=" + storageName;
 }
 
 wakelock.onclick = async e => {

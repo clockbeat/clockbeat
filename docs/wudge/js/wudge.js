@@ -7,76 +7,89 @@ let boxes = document.getElementById("boxes");
 let pageselect = document.getElementById("pageselect");
 let wakelock = document.getElementById("wakelock");
 let wakelockSentinel;
-let table = addET(main, "table");
+let table;
 let keyList = [];
 let storageName = "wudge";
 let statsStore = new CbStorage("stats");
 let storage = new CbStorage(storageName);
 let solutions = storage.getItem("solutions") ?? [];
 let offsets = storage.getItem("offsets") ?? [];
-let rowCount = 5;
+let foundlings = storage.getItem("foundlings") ?? [];
+let clicks = storage.getItem("clicks") ?? 10;
+let rowCount = 8;
 let cellCount = 5;
 let gameOver = false;
 let moveitMapping = new moveit(main, {
     start: e => {return true;},
     end: dragged
 });
+const page = {};
 
-root.style.setProperty("--cells", cellCount);
+function startUp() {
+    root.style.setProperty("--cells", cellCount);
 
-//if (solutions.length == 0) {
-makeSolutions();
-//}
+    if (solutions.length == 0) {
+        makeSolutions();
+    }
 
-if (offsets.length == 0) {
-    calcOffsets();
-}
+    if (offsets.length == 0) {
+        calcOffsets();
+    }
 
-if (storage.getItem("wakelock") == "on") {
-    (async () => {
-        try {
-            wakelockSentinel = await navigator.wakeLock.request('screen');
-            wakelock.className = "wakeon";
-        } catch (err) {
-            console.log(`${err.name}, ${err.message}`);
-        }
-    })();
-}
+    if (storage.getItem("wakelock") == "on") {
+        (async () => {
+            try {
+                wakelockSentinel = await navigator.wakeLock.request('screen');
+                wakelock.className = "wakeon";
+            } catch (err) {
+                console.log(`${err.name}, ${err.message}`);
+            }
+        })();
+    }
 
-addRow("u", "upbut", updownclick);
+    main.innerHTML = "";
+    table = addET(main, "table");
 
-for (let r = 0; r < rowCount; r++) {
-    addRow(r, "cell");
-}
+    addRow("u", "upbut", updownclick);
 
-addRow("d", "downbut", updownclick);
+    for (let r = 0; r < rowCount; r++) {
+        addRow(r, "cell");
+    }
 
-function addRow(r, cellClass, onclick) {
-    let tr = addET(table, "tr");
-    tr.id = "r" + r;
-    for (let c = 0; c < cellCount; c++) {
-        let td = addET(tr, "td");
-        td.id = "r" + r + "c" + c;
-        td.innerHTML = "";
-        td.className = cellClass;
-        if (onclick) {
-            td.onclick = e => {
-                onclick(r, c);
+    addRow("d", "downbut", updownclick);
+
+    function addRow(r, cellClass, onclick) {
+        let tr = addET(table, "tr");
+        tr.id = "r" + r;
+        for (let c = 0; c < cellCount; c++) {
+            let td = addET(tr, "td");
+            td.id = "r" + r + "c" + c;
+            td.innerHTML = "";
+            let tb = r == 0 ? "top" : "";
+            tb = r == rowCount - 1 ? "bottom" : tb;
+
+            td.className = cellClass + ` r${r} c${c} ${tb}`;
+            //td.style.cssText = `--c:${c}; --r:${r};`;
+            if (onclick) {
+                td.onclick = e => {
+                    onclick(r, c);
+                }
             }
         }
     }
+
+    const all = document.querySelectorAll("*[id]");
+    all.forEach((val) => {
+        page[val.id] = val;
+    });
+
+    fillBoard();
+    console.log(solutions);
+
+    save();
 }
 
-const page = {};
-const all = document.querySelectorAll("*[id]");
-all.forEach((val) => {
-    page[val.id] = val;
-});
-
-fillBoard();
-console.log(solutions);
-
-save();
+startUp();
 
 //--------------------------------------------------------
 
@@ -85,12 +98,14 @@ reload.onclick = function (e) {
     if (wakelockSentinel) {
         storage.setItem("wakelock", "on");
     }
-    storage.setItem("solutions", []);
-    location.reload();
+    offsets = [];
+    solutions = [];
+    //location.reload();
+    startUp();
 }
 
 stats.onclick = function (e) {
-    location.href = "stats.html#type=" + storageName;
+    doStats();
 }
 
 wakelock.onclick = async e => {
@@ -99,6 +114,7 @@ wakelock.onclick = async e => {
             wakelockSentinel = await navigator.wakeLock.request('screen');
             wakelock.className = "wakeon";
             storage.setItem("wakelock", "on");
+            save();
         } catch (err) {
             // the wake lock request fails - usually system related, such being low on battery
             console.log(`${err.name}, ${err.message}`);
@@ -108,6 +124,7 @@ wakelock.onclick = async e => {
         wakelock.className = "wakeoff";
         wakelockSentinel = null;
         storage.setItem("wakelock", "off");
+        save();
     }
 }
 
@@ -128,7 +145,7 @@ document.onkeydown = function (e) {
 //-------------------------------------------------------------------
 
 function updownclick(button, col) {
-    console.log(button, col, offsets);
+    //console.log(button, col, offsets);
     if (button == "u") {
         offsets[col]++;
     }
@@ -136,17 +153,38 @@ function updownclick(button, col) {
         offsets[col]--;
     }
     offsets[col] = (offsets[col] + rowCount) % rowCount;
-    fillBoard();
+    //page.main.style.transition = "top 2s";
+    amendCellClass(col, "but" + button, true);
+    setTimeout(() => {
+        amendCellClass(col, "but" + button, false);
+        fillBoard();
+    }, 500);
+    clicks--;
     save();
+    console.log(clicks);
 }
 
-function calcOffsets() {
-    offsets.length = 0;
-    for (let c = 0; c < cellCount; c++) {
-        offsets.push(Math.floor(Math.random() * rowCount));
+function amendCellClass(col, name, add) {
+    for (let r = 0; r < rowCount; r++) {
+        if (add) {
+            page["r" + r + "c" + col].classList.add(name);
+        } else {
+            page["r" + r + "c" + col].classList.remove(name);
+        }
     }
 }
 
+function calcOffsets() {
+    let off = Math.floor(Math.random() * rowCount);
+    offsets.length = 0;
+    for (let c = 0; c < cellCount; c++) {
+        while (offsets.includes(off)) {
+            off = Math.floor(Math.random() * rowCount);
+        }
+        offsets.push(off);
+    }
+    save();
+}
 
 function fillBoard() {
     let board = new Array(rowCount).fill("");
@@ -162,10 +200,16 @@ function fillBoard() {
         if (solutions.includes(board[r])) {
             page["r" + r].className = "found";
         } else if (validWords.includes(board[r]) || solutionWords.includes(board[r])) {
-            page["r" + r].className = "misplaced";
+            page["r" + r].className = "foundagain";
+            if (!foundlings.includes(board[r])) {
+                foundlings.push(board[r]);
+                clicks += 3;
+                page["r" + r].className = "misplaced";
+            }
+
         }
     }
-    console.log(board);
+    //console.log(board);
 }
 
 function dragged(e) {
@@ -192,6 +236,10 @@ function addET(target, type, className) {
 }
 
 function save() {
+    page.score.innerHTML = clicks;
+    storage.setItem("solutions", solutions);
+    storage.setItem("offsets", offsets);
+    storage.setItem("clicks", clicks);
     storage.save();
 }
 
@@ -201,8 +249,8 @@ function makeSolutions() {
         let pos = Math.floor(solutionWords.length * Math.random());
         solutions.push(solutionWords[pos]);
     }
-    //solutions = ["eerie", "tooth", "civic","eerie", "tooth", "civic", "eerie", "tooth"];
-    storage.setItem("solutions", solutions);
+    clicks = rowCount * cellCount;
+    save();
 }
 
 function makeKeyboard(letterResults) {

@@ -18,7 +18,6 @@ body {
 table {
     display: flex;
     flex-direction: column;
-    padding-top: 5px;
 }
 
 tr {
@@ -34,16 +33,16 @@ td {
     justify-content: center;
     border-spacing: 2px;
     margin: 1px;
-    height: 1.8rem;
-    max-width: 2rem;
-    font-size: 1.8rem;
+    height: 3rem;
+    max-width: 3rem;
+    font-size: 2.7rem;
     text-transform: uppercase;
     user-select: none;
     background-color: #ffffff;
     color: rgb(109, 109, 109);
-    transform: rotateX(0deg);
-    transition-property: background-color, color, transform;
-    transition-duration: 2s;
+    overflow-y: hidden;
+    position: relative;
+    top: 0px;
 }
 
 td.stats {
@@ -52,14 +51,40 @@ td.stats {
     background-color: grey;
 }
 
+td.butd {
+    transition: top 0.5s;
+    top: 3rem;
+}
+
+td.butd.bottom {
+    opacity: 0;
+}
+
+td.butu {
+    transition: top 0.5s;
+    top: -3rem;
+}
+
+td.butu.top {
+    opacity: 0;
+}
+
 #main {
     position: relative;
-    top: 30vw;
+    top: 5vw;
 }
 
 input {
     opacity: 0;
     height: 0px;
+}
+
+#score {
+    margin: auto;
+    color: white; 
+    text-align: center;   
+    padding-top: 0.5rem;
+    font-size: 25vw;
 }
 
 #pageselect {
@@ -151,6 +176,12 @@ input {
     transform: rotateX(360deg);
 }
 
+.foundagain {
+    background-color: var(--mygrey);
+    color: black;
+    transform: rotateX(360deg);
+}
+
 .found {
     background-color: var(--mygreen);
     color: black;
@@ -183,19 +214,16 @@ input {
     background-color: var(--myyellow);
 }
 
-.cell {
-    transition-delay: 1s;
-}
-
 .upbut,
 .downbut {
     background-color: #00000000;
     background-image: url(../images/arrow_up_circle.svg);
-    background-size: contain;
+    background-size: cover;
     background-position: center;
+    margin-bottom: 0.3em;
 }
 
 .downbut {
     background-image: url(../images/arrow_down_circle.svg);
-
+    margin-top: 0.3em;
 }

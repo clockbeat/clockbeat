@@ -209,6 +209,7 @@ function fillBoard() {
 
         }
     }
+    page.score.innerHTML = clicks;
     //console.log(board);
 }
 
@@ -236,7 +237,6 @@ function addET(target, type, className) {
 }
 
 function save() {
-    page.score.innerHTML = clicks;
     storage.setItem("solutions", solutions);
     storage.setItem("offsets", offsets);
     storage.setItem("clicks", clicks);

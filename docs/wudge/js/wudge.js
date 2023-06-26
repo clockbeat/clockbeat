@@ -28,11 +28,11 @@ const page = {};
 function startUp() {
     root.style.setProperty("--cells", cellCount);
 
-    if (solutions.length == 0) {
+    if (solutions.length != rowCount) {
         makeSolutions();
     }
 
-    if (offsets.length == 0) {
+    if (offsets.length != cellCount) {
         calcOffsets();
     }
 

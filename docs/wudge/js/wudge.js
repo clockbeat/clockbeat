@@ -4,7 +4,6 @@ let keyboard = document.getElementById("keyboard");
 let reload = document.getElementById("reload");
 let statsLink = document.getElementById("stats");
 let boxes = document.getElementById("boxes");
-let pageselect = document.getElementById("pageselect");
 let wakelock = document.getElementById("wakelock");
 let wakelockSentinel;
 let table;
@@ -15,7 +14,7 @@ let storage = new CbStorage(storageName);
 let solutions = storage.getItem("solutions") ?? [];
 let offsets = storage.getItem("offsets") ?? [];
 let foundlings = storage.getItem("foundlings") ?? [];
-let clicks = storage.getItem("clicks") ?? 10;
+let clicks = storage.getItem("clicks") ?? 0;
 let rowCount = 8;
 let cellCount = 5;
 let gameOver = false;
@@ -28,12 +27,12 @@ const page = {};
 function startUp() {
     root.style.setProperty("--cells", cellCount);
 
-    if (solutions.length != rowCount) {
+    if (solutions.length != rowCount || clicks <= 0) {
         makeSolutions();
-    }
-
-    if (offsets.length != cellCount) {
         calcOffsets();
+        foundlings = [];
+        gameOver = false;
+        save();
     }
 
     if (storage.getItem("wakelock") == "on") {
@@ -85,6 +84,10 @@ function startUp() {
 
     fillBoard();
     console.log(solutions);
+
+    if (!gameOver) {
+        page.main.className = "";
+    }
 
     save();
 }
@@ -155,13 +158,19 @@ function updownclick(button, col) {
     offsets[col] = (offsets[col] + rowCount) % rowCount;
     //page.main.style.transition = "top 2s";
     amendCellClass(col, "but" + button, true);
+    page.score.className = "";
     setTimeout(() => {
         amendCellClass(col, "but" + button, false);
         fillBoard();
     }, 500);
     clicks--;
+    if (clicks <= 0) {
+        clicks = 0;
+        offsets = new Array(cellCount).fill(0);
+        fillBoard("bad");
+        gameOver = true;
+    }
     save();
-    console.log(clicks);
 }
 
 function amendCellClass(col, name, add) {
@@ -186,7 +195,11 @@ function calcOffsets() {
     save();
 }
 
-function fillBoard() {
+function fillBoard(disp) {
+    if (gameOver) {
+        main.className = "gameover";
+        return;
+    }
     let board = new Array(rowCount).fill("");
     for (let c = 0; c < cellCount; c++) {
         for (let r = 0; r < rowCount; r++) {
@@ -198,13 +211,15 @@ function fillBoard() {
     for (let r = 0; r < rowCount; r++) {
         page["r" + r].className = "";
         if (solutions.includes(board[r])) {
-            page["r" + r].className = "found";
+            page["r" + r].className = disp ?? "found";
         } else if (validWords.includes(board[r]) || solutionWords.includes(board[r])) {
             page["r" + r].className = "foundagain";
             if (!foundlings.includes(board[r])) {
                 foundlings.push(board[r]);
                 clicks += 3;
                 page["r" + r].className = "misplaced";
+                page.score.className = "blowup";
+                save();
             }
 
         }
@@ -239,6 +254,7 @@ function addET(target, type, className) {
 function save() {
     storage.setItem("solutions", solutions);
     storage.setItem("offsets", offsets);
+    storage.setItem("foundlings", foundlings);
     storage.setItem("clicks", clicks);
     storage.save();
 }
@@ -249,7 +265,7 @@ function makeSolutions() {
         let pos = Math.floor(solutionWords.length * Math.random());
         solutions.push(solutionWords[pos]);
     }
-    clicks = rowCount * cellCount;
+    clicks = Math.ceil(rowCount * cellCount * 0.5);
     save();
 }
 

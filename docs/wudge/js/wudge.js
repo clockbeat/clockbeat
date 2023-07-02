@@ -2,8 +2,8 @@ let root = document.querySelector(':root');
 let main = document.getElementById("main");
 let keyboard = document.getElementById("keyboard");
 let reload = document.getElementById("reload");
-let statsLink = document.getElementById("stats");
-let boxes = document.getElementById("boxes");
+let stats = document.getElementById("stats");
+let type = document.getElementById("type");
 let wakelock = document.getElementById("wakelock");
 let wakelockSentinel;
 let table;
@@ -15,6 +15,7 @@ let solutions = storage.getItem("solutions") ?? [];
 let offsets = storage.getItem("offsets") ?? [];
 let foundlings = storage.getItem("foundlings") ?? [];
 let clicks = storage.getItem("clicks") ?? 0;
+let daily = storage.getItem("daily") ?? 0;
 let rowCount = 8;
 let cellCount = 5;
 let gameOver = false;
@@ -22,12 +23,19 @@ let moveitMapping = new moveit(main, {
     start: e => {return true;},
     end: dragged
 });
-const page = {};
+let page = {};
+// let datenumber;
+// let seed = Math.random();
 
 function startUp() {
+
+    // let dt = new Date();
+    // datenumber = (dt.getFullYear() * 10000) + (dt.getMonth() * 100) + dt.getDate(); 
+
     root.style.setProperty("--cells", cellCount);
 
-    if (solutions.length != rowCount || clicks <= 0) {
+    checkForGameOver();
+    if (solutions.length != rowCount || gameOver) {
         makeSolutions();
         calcOffsets();
         foundlings = [];
@@ -78,6 +86,7 @@ function startUp() {
     }
 
     const all = document.querySelectorAll("*[id]");
+    page = {};
     all.forEach((val) => {
         page[val.id] = val;
     });
@@ -108,7 +117,7 @@ reload.onclick = function (e) {
 }
 
 stats.onclick = function (e) {
-    doStats();
+    doStats(storageName);
 }
 
 wakelock.onclick = async e => {
@@ -164,13 +173,38 @@ function updownclick(button, col) {
         fillBoard();
     }, 500);
     clicks--;
-    if (clicks <= 0) {
+    checkForGameOver(true);
+    save();
+}
+
+function checkForGameOver(fill) {
+    let diff = offsets.find(val => {
+        return val != offsets[0];
+    }, 0);
+
+    if (diff === undefined) {
+        if (fill) {
+            fillBoard();
+        }
+        gameOver = true;
+    } else if (clicks <= 0) {
         clicks = 0;
         offsets = new Array(cellCount).fill(0);
-        fillBoard("bad");
+        if (fill) {
+            fillBoard("bad");
+        }
         gameOver = true;
     }
-    save();
+    if (gameOver && fill) {
+        let stats = statsStore.getItem(storageName) ?? {total: 0, tries: 0, high: 0, low: 99999};
+        stats.last = clicks;
+        stats.tries++;
+        stats.total += clicks;
+        stats.low = stats.low > clicks ? clicks : stats.low;
+        stats.high = stats.high < clicks ? clicks : stats.high;
+        statsStore.setItem(storageName, stats);
+
+    }
 }
 
 function amendCellClass(col, name, add) {
@@ -184,11 +218,11 @@ function amendCellClass(col, name, add) {
 }
 
 function calcOffsets() {
-    let off = Math.floor(Math.random() * rowCount);
+    let off = Math.floor(random() * rowCount);
     offsets.length = 0;
     for (let c = 0; c < cellCount; c++) {
         while (offsets.includes(off)) {
-            off = Math.floor(Math.random() * rowCount);
+            off = Math.floor(random() * rowCount);
         }
         offsets.push(off);
     }
@@ -200,6 +234,7 @@ function fillBoard(disp) {
         main.className = "gameover";
         return;
     }
+    main.className = "";
     let board = new Array(rowCount).fill("");
     for (let c = 0; c < cellCount; c++) {
         for (let r = 0; r < rowCount; r++) {
@@ -260,9 +295,10 @@ function save() {
 }
 
 function makeSolutions() {
+    //seed = datenumber;
     solutions = [];
     for (let p = 0; p < rowCount; p++) {
-        let pos = Math.floor(solutionWords.length * Math.random());
+        let pos = Math.floor(solutionWords.length * random());
         solutions.push(solutionWords[pos]);
     }
     clicks = Math.ceil(rowCount * cellCount * 0.5);
@@ -293,4 +329,13 @@ function makeKeyboard(letterResults) {
         }
         kb.appendChild(key);
     });
+}
+
+function random() {
+    return Math.random();
+    // seed = 18000 * (seed & 65535) + (seed >> 16);
+    // seed = 18000 * (seed & 65535) + (seed >> 16);
+    // seed &= 0xffff;
+    // /* 16-bit result */
+    // return Math.abs(seed / 65536);
 }

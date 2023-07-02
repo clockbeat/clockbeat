@@ -95,10 +95,16 @@ input {
     height: 0px;
 }
 
+#type {
+    color: white;
+    text-align: center;
+    padding-top: 0.3rem;
+    font-size: 1.5rem;
+}
+
 #score {
     color: white;
     text-align: center;
-    padding-top: 0.5rem;
     font-size: 8rem;
 }
 

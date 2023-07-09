@@ -62,13 +62,29 @@
 		page.buts.innerHTML = "";
 		dests.forEach(dest => {
 			let inp = document.createElement("input");
+			let newWin = false;
 			inp.type = "button";
 			inp.value = "Send to " + dest.name;
 			inp.onclick = e => {
-				// let dest = "https://news.ycombinator.com/submitlink?t=$title&u=$url";
 				let loc = dest.url.replace("$title", encodeURIComponent(page.title.value)).replace("$url", encodeURIComponent(page.url.value));
-				console.log(loc);
-				location = loc;
+				if (dest.url.trim() == "$url") {
+					loc = page.url.value;
+					newWin = true;
+				}
+				try {
+					let url = new URL(loc);
+					console.log(loc);
+					if (!url.protocol.startsWith("http")) {
+						throw ("Not http/s");
+					}
+					if (newWin) {
+						window.open(loc, '_blank').focus();
+					} else {
+						location = loc;
+					}
+				} catch (e) {
+					alert("Not a valid URL '" + loc + "'");
+				}
 			}
 			buts.appendChild(inp);
 		});
@@ -78,7 +94,7 @@
 		page.url.value = search.description ?? "";
 
 		page.title.oninput = e => {
-			page.info.innerHTML = "(" + page.title.value.length +  ")";
+			page.info.innerHTML = "(" + page.title.value.length + ")";
 		}
 		page.title.oninput();
 	</script>

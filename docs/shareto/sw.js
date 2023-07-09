@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "64822202";
+let cacheName = /*time!*/ "64aa9f4c";
 
 const contentToCache = ["index.html", "submit.svg"];
 

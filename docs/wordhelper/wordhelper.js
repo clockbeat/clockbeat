@@ -90,6 +90,13 @@ wakelock.onclick = async e => {
 }
 
 
+document.addEventListener("visibilitychange", async () => {
+    if (wakelockSentinel !== null && document.visibilityState === "visible") {
+        wakelockSentinel = await navigator.wakeLock.request('screen');
+    }
+});
+
+
 if (html) {
     table.innerHTML = html;
     let tds = Array.from(document.getElementsByTagName("td"));

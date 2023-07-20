@@ -27,6 +27,7 @@ let userInteract = false;
 let wakeLock;
 let scrollTimeout;
 let oldTime = "";
+let dragFrom = null;
 
 document.onpointerdown = e => {
     userInteract = true;
@@ -48,6 +49,11 @@ document.addEventListener("DOMContentLoaded", e => {
 
 function runIt() {
     console.clear();
+
+    let moveitMapping = new moveit(document.body, {
+        start: startDrag,
+        end: endDrag
+    });
 
     document.addEventListener("visibilitychange", async () => {
         if (wakeLock !== null && document.visibilityState === "visible") {
@@ -177,8 +183,7 @@ function setColorChoices() {
             timeInput = "<td>" + descriptions[colors[col].type] + "</td>";
         }
         row.innerHTML += timeInput +
-            `<td>Text <input id="color${col}" type="color" value="${color}" oninput="setColor(event.target.value, ${col});"> </td>
-        <td>Background <input id="bg${col}" type="color" value="${bg}" oninput="setBg(event.target.value, ${col});"></td>
+            `<td><input id="color${col}" type="color" value="${color}" oninput="setColor(event.target.value, ${col});"> <br><input id="bg${col}" type="color" value="${bg}" oninput="setBg(event.target.value, ${col});"></td>
         <td id="pre${col}" style="border: 1px solid black; font-size: 300%; font-weight: bold;">&nbsp;12:34&nbsp;</td>
         <td><input id="del${col}" type="button" value="x" onclick="deleteColor(${col});"></td>
     `;
@@ -360,3 +365,35 @@ function change24hr(val) {
     oldTime = "";
     store();
 }
+
+function startDrag(e) {
+    console.log(e);
+    if (e.target.type == "color") {
+        dragFrom = e.target;
+    }
+} 
+
+function endDrag(e) {
+    if (dragFrom == null) {
+        return;
+    }
+    console.log(e);
+    let part = e.target.id.match(/[a-z]+|\d+/ig);
+    if (!part || part.length != 2) {
+        dragFrom = null;
+        return;
+    }
+    if (part[0] == "pre") {
+        part[0] = dragFrom.id.match(/[a-z]+|\d+/ig)[0];
+    }
+    let target = document.getElementById(part[0] + part[1]);
+    if (target && target.type == "color") {
+        target.value = dragFrom.value;
+        if (part[0] == "bg") {
+            setBg(dragFrom.value, part[1]);
+        } else {
+            setColor(dragFrom.value, part[1]);
+        }
+    }
+    dragFrom = null;
+} 

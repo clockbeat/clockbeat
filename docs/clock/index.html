@@ -35,10 +35,14 @@
 	<script src="suntimes.js"></script>
 	<script src="clock.js"></script>
 	<style>
+		input[type=checkbox]+label {
+			border: 3px solid transparent
+		}
 		input[type=checkbox]:checked+label {
-			background-color: red;
-			color: white;
-			mix-blend-mode: difference;
+			background-color: rgb(255, 0, 0);
+			color: rgb(0, 0, 0);
+			border: 3px solid white;
+			border-radius: 15px;
 		}
 
 		input[type=time] {
@@ -52,10 +56,6 @@
 		input[type=button] {
 			font-size: 1.2em;
 			margin-left: 1em;
-		}
-
-		input[type=checkbox] {
-			transform: scale(2);
 		}
 
 		#choices.len1 #spa0 {
@@ -73,7 +73,7 @@
 </head>
 
 <body style="font-family: sans-serif; padding-bottom: 3vw; user-select: none; margin: 0;">
-	<div id="main" style="min-height: 110vh; margin: 0; font-weight: bold; transition: color, background-color 10s;">
+	<div id="main" style="min-height: 110vh; margin: 0; font-weight: bold; transition: all 10s linear;">
 		<div id="clockhead" style="font-size: 10vw; text-align: right; padding-right: 0.5em;"></div>
 		<div style="position: relative; font-size: 36vw; text-align: center; margin-top: -4vw; margin-bottom: -4vw;">
 			<div id="clock" style="width: 100%; "></div>

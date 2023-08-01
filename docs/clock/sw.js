@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "64b907db";
+let cacheName = /*time!*/ "64c914f4";
 
 const contentToCache = ["index.html", "clock.js", "bong.mp3", "clock.svg", "manifest.json"];
 
@@ -26,6 +26,7 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("install", (e) => {
+    self.skipWaiting();
     e.waitUntil(
       (async () => {
         const cache = await caches.open(cacheName);

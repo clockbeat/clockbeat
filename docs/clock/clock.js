@@ -28,6 +28,9 @@ let wakeLock;
 let scrollTimeout;
 let oldTime = "";
 let dragFrom = null;
+var randomColor = "000000";
+let bgRand = [];
+let colorRand = [];
 
 document.onpointerdown = e => {
     userInteract = true;
@@ -95,10 +98,26 @@ function runIt() {
                 }
             }
             calculateDawnAndDusk();
-        }
+            if (colors[currentColor].color == colors[currentColor].bg) {
+                //  Math.floor(Math.random()*16777215).toString(16);
+                randomColorPart("r");
+                randomColorPart("g");
+                randomColorPart("b");
+                randomColorComposite(bgRand);
+                randomColorComposite(colorRand);
+            }
 
-        page.main.style.color = colors[currentColor].color;
-        page.main.style.backgroundColor = colors[currentColor].bg;
+            if (colors[currentColor].color != colors[currentColor].bg) {
+                page.main.style.transitionDuration= "10s";
+                page.main.style.color = colors[currentColor].color;
+                page.main.style.backgroundColor = colors[currentColor].bg;
+            } else {
+                page.main.style.transitionDuration= "60s";
+                page.main.style.backgroundColor = bgRand["str"];
+                page.main.style.color = colorRand["str"];
+                console.log(bgRand["str"], colorRand["str"]);
+            }
+        }
 
         if (page.disablealarm.checked) {
             page.alarmlabel.style.display = "none";
@@ -125,11 +144,21 @@ function runIt() {
     currentTime();
 }
 
+function randomColorPart(part) {
+    bgRand[part] = Math.floor(Math.random() * 256);
+    colorRand[part] = Math.floor((bgRand[part] + 64 + (Math.random() * 128)) % 256);
+}
+
+function randomColorComposite(c) {
+   let comp = (c["r"] << 16) + (c["g"] << 8) + c["b"];
+   c["str"] = "#" + comp.toString(16);
+}
+
 function formatTime(hh, mm) {
     let session = "AM";
     let hhx = (hh < 10) ? "0" + hh : hh;
 
-    if (hr24) { 
+    if (hr24) {
         session = "";
     } else {
         if (hh >= 12) {
@@ -208,6 +237,7 @@ let setWakelock = async () => {
 
 function store() {
     localStorage.setItem("clock", JSON.stringify({colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24}));
+    oldTime = "";
 }
 
 function doScroll() {
@@ -371,7 +401,7 @@ function startDrag(e) {
     if (e.target.type == "color") {
         dragFrom = e.target;
     }
-} 
+}
 
 function endDrag(e) {
     if (dragFrom == null) {

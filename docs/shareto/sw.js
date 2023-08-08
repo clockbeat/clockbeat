@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "64aa9f4c";
+let cacheName = /*time!*/ "64d2710f";
 
 const contentToCache = ["index.html", "submit.svg"];
 
@@ -26,6 +26,7 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("install", (e) => {
+    self.skipWaiting();
     e.waitUntil(
       (async () => {
         const cache = await caches.open(cacheName);

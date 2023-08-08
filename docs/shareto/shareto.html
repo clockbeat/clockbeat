@@ -46,8 +46,9 @@
 		<div>Url</div>
 		<textarea id="url" wrap="soft" style="width: 90vw; height: 20vh;"></textarea>
 		<div id="buts"></div>
-		<div>&nbsp;</div>
-		<div><a href="destinations.html">Destinations</a></div>
+		<div><input id="toqueue" type="button" value="Add to Queue" style="background-color: bisque;"></div>
+		<div><a id="queuelink" href="queue.html">Queue</a></div>
+		<div><a href="index.html">Home</a></div>
 	</div>
 
 	<script type="text/javascript">
@@ -59,6 +60,7 @@
 		});
 		let storage = new CbStorage("shareto");
 		let dests = storage.require("destinations", []);
+		let queue = storage.require("queue", []);
 		page.buts.innerHTML = "";
 		dests.forEach(dest => {
 			let inp = document.createElement("input");
@@ -89,14 +91,39 @@
 			buts.appendChild(inp);
 		});
 
+		page.queuelink.innerHTML = "Queue (" + queue.length + ")";
+
 		let search = Object.fromEntries(new URLSearchParams(location.search));
-		page.title.value = search.name ?? "";
-		page.url.value = search.description ?? "";
+		if (search.queue === undefined) {
+			page.title.value = search.name ?? "";
+			page.url.value = search.description ?? "";
+		} else {
+			let item = queue[search.queue];
+			if (item) {
+				page.title.value = item.name ?? "";
+				page.url.value = item.url ?? "";
+				page.toqueue.value = "Remove from Queue";
+			}
+		}
 
 		page.title.oninput = e => {
 			page.info.innerHTML = "(" + page.title.value.length + ")";
 		}
 		page.title.oninput();
+
+		page.toqueue.onclick = e => {
+			if (search.queue !== undefined) {
+				queue.splice(search.queue, 1);
+			} else {
+				let queueitem = {};
+				queueitem.name = page.title.value;
+				queueitem.url = page.url.value;
+				queue.push(queueitem);
+			}
+			storage.save();
+			page.toqueue.disabled = true;
+		}
+
 	</script>
 
 </body>

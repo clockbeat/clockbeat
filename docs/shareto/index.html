@@ -13,6 +13,7 @@
 			margin: 2vw;
 		}
 	</style>
+	<script src="storage.js"></script>
 	<script>
 		try {
 			console.clear();
@@ -43,8 +44,18 @@
 	<br><br>When you share a web page you can share it to another web site.
 	<br><br>Using the share option next to the URL may result in getting the url only. Use the side menu share option to
 	get url and title.
-	<br><br><br><br>
+	<br><br>
 	<div><a href="destinations.html">Destinations</a></div>
+	<br>
+	<div><a id="queuelink" href="queue.html">Queue</a></div>
+	<br>
+	<div><a href="shareto.html">Share form</a></div>
+	<br><br>V2
+	<script>
+		let storage = new CbStorage("shareto");
+		let queue = storage.require("queue", []);
+		document.getElementById("queuelink").innerHTML = "Queue (" + queue.length + ")";
+	</script>
 </body>
 
 </html>

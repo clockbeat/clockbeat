@@ -1,0 +1,168 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+	<script src="storage.js"></script>
+	<script>
+		try {
+			console.clear();
+			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+				window.addEventListener("load", () => {
+					navigator.serviceWorker.register('sw.js')
+						.then(reg => console.log("Service worker registered"))
+						.catch(err => console.error(`Service Worker Error: ${err}`));
+				});
+			}
+		} catch (e) {
+			console.error(e);
+		}		
+	</script>
+	<style>
+		:root {
+			font-family: sans-serif;
+		}
+
+		div,
+		input {
+			margin: 2vw auto 0 auto;
+			font-size: 105%;
+			width: 90vw;
+		}
+
+		textarea {
+			margin: 2vw auto 0 auto;
+			font-size: 120%;
+			width: 90vw;
+		}
+
+		button {
+			width: 5em;
+			margin: 2vw auto 0 auto;
+		}
+	</style>
+</head>
+
+<body style="text-align: center;">
+	<image src="submit.svg" style="width: 30vw; max-width: 20vh;"></image>
+    <h3>Queue</h3>
+	<div id="queuelist" style="display: grid; grid-template-columns: 2fr 7fr 1fr; gap: 1vw; grid-auto-rows: auto;"></div>
+	<div>&nbsp;</div>
+	<button id="export">Export</button>
+	<input id="import" type="file" accept=".json" style="display: none;" aria-label="load" />
+	<button id="importproxy">Load</button>
+
+	<div><a href="index.html">Home</a></div>
+
+	<script type="text/javascript">
+		console.clear();
+		const page = {};
+		const all = document.querySelectorAll("*[id]");
+		all.forEach((val) => {
+			page[val.id] = val;
+		});
+
+		const storage = new CbStorage("shareto");
+		let queue = storage.require("queue", []);
+		refreshList();
+
+		function applyQueueItem(name, url) {
+			let val = {};
+			val.name = name;
+			let found = queue.find(d => {
+				return d.name == val.name;
+			});
+			if (found) {
+				val = found;
+			} else {
+				queue.push(val);
+			}
+			val.url = url;
+			storage.save();
+			refreshList();
+		}
+
+		function refreshList() {
+			queue = storage.getItem("queue");
+			page.queuelist.innerHTML = "";
+			queue.forEach((item, ix) => {
+				let title = document.createElement("span");
+				title.style.gridColumn = "span 1";
+				title.style.cursor = "pointer";
+				title.style.overflowWrap = "anywhere";
+				title.innerHTML = item.name;
+
+				let link = document.createElement("span");
+				link.style.gridColumn = "span 1";
+				link.style.cursor = "pointer";
+				link.style.overflowWrap = "anywhere";
+				link.innerHTML = item.url;
+
+				let del = document.createElement("span");
+				del.style.gridColumn = "span 1";
+				del.style.cursor = "pointer";
+				del.style.marginLeft = "1em";
+				del.style.fontSize ="150%";
+				del.innerHTML = "&#9447;";
+				del.onclick = e => {
+					console.log(ix);
+					let ds = storage.getItem("queue");
+					ds.splice(ix, 1);
+					storage.save();
+					refreshList();
+					e.stopPropagation();
+				}
+
+				title.onclick = link.onclick = e => {
+                    // location = "shareto.html?name=" + item.name + "&description=" + item.url;
+                    location = "shareto.html?queue=" + ix;
+				}
+
+				page.queuelist.appendChild(title);
+				page.queuelist.appendChild(link);
+				page.queuelist.appendChild(del);
+			});
+		}
+
+		page.importproxy.onclick = e => {
+			page.import.click();
+		}
+
+		page.import.onchange = e => {
+			console.clear();
+			let file = page.import.files[0];
+			let reader = new FileReader();
+			reader.readAsText(file);
+			reader.onload = e => {
+				let imported = JSON.parse(reader.result);
+				console.log(imported);
+				imported.destinations.forEach(d => {
+					applyQueueItem(d.name, d.url)
+				});
+			}
+			page.import.value = "";
+		}
+
+
+		page.export.onclick = e => {
+			download(storage.toString(), "shareto-queue.json");
+		}
+
+		function download(text, filename) {
+			let element = document.createElement('a');
+			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+			element.setAttribute('download', filename);
+			element.style.display = 'none';
+			document.body.appendChild(element);
+			element.click();
+			document.body.removeChild(element);
+		}
+
+	</script>
+
+</body>
+
+</html>

@@ -55,7 +55,7 @@
 	<textarea id="url" wrap="soft" style="height: 10vh;"></textarea>
 	<div><input id="apply" type="button" value="Apply"></div>
 	<div>&nbsp;</div>
-	<div id="destlist" style="display: grid; grid-template-columns: 2fr 7fr 1fr; gap: 1vw; grid-auto-rows: auto;"></div>
+	<div id="destlist" style="display: grid; grid-template-columns: 7fr 1fr; gap: 2vw; grid-auto-rows: auto; text-align: initial;"></div>
 	<div>&nbsp;</div>
 	<button id="export">Export</button>
 	<input id="import" type="file" accept=".json" style="display: none;" aria-label="load" />
@@ -102,17 +102,24 @@
 			dests = storage.getItem("destinations");
 			page.destlist.innerHTML = "";
 			dests.forEach((dest, ix) => {
+				let itemSpan = document.createElement("span");
+				itemSpan.style.gridColumn = "span 1";
+
 				let title = document.createElement("span");
-				title.style.gridColumn = "span 1";
 				title.style.cursor = "pointer";
 				title.style.overflowWrap = "anywhere";
 				title.innerHTML = dest.name;
 
 				let link = document.createElement("span");
-				link.style.gridColumn = "span 1";
 				link.style.cursor = "pointer";
 				link.style.overflowWrap = "anywhere";
+				link.style.color = "blue";
 				link.innerHTML = dest.url;
+
+				let br = document.createElement("br");
+				itemSpan.appendChild(title);
+				itemSpan.appendChild(br);
+				itemSpan.appendChild(link);
 
 				let del = document.createElement("span");
 				del.style.gridColumn = "span 1";
@@ -134,8 +141,8 @@
 					page.url.value = dest.url;
 				}
 
-				page.destlist.appendChild(title);
-				page.destlist.appendChild(link);
+				//page.destlist.appendChild(title);
+				page.destlist.appendChild(itemSpan);
 				page.destlist.appendChild(del);
 			});
 		}

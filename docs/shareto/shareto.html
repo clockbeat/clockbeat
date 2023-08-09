@@ -106,9 +106,15 @@
 			}
 		}
 
-		page.title.oninput = e => {
+		page.title.oninput = page.url.oninput = e => {
 			page.info.innerHTML = "(" + page.title.value.length + ")";
+			if (search.queue !== undefined) {
+				queue[search.queue].name = page.title.value;
+				queue[search.queue].url = page.url.value;
+				storage.save();
+			}
 		}
+
 		page.title.oninput();
 
 		page.toqueue.onclick = e => {
@@ -122,6 +128,7 @@
 			}
 			storage.save();
 			page.toqueue.disabled = true;
+			page.queuelink.innerHTML = "Queue (" + queue.length + ")";
 		}
 
 	</script>

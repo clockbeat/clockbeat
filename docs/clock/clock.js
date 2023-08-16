@@ -82,18 +82,18 @@ function runIt() {
         let mm = date.getMinutes();
         let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
-        let {time, timeForAlarm, session} = formatTime(hh, mm);
+        let {time, time24Hour, session} = formatTime(hh, mm);
 
         if (oldTime !== time) {
             page.clock.innerText = time;
             page.clockhead.innerText = days[date.getDay()] + "   " + session;
             oldTime = time;
-            if (alarmOn && alarmTime == timeForAlarm) {
+            if (alarmOn && alarmTime == time24Hour) {
                 //console.log("Alarm");
                 alarmPlay = 600; //seconds max
             }
             for (let n = 0; n < colors.length; n++) {
-                if (colors[n].from == timeForAlarm) {
+                if (colors[n].from == time24Hour) {
                     currentColor = n;
                 }
             }
@@ -133,7 +133,7 @@ function runIt() {
             if (alarmPlay > 0) {
                 audio.play();
                 if (alarmPlay == 1) {
-                    page.alarmlabel.innerText = "Alarm " + alarmTime + "On x";
+                    page.alarmlabel.innerText = "Alarm " + alarmTime + " On x";
                 }
                 alarmPlay--;
             }
@@ -169,8 +169,8 @@ function formatTime(hh, mm) {
     mm = (mm < 10) ? "0" + mm : mm;
 
     let time = hh + ":" + mm;
-    let timeForAlarm = hhx + ":" + mm;
-    return {time, timeForAlarm, session};
+    let time24Hour = hhx + ":" + mm;
+    return {time, time24Hour, session};
 }
 
 function calcCurrentColor() {
@@ -178,12 +178,12 @@ function calcCurrentColor() {
     let date = new Date();
     let hhnow = date.getHours();
     let mmnow = date.getMinutes();
-    let timeNow = formatTime(hhnow, mmnow).timeForAlarm;
+    let timeNow = formatTime(hhnow, mmnow).time24Hour;
     mmnow++;
     let timeCalc = "";
     for (let hh = hhnow; timeNow != timeCalc; hh = (hh + 1) % 24) {
         for (let mm = mmnow; mm < 60 && timeNow != timeCalc; mm++) {
-            timeCalc = formatTime(hh, mm).timeForAlarm;
+            timeCalc = formatTime(hh, mm).time24Hour;
             for (let n = 0; n < colors.length; n++) {
                 if (colors[n].from == timeCalc) {
                     currentColor = n;
@@ -359,7 +359,7 @@ function setAlarm(checked) {
     alarmOn = !!checked
     page.alarmlabel.innerText = "Alarm " + alarmTime + (alarmOn ? " On" : " Off");
     if (!alarmOn) {
-        alarmPlay = false;
+        alarmPlay = 0;
     }
     store();
 }

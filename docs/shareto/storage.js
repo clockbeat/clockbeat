@@ -32,11 +32,23 @@ let CbStorage = function(storageName) {
         if (!storage[key]) {
             storage[key] = defaultValue;
             this.save();
+        } else if (typeof defaultValue == "object") {
+            Object.keys(defaultValue).forEach(intKey => {
+                if (storage[key][intKey] === undefined) {
+                    storage[key][intKey] = defaultValue[intKey];
+                }
+            });
+            this.save();
         }
         return storage[key];
     }
     
     this.toString = function() {
         return JSON.stringify(storage);
+    }
+
+    this.setStorage = function(obj) {
+        storage = Object.assign({}, obj);
+        this.save();
     }
 }

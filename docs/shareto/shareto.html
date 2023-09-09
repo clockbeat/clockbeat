@@ -43,7 +43,7 @@
 	<div id="subfrom">
 		<div>Title <span id="info"></span></div>
 		<textarea id="title" wrap="soft" style="width: 90vw; height: 20vh;"></textarea>
-		<div>Url</div>
+		<div>Url (<a id="link" href="#">open</a>)</div>
 		<textarea id="url" wrap="soft" style="width: 90vw; height: 20vh;"></textarea>
 		<div id="buts"></div>
 		<div><input id="toqueue" type="button" value="Add to Queue" style="background-color: bisque;"></div>
@@ -69,10 +69,6 @@
 			inp.value = "Send to " + dest.name;
 			inp.onclick = e => {
 				let loc = dest.url.replace("$title", encodeURIComponent(page.title.value)).replace("$url", encodeURIComponent(page.url.value));
-				if (dest.url.trim() == "$url") {
-					loc = page.url.value;
-					newWin = true;
-				}
 				try {
 					let url = new URL(loc);
 					console.log(loc);
@@ -105,6 +101,7 @@
 				page.toqueue.value = "Remove from Queue";
 			}
 		}
+		applyEdits();
 
 		page.title.oninput = page.url.oninput = e => {
 			page.info.innerHTML = "(" + page.title.value.length + ")";
@@ -129,6 +126,38 @@
 			storage.save();
 			page.toqueue.disabled = true;
 			page.queuelink.innerHTML = "Queue (" + queue.length + ")";
+		}
+
+		page.link.onclick = e => {
+			e.preventDefault();
+			if (!page.url.value) {
+				return;
+			}
+			let url = new URL(page.url.value); //Fail if invalid
+			if (!url.protocol.startsWith("http")) {
+				throw ("Not http/s");
+			}
+			location = page.url.value;
+		}
+
+		function applyEdits() {
+			let edits = storage.getItem("edits");
+			if (!edits) {
+				return;
+			}
+			//Auto remove
+			if (edits.artitle) {
+				edits.artitle.forEach(str => {
+					page.title.value = page.title.value.replace(str, "");
+				});
+				page.title.value = page.title.value.replace("  ", " ");
+			}
+			if (edits.arurl) {
+				edits.arurl.forEach(str => {
+					page.url.value = page.url.value.replace(str, "");
+				});
+				page.url.value = page.url.value.replace("  ", " ");
+			}
 		}
 
 	</script>

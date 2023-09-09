@@ -51,9 +51,6 @@
     <h3>Queue</h3>
 	<div id="queuelist" style="display: grid; grid-template-columns: 7fr 1fr; gap: 2vw; grid-auto-rows: auto; text-align: initial;"></div>
 	<div>&nbsp;</div>
-	<button id="export">Export</button>
-	<input id="import" type="file" accept=".json" style="display: none;" aria-label="load" />
-	<button id="importproxy">Load</button>
 
 	<div><a href="index.html">Home</a></div>
 
@@ -133,40 +130,6 @@
 				page.queuelist.appendChild(itemSpan);
 				page.queuelist.appendChild(del);
 			});
-		}
-
-		page.importproxy.onclick = e => {
-			page.import.click();
-		}
-
-		page.import.onchange = e => {
-			console.clear();
-			let file = page.import.files[0];
-			let reader = new FileReader();
-			reader.readAsText(file);
-			reader.onload = e => {
-				let imported = JSON.parse(reader.result);
-				console.log(imported);
-				imported.destinations.forEach(d => {
-					applyQueueItem(d.name, d.url)
-				});
-			}
-			page.import.value = "";
-		}
-
-
-		page.export.onclick = e => {
-			download(storage.toString(), "shareto-queue.json");
-		}
-
-		function download(text, filename) {
-			let element = document.createElement('a');
-			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-			element.setAttribute('download', filename);
-			element.style.display = 'none';
-			document.body.appendChild(element);
-			element.click();
-			document.body.removeChild(element);
 		}
 
 	</script>

@@ -50,11 +50,56 @@
 	<div><a id="queuelink" href="queue.html">Queue</a></div>
 	<br>
 	<div><a href="shareto.html">Share form</a></div>
-	<br><br>V2.2
+	<br>
+	<div><a href="edits.html">Edits</a></div>
+	<br>
+	<button id="export">Backup</button>
+	<input id="import" type="file" accept=".json" style="display: none;" aria-label="load" />
+	<button id="importproxy">Restore</button>
+	<br><br>V2.3
 	<script>
+		console.clear();
+		const page = {};
+		const all = document.querySelectorAll("*[id]");
+		all.forEach((val) => {
+			page[val.id] = val;
+		});
+
 		let storage = new CbStorage("shareto");
 		let queue = storage.require("queue", []);
 		document.getElementById("queuelink").innerHTML = "Queue (" + queue.length + ")";
+
+		page.importproxy.onclick = e => {
+			page.import.click();
+		}
+
+		page.import.onchange = e => {
+			console.clear();
+			let file = page.import.files[0];
+			let reader = new FileReader();
+			reader.readAsText(file);
+			reader.onload = e => {
+				let imported = JSON.parse(reader.result);
+				console.log(imported);
+				storage.setStorage(imported);
+			}
+			location.reload();
+		}
+
+
+		page.export.onclick = e => {
+			download(storage.toString(), "shareto.json");
+		}
+
+		function download(text, filename) {
+			let element = document.createElement('a');
+			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+			element.setAttribute('download', filename);
+			element.style.display = 'none';
+			document.body.appendChild(element);
+			element.click();
+			document.body.removeChild(element);
+		}
 	</script>
 </body>
 

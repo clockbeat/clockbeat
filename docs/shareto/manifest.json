@@ -15,7 +15,7 @@
     }
   ],
   "share_target": {
-    "action": "/shareto/shareto.html#",
+    "action": "/shareto/shareto.html",
     "method": "GET",
     "params": {
       "title": "name",

@@ -14,10 +14,6 @@ let white = "&#9633;";
 let tick = "&#10003;";
 let goodInput = "";
 let gameOver = false;
-let moveitMapping = new moveit(main, {
-    start: e => {return true;},
-    end: dragged
-});
 
 let hash = location.hash.substring(1);
 let params = hash ? hash.split("&").reduce((res, item) => {
@@ -160,26 +156,6 @@ document.onkeydown = function (e) {
 }
 
 //-------------------------------------------------------------------
-
-function dragged(e) {
-    //"this" is moveit
-    //console.log(this);
-    let xmove = (this.x - this.downpos.x);
-    let xdist = Math.abs(xmove - (innerWidth * 0.02));
-    let ydist = Math.abs(this.y - this.downpos.y - (innerWidth * 0.02));
-    let oldPage = pageNumber;
-    if (ydist > xdist) return;
-    if (xmove > innerWidth * 0.02) {
-        pageNumber = Math.min(pageCount - 1, pageNumber + 1);
-    }
-    if (xmove < -innerWidth * 0.02) {
-        pageNumber = Math.max(0, pageNumber - 1);
-    }
-    if (oldPage != pageNumber) {
-        storage.setItem("currentKey", pageNumber);
-        location.reload();
-    }
-}
 
 function makeOverview(pageResults) {
     let foundCount = 0;

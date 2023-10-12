@@ -10,11 +10,12 @@
 <body style="user-select: none;">
     <div id="exit"
         style="font-size: 2em; cursor: pointer; display: block; position: absolute; right: 5; color: rgb(209, 209, 209);"
-        onclick="location.href = 'index.html';">
+        onclick="location.href = 'index.html' + location.hash;">
         &#10006;</div>
     <div id="main">
         <table id="stats"></table>
     </div>
+    <div style="font-size: 0.7em; font-style: oblique; float: right; margin-right: 1em;">V1</div>
 
     <script>
         console.clear();
@@ -29,7 +30,7 @@
         let storageName = params['type'];
         let stats = statsStore.getItem(storageName);
         if (!stats) {
-            location.href = "index.html";
+            location.href = "index.html" + location.hash;;
         }
         let statsTable = document.getElementById("stats");
         let largest = [...stats.scores].sort((a, b) => b - a)[0];

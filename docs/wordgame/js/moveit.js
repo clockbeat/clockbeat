@@ -19,6 +19,7 @@ function moveit(element, mapping) {
             mapping.down(e);
             e.stopPropagation();
         }
+        mapping.event = e;
     }
 
     function move(e) {
@@ -39,6 +40,7 @@ function moveit(element, mapping) {
             mapping.lastpos = {x: mapping.x, y: mapping.y};
             e.stopPropagation();
         }
+        mapping.event = e;
     }
 
     function up(e) {
@@ -61,13 +63,27 @@ function moveit(element, mapping) {
         }
     }
 
+    function touchend(e) {
+        let pos = mapping.event.changedTouches[0];
+        let tgt = document.body;
+        if (pos) {
+            tgt = document.elementFromPoint(pos.clientX, pos.clientY);
+        }
+        var event = new MouseEvent("mouseup", {
+            bubbles: true,
+            cancelable: true
+        });
+        tgt.dispatchEvent(event); //invoke "up" with element under pointer
+        e.stopPropagation();
+    }
+
     element.addEventListener("mousedown", down);
     element.addEventListener("mousemove", move);
     document.addEventListener("mouseup", up);
 
     element.addEventListener("touchstart", down);
     element.addEventListener("touchmove", move);
-    document.addEventListener("touchend", up);
+    document.addEventListener("touchend", touchend);
 
     return mapping;
 }

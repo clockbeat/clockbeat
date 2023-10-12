@@ -2,41 +2,72 @@ let root = document.querySelector(':root');
 let main = document.getElementById("main");
 let keyboard = document.getElementById("keyboard");
 let reload = document.getElementById("reload");
-let statsLink = document.getElementById("stats");
+let stats = document.getElementById("stats");
 let boxes = document.getElementById("boxes");
 let pageselect = document.getElementById("pageselect");
 let wakelock = document.getElementById("wakelock");
 let wakelockSentinel;
 let table = addET(main, "table");
-let keyList = [];
+//let keyList = [];
 let black = "&#9632;";
 let white = "&#9633;";
 let tick = "&#10003;";
-let storageName = "wordgame-oct";
-let statsStore = new CbStorage("stats");
-let storage = new CbStorage(storageName);
-let guesses = storage.getItem("guesses") ?? [];
-let pageNumber = storage.getItem("currentKey") ?? "0";
 let goodInput = "";
-let pageCount = 8;
-let solutions = storage.getItem("solutions") ?? [];
-let rowCount = 12;
-let cellCount = 5;
 let gameOver = false;
 let moveitMapping = new moveit(main, {
     start: e => {return true;},
     end: dragged
 });
 
+let hash = location.hash.substring(1);
+let params = hash ? hash.split("&").reduce((res, item) => {
+    var parts = item.split('=');
+    res[parts[0]] = parts[1];
+    return res;
+}, {}) : {}; //If no hash params is empty
+
+if (!params.type) {
+    location = location.pathname + "#type=wordgame-wle";
+    location.reload();
+}
+
+let storageName = params.type;
+let statsStore = new CbStorage("stats");
+let storage = new CbStorage(storageName);
+let guesses = storage.getItem("guesses") ?? [];
+let pageNumber = storage.getItem("currentKey") ?? "0";
+let solutions = storage.getItem("solutions") ?? [];
+
+const typeDetails = gametypes[params.type];
+console.log(params.type, typeDetails);
+let {pageCount, rowCount, cellCount, background, prefill} = typeDetails;
+
 if (pageNumber >= pageCount) {
     pageNumber = pageCount - 1;
 }
 
 root.style.setProperty("--cells", cellCount);
+root.style.backgroundColor = background;
 
 if (solutions.length == 0) {
     makeSolutions();
 }
+
+let rightOptions = document.getElementById("rightoptions");
+Object.keys(gametypes).forEach(key => {
+    if (key != params.type) {
+        let div = document.createElement("div");
+        div.className = "typelink";
+        div.style.backgroundColor = gametypes[key].background;
+        div.innerHTML = gametypes[key].iconChar;
+        div.onclick = e => {
+            location = location.pathname + "#type=" + key;
+            location.reload(); 
+        }
+        rightOptions.appendChild(div);
+        rightOptions.appendChild(document.createElement("br"));
+    }
+});
 
 if (storage.getItem("wakelock") == "on") {
     (async () => {
@@ -161,6 +192,7 @@ function makeOverview(pageResults) {
             storage.setItem("currentKey", p);
             location.reload();
         };
+        sp.style.borderColor = background;
         if (pageNumber == p) {
             sp.style.borderColor = "#ffffff";
         }
@@ -177,8 +209,6 @@ function makeOverview(pageResults) {
             foundbar.innerHTML = tick;
             foundCount++;
         }
-
-        //boxes.appendChild(sp);
     }
     if (foundCount >= pageCount) {
         gameOver = true;
@@ -272,7 +302,7 @@ function save() {
                 cell.className = "";
             }
         }
-        let stats = statsStore.getItem(storageName) ?? {scores: Array(rowCount + 1).fill(0), pageCount};
+        let stats = statsStore.require(storageName, {scores: Array(rowCount + 1).fill(0), pageCount});
         if (stats["last"] !== sols) {
             stats["last"] = sols;
             stats.scores[balance]++;
@@ -399,9 +429,16 @@ function refreshPage() {
 
 function makeSolutions() {
     solutions = [];
-    for (let p = 0; p < pageCount; p++) {
+    for (let p = 0; p < pageCount + prefill; p++) {
         let pos = Math.floor(solutionWords.length * Math.random());
-        solutions.push(solutionWords[pos]);
+        while (solutions.includes(solutionWords[pos])) {
+            pos = Math.floor(solutionWords.length * Math.random());
+        }
+        if (p < pageCount) {
+            solutions.push(solutionWords[pos]);
+        } else {
+            guesses.push(solutionWords[pos].toUpperCase())
+        }
     }
     //solutions = ["eerie", "tooth", "civic","eerie", "tooth", "civic", "eerie", "tooth"];
     storage.setItem("solutions", solutions);

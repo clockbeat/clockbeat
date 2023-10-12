@@ -6,7 +6,7 @@
     <script>
         var swk;
         try {
-            console.clear();
+            //console.clear();
             if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
                 window.addEventListener("load", () => {
                     navigator.serviceWorker.register('sw.js')
@@ -33,6 +33,7 @@
     <script src="js/moveit.js"></script>
     <script src="js/validwords.js"></script>
     <script src="js/solutionwords.js"></script>
+    <script src="js/gametypes.js"></script>
 
 </head>
 
@@ -42,17 +43,17 @@
     <div id="reload"
         style="font-size: 2em; cursor: pointer; display: block; position: absolute; right: 5; color: rgb(209, 209, 209);">
         &#10006;</div>
-    <div id="wakelock" class="wakeoff"
-        style="font-size: 2em; cursor: pointer; display: block; position: absolute; left: 5; top: 7; color: rgb(209, 209, 209);">
-        💡</div>
-
-    <div id="stats"
-        style="font-size: 1.5em; cursor: pointer; display: block; position: absolute; left: 10; top: 60; color: rgb(209, 209, 209);">
-        &#128202;</div>
-
+    <div id="rightoptions" style="position: absolute; left: 8; top: 7; cursor: pointer;">
+        <div id="wakelock" class="wakeoff" style="font-size: 2em;  display: block; margin-left: -3px;">
+            💡</div>
+        <br>
+        <div id="stats" style="font-size: 1.5em; display: block;">
+            &#128202;</div>
+        <br>
+    </div>
     <div id="main"></div>
     <div id="pageselect">
-        <div style="max-width: 20rem; margin: auto">
+        <div style="width: fit-content; margin: auto">
             <div id="boxes">&#9632;&#9633;</div>
         </div>
     </div>

@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "6491cfff";
+let cacheName = /*time!*/ "65280c95";
 
 const contentToCache = ["index.html", "js/wordgame.js", "js/validwords.js", "js/solutionwords.js", "js/moveit.js", "js/storage.js", "css/wordgame.css", "stats.html"];
 
@@ -9,23 +9,25 @@ self.addEventListener("activate", (e) => {
             return Promise.all(
                 cacheNames.map(cache => {
                     if (cache !== cacheName) {
+                        console.log("Deleted cache " + cache);
                         return caches.delete(cache);
                     }
                 })
             );
         })
     );
-    e.waitUntil(
-        (async () => {
-            if ("navigationPreload" in self.registration) {
-                await self.registration.navigationPreload.enable();
-            }
-        })()
-    );
+    // e.waitUntil(
+    //     (async () => {
+    //         if ("navigationPreload" in self.registration) {
+    //             await self.registration.navigationPreload.enable();
+    //         }
+    //     })()
+    // );
     self.clients.claim();
 });
 
 self.addEventListener("install", (e) => {
+    self.skipWaiting();
     e.waitUntil(
       (async () => {
         const cache = await caches.open(cacheName);
@@ -59,12 +61,12 @@ async function updateCache(request) {
 self.addEventListener("fetch", (e) => {
     e.respondWith((async () => {
 
-        try {
-            const preloadResponse = await e.preloadResponse;
-            if (preloadResponse) {
-                return preloadResponse;
-            }
-        } catch { }
+        // try {
+        //     const preloadResponse = await e.preloadResponse;
+        //     if (preloadResponse) {
+        //         return preloadResponse;
+        //     }
+        // } catch { }
 
         let request = e.request;
         let response = await updateCache(request);

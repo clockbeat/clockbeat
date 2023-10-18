@@ -6,6 +6,7 @@ let stats = document.getElementById("stats");
 let boxes = document.getElementById("boxes");
 let pageselect = document.getElementById("pageselect");
 let wakelock = document.getElementById("wakelock");
+let hints = document.getElementById("hints");
 let wakelockSentinel;
 let table = addET(main, "table");
 //let keyList = [];
@@ -25,6 +26,7 @@ let params = hash ? hash.split("&").reduce((res, item) => {
 if (!params.type) {
     location = location.pathname + "#type=wordgame-wle";
     location.reload();
+    params.type = "1";
 }
 
 let storageName = params.type;
@@ -36,7 +38,7 @@ let solutions = storage.getItem("solutions") ?? [];
 
 const typeDetails = gametypes[params.type];
 console.log(params.type, typeDetails);
-let {pageCount, rowCount, cellCount, background, prefill} = typeDetails;
+let {pageCount, rowCount, cellCount, background, prefill, combinePages, showProgress} = typeDetails;
 
 if (pageNumber >= pageCount) {
     pageNumber = pageCount - 1;
@@ -49,21 +51,35 @@ if (solutions.length == 0) {
     makeSolutions();
 }
 
-let rightOptions = document.getElementById("rightoptions");
+let leftOptions = document.getElementById("leftoptions");
 Object.keys(gametypes).forEach(key => {
-    if (key != params.type) {
-        let div = document.createElement("div");
-        div.className = "typelink";
-        div.style.backgroundColor = gametypes[key].background;
-        div.innerHTML = gametypes[key].iconChar;
-        div.onclick = e => {
-            location = location.pathname + "#type=" + key;
-            location.reload(); 
-        }
-        rightOptions.appendChild(div);
-        rightOptions.appendChild(document.createElement("br"));
+    let div = document.createElement("div");
+    div.className = "typelink";
+    div.style.backgroundColor = gametypes[key].background;
+    div.innerHTML = gametypes[key].iconChar;
+    if (key == params.type) {
+        div.style.borderColor = "white";
     }
+    div.onclick = e => {
+        location = location.pathname + "#type=" + key;
+        location.reload();
+    }
+    leftOptions.appendChild(div);
+    leftOptions.appendChild(document.createElement("div"));
 });
+
+if (combinePages) {
+    let rightOptions = document.getElementById("rightoptions");
+    ["--mygreen", "--myyellow", "--mygrey", "--mywhite"].forEach((col, ix) => {
+        let div = document.createElement("div");
+        div.id = "letter" + (2 - ix);
+        div.className = "lettercount";
+        div.innerHTML = "&nbsp;";
+        div.style.backgroundColor = "var(" + col + ")"
+        rightOptions.appendChild(div);
+        rightOptions.appendChild(document.createElement("div"));
+    });
+}
 
 if (storage.getItem("wakelock") == "on") {
     (async () => {
@@ -110,6 +126,10 @@ stats.onclick = function (e) {
     location.href = "stats.html#type=" + storageName;
 }
 
+// hints.onclick = function (e) {
+//     showHints();
+// }
+
 wakelock.onclick = async e => {
     if (!wakelockSentinel) {
         try {
@@ -135,23 +155,25 @@ document.addEventListener("visibilitychange", async () => {
 });
 
 document.onkeydown = function (e) {
-    if (e.key === "Enter") {
-        applyWord();
-        refreshPage();
-        save();
-    } else if (e.key === "Backspace") {
-        goodInput = goodInput.substring(0, goodInput.length - 1);
-        applyWord();
-        refreshPage();
-        save();
-    } else if (e.key.toLowerCase() == e.key.toUpperCase() || e.key.length != 1) {
-        e.stopPropagation();
-        e.preventDefault();
-    } else {
-        goodInput += e.key.toUpperCase();
-        goodInput = goodInput.substring(0, cellCount);
-        refreshPage();
-        save();
+    if (!gameOver) {
+        if (e.key === "Enter") {
+            applyWord();
+            refreshPage();
+            save();
+        } else if (e.key === "Backspace") {
+            goodInput = goodInput.substring(0, goodInput.length - 1);
+            applyWord();
+            refreshPage();
+            save();
+        } else if (e.key.toLowerCase() == e.key.toUpperCase() || e.key.length != 1) {
+            e.stopPropagation();
+            e.preventDefault();
+        } else {
+            goodInput += e.key.toUpperCase();
+            goodInput = goodInput.substring(0, cellCount);
+            refreshPage();
+            save();
+        }
     }
 }
 
@@ -162,20 +184,33 @@ function makeOverview(pageResults) {
     boxes.innerHTML = "";
     let barMult = 100 / cellCount;
     for (let p = 0; p < pageCount; p++) {
-        let letterHints = pageResults[p].letterHints.total;
+
         let sp = addET(boxes, "div", "box");
-        sp.onclick = e => {
-            storage.setItem("currentKey", p);
-            location.reload();
-        };
         sp.style.borderColor = background;
-        if (pageNumber == p) {
-            sp.style.borderColor = "#ffffff";
+        let foundbar = addET(sp, "div", "boxbar");
+        foundbar.className = "foundbar";
+
+        if (!showProgress) {
+            if (pageResults[p].pageDone) {
+                foundbar.style.height = "100%";
+                foundbar.innerHTML = tick;
+                foundCount++;
+            }
+            continue;
+        }
+        let letterHints = pageResults[p].letterHints.total;
+        if (!combinePages) {
+            sp.onclick = e => {
+                storage.setItem("currentKey", p);
+                location.reload();
+            };
+            if (pageNumber == p) {
+                sp.style.borderColor = "#ffffff";
+            }
+            sp.style.cursor = "pointer";
         }
 
-        let foundbar = addET(sp, "div", "boxbar");
         foundbar.style.height = (letterHints.found * barMult) + "%";
-        foundbar.className = "foundbar";
 
         let matchedbar = addET(sp, "div", "boxbar");
         matchedbar.style.height = (letterHints.matchedOnly * barMult) + "%";
@@ -193,10 +228,12 @@ function makeOverview(pageResults) {
 }
 
 function keyboardPress(e) {
-    goodInput += e.target.innerHTML.toUpperCase();
-    goodInput = goodInput.substring(0, cellCount);
-    refreshPage();
-    save();
+    if (!gameOver) {
+        goodInput += e.target.innerHTML.toUpperCase();
+        goodInput = goodInput.substring(0, cellCount);
+        refreshPage();
+        save();
+    }
 }
 
 function specialPress(type) {
@@ -244,6 +281,42 @@ function addET(target, type, className) {
     return el;
 }
 
+function showHints() {
+    document.body.className = "notransition";
+    let {rowResults, letterHints} = calculatePage(pageNumber);
+    pageselect.className = "gameover";
+    //keyboard.className = "gameover";
+    let misses = Object.entries(letterHints.help.missed);
+    let solutionRows = 1;
+    for (let r = 0; r < rowCount; r++) {
+        let [missChar, missVals] = [null, null];
+        if (r >= solutionRows && r < misses.length + solutionRows) {
+            [missChar, missVals] = misses[r - solutionRows];
+            console.log(missChar, missVals);
+        }
+        for (let c = 0; c < cellCount; c++) {
+            let cell = document.getElementById("r" + r + "c" + c);
+            cell.className = "";
+            cell.innerHTML = "";
+            let sol = letterHints.help.solved[c];
+            if (r < solutionRows) {
+                cell.innerHTML = sol;
+                if (sol) {
+                    cell.className = "found";
+                }
+            }
+            if (missChar) {
+                if (!missVals[c] && !sol) {
+                    cell.innerHTML = missChar;
+                    cell.className = "misplaced";
+                }
+            }
+        }
+        let row = document.getElementById("r" + r);
+        row.style.marginBottom = "initial";
+    }
+}
+
 function save() {
     storage.setItem("guesses", guesses);
     storage.setItem("currentKey", pageNumber);
@@ -258,6 +331,9 @@ function save() {
         for (let p = 0; p < pageCount; p++) {
             let {pageDone} = calculatePage(p);
             let sol = solutions[p];
+            let row = document.getElementById("r" + p);
+            row.style.marginBottom = "initial";
+            row.style.fontStyle = "initial";
             for (let c = 0; c < cellCount; c++) {
                 let cell = document.getElementById("r" + p + "c" + c);
                 cell.innerHTML = sol[c];
@@ -290,17 +366,19 @@ function save() {
 function calculatePage(pagenum) {
     let foundCount = 0;
     let pageDone = false;
+    let pageFull = false;
     let rowResults = []; // 0=no match 1=misplaced 2=found
     let letterResults = {};
-    let letterHints = {};
+    let letterHints = {total: {matched: 0, found: 0}, help: {solved: new Array(cellCount).fill(""), missed: {}}};
+    let hintsData = {};
     let partSolved = new Array(cellCount).fill("");
     let solution = solutions[pagenum].toUpperCase().split("");
     guesses.forEach((guess, ix) => {
         let matchedLetters = {};
         let rowResult = [];
         let workGuess = [...guess];
-        rowResults.push(rowResult);
-        if (!pageDone) {
+        if (!pageFull) {
+            rowResults.push(rowResult);
             let sol = [...solution];
             foundCount = 0;
             for (let c = 0; c < cellCount; c++) {
@@ -313,14 +391,19 @@ function calculatePage(pagenum) {
                     matchedLetters[workGuess[c]] = (matchedLetters[workGuess[c]] ?? 0) + 1;
                     workGuess[c] = "?";
                     partSolved[c] = solution[c];
+                    letterHints.help.solved[c] = solution[c];
                 }
             }
-            let foundLetters = Object.assign({}, matchedLetters);
             if (foundCount == cellCount) {
                 pageDone = true;
+                if (combinePages) {
+                    letterResults = {};
+                } else {
+                    pageFull = true;
+                }
             }
             for (let c = 0; c < cellCount; c++) {
-                const char = workGuess[c];
+                const char = workGuess[c]; //already has full matches as "?"
                 const hit = sol.indexOf(char);
                 if (hit >= 0) {
                     if (rowResult[c] == 0) {
@@ -329,7 +412,11 @@ function calculatePage(pagenum) {
                     if (!letterResults[char]) {
                         letterResults[char] = 1;
                     }
-                    sol[hit] = "*";
+                    if (!letterHints.help.missed[char]) {
+                        letterHints.help.missed[char] = new Array(cellCount).fill(0);
+                    }
+                    letterHints.help.missed[char][c] = 1;
+                    sol[hit] = "*"; //overwrite so duplicates match next occurence
                     matchedLetters[char] = (matchedLetters[char] ?? 0) + 1;
                 } else {
                     if (letterResults[char] === undefined) {
@@ -338,51 +425,58 @@ function calculatePage(pagenum) {
                 }
             }
             Object.keys(matchedLetters).forEach(char => {
-                if (!letterHints[char]) {
-                    letterHints[char] = {matched: 0, found: 0};
+                if (!hintsData[char]) {
+                    hintsData[char] = {matched: 0, found: 0};
                 }
-                if (letterHints[char].matched < matchedLetters[char]) {
-                    letterHints[char].matched = matchedLetters[char]
+                if (hintsData[char].matched < matchedLetters[char]) {
+                    hintsData[char].matched = matchedLetters[char]
                 }
-                letterHints[char].found = 0;
+                hintsData[char].found = 0;
             });
         }
     });
-    let keys = Object.keys(letterHints);
-    letterHints.total = {matched: 0, found: 0};
     partSolved.forEach(char => {
         if (char) {
-            letterHints[char].found += 1;
+            hintsData[char].found += 1;
         }
     });
-    keys.forEach(key => {
-        if (letterHints[key].matched < letterHints[key].found) {
-            letterHints[key].matched = letterHints[key].found;
+    Object.keys(hintsData).forEach(key => {
+        if (hintsData[key].matched < hintsData[key].found) {
+            hintsData[key].matched = hintsData[key].found;
             //fixed where dup letter found on different rows
         }
-        letterHints.total.matched += letterHints[key].matched;
-        letterHints.total.found += letterHints[key].found;
+        if (hintsData[key].matched == hintsData[key].found) {
+            delete letterHints.help.missed[key];
+        }
+        letterHints.total.matched += hintsData[key].matched;
+        letterHints.total.found += hintsData[key].found;
     });
     letterHints.total.matchedOnly = letterHints.total.matched - letterHints.total.found;
-    //console.log(pagenum, partSolved.join(""), letterHints);
+    delete letterResults["?"];
+    console.log(pagenum, partSolved.join(""), letterHints);
     return {rowResults, letterResults, letterHints, pageDone};
 }
 
 function refreshPage() {
     let pageResults = [];
+    let pnum = pageNumber;
     for (let p = 0; p < pageCount; p++) {
         pageResults.push(calculatePage(p));
     }
+    if (combinePages) {
+        //We add a row to pageResults beyond the pages and only use that here
+        pnum = pageCount;
+        pageResults.push(combinePageRows(pageResults));
+    }
 
-    let {rowResults, letterResults, pageDone} = pageResults[pageNumber];
+    let {rowResults, letterResults, pageDone, combinedPageLetters} = pageResults[pnum];
     let r = guesses.length;
-    let foundCount = 0;
     rowResults.forEach((result, ix) => {
-        if (foundCount >= cellCount) return;
-        foundCount = 0;
+        let foundCount = 0;
         for (let c = 0; c < cellCount; c++) {
             let cell = document.getElementById("r" + ix + "c" + c);
-            cell.innerHTML = guesses[ix][c] ?? "";
+            const guessChar = guesses[ix][c];
+            cell.innerHTML = guessChar ?? "";
             if (result[c] == 2) {
                 cell.className = "found";
                 foundCount++;
@@ -391,31 +485,108 @@ function refreshPage() {
             } else {
                 cell.className = "wrong";
             }
+            if (combinePages && guessChar) {
+                let page = combinedPageLetters[guessChar];
+                if (page && pageResults[page].pageDone) {
+                    cell.className = "completed";
+                }
+            }
+        }
+        let row = document.getElementById("r" + ix);
+        if (foundCount == cellCount && !solutions.includes(guesses[ix].toLowerCase())) {
+            row.style.fontStyle = "italic";
+        }
+        if (ix == prefill - 1) {
+            row.style.marginBottom = "0.5em"
         }
     });
     if (!pageDone && guesses.length < rowCount) {
         for (let c = 0; c < cellCount; c++) {
-            let row = document.getElementById("r" + r + "c" + c);
-            row.innerHTML = goodInput[c] ?? "";
+            let cell = document.getElementById("r" + r + "c" + c);
+            cell.innerHTML = goodInput[c] ?? "";
         }
     }
+    if (combinePages) {
+        let letterCount = new Array(4).fill(0);
+        letterCount[0] = 26;
+        Object.values(letterResults).forEach(value => {
+            letterCount[value + 1]++;
+            letterCount[0]--;
+        });
+        letterCount.forEach((val, ix) => {
+            document.getElementById("letter" + (ix - 1)).innerHTML = val;
+        });
+    }
+
     makeKeyboard(letterResults);
     makeOverview(pageResults);
 }
 
-function makeSolutions() {
-    solutions = [];
-    for (let p = 0; p < pageCount + prefill; p++) {
-        let pos = Math.floor(solutionWords.length * Math.random());
-        while (solutions.includes(solutionWords[pos])) {
-            pos = Math.floor(solutionWords.length * Math.random());
-        }
-        if (p < pageCount) {
-            solutions.push(solutionWords[pos]);
-        } else {
-            guesses.push(solutionWords[pos].toUpperCase())
+function combinePageRows(pageResults) {
+    let rowResults = [];
+    for (let n = 0; n < guesses.length; n++) {
+        rowResults.push(new Array(cellCount).fill(0));
+    }
+    let letterResults = {};
+    let pageDone = true;
+    let combinedPageLetters = {};
+    for (let p = 0; p < pageCount; p++) {
+        let cp = pageResults[p]; //calculatePage(p);
+        cp.rowResults.forEach((rr, rix) => {
+            rr.forEach((r, cix) => {
+                rowResults[rix][cix] = Math.max(rowResults[rix][cix], r);
+            });
+        });
+        Object.keys(cp.letterResults).forEach(key => {
+            letterResults[key] = Math.max(letterResults[key] ?? 0, cp.letterResults[key]);
+        });
+
+        solutions.forEach((sol, ix) => {
+            sol.split("").forEach(let => {
+                combinedPageLetters[let.toUpperCase()] = ix;
+            })
+        });
+
+        if (!cp.pageDone) {
+            pageDone = false;
         }
     }
+    return {rowResults, letterResults, pageDone, combinedPageLetters};
+}
+
+function makeSolutions() {
+    let loopCount = 0;
+    do {
+        loopCount = 0;
+        solutions = [];
+        let wordsUsed = [];
+        let lettersUsed = new Set();
+        for (let p = 0; p < pageCount + prefill; p++) {
+            let pos;
+            let isOk;
+            do {
+                isOk = true;
+                pos = Math.floor(solutionWords.length * Math.random());
+                if (combinePages && p < pageCount) {
+                    isOk = solutionWords[pos].split("").every(letter => {
+                        return !lettersUsed.has(letter);
+                    });
+                }
+                loopCount++;
+            } while ((wordsUsed.includes(solutionWords[pos]) || !isOk) && loopCount <= 1000);
+            const word = solutionWords[pos];
+            word.split("").forEach(letter => {
+                lettersUsed.add(letter);
+            });
+            if (p < pageCount) {
+                solutions.push(word);
+                wordsUsed.push(word);
+            } else {
+                guesses.push(word.toUpperCase());
+                wordsUsed.push(word);
+            }
+        }
+    } while (loopCount >= 1000);
     //solutions = ["eerie", "tooth", "civic","eerie", "tooth", "civic", "eerie", "tooth"];
     storage.setItem("solutions", solutions);
 }

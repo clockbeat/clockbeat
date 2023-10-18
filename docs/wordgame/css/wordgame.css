@@ -5,7 +5,9 @@
     --myred: rgb(255, 171, 171);
     --myyellow: rgb(247, 226, 132);
     --mygreen: rgb(142, 233, 106);
+    --mygreenlight: rgb(181, 206, 169);
     --mygrey: rgb(187, 187, 187);
+    --mywhite: rgb(255, 255, 255);
     --cells: 100;
     font-size: 2.4vh;
 }
@@ -44,6 +46,10 @@ td {
     transform: rotateX(0deg);
     transition-property: background-color, color, transform;
     transition-duration: 2s;
+}
+
+.notransition td {
+    transition: none;
 }
 
 td.stats {
@@ -158,6 +164,12 @@ input {
     transform: rotateX(360deg);
 }
 
+.completed {
+    background-color: var(--mygreenlight);
+    color: white;
+    transform: rotateX(360deg);
+}
+
 .bad td,
 .badstat {
     background-color: var(--myred);
@@ -182,8 +194,19 @@ input {
     font-size: 1.3em;
     display: block;
     margin-left: 1px;
-    border: 1px solid white;
+    border: 2px solid grey;
     text-align: center;
     width: 1.3em;
     color: white;
+    cursor: pointer;
+}
+
+.lettercount {
+    font-size: 1em;
+    padding: 0.4em;
+    display: block;
+    margin: 4px 1px 4px 1px;
+    text-align: center;
+    width: 1.3em;
+    color: black;
 }

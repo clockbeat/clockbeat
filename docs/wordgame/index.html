@@ -30,7 +30,6 @@
         }
     </script>
     <script src="js/storage.js"></script>
-    <script src="js/moveit.js"></script>
     <script src="js/validwords.js"></script>
     <script src="js/solutionwords.js"></script>
     <script src="js/gametypes.js"></script>
@@ -40,16 +39,21 @@
 
 
 <body style="user-select: none;">
+    <div id="rightoptions" style="position: absolute; right: 8; top: 7; touch-action: none; user-select: none;">
     <div id="reload"
-        style="font-size: 2em; cursor: pointer; display: block; position: absolute; right: 5; color: rgb(209, 209, 209);">
+        style="font-size: 2em; cursor: pointer; display: block; color: rgb(209, 209, 209);  margin-bottom: 0.2em;  text-align: center;">
         &#10006;</div>
-    <div id="rightoptions" style="position: absolute; left: 8; top: 7; cursor: pointer;">
-        <div id="wakelock" class="wakeoff" style="font-size: 2em;  display: block; margin-left: -3px;">
+        <div id="hints"
+        style="font-size: 2em; xcursor: pointer; display: block; color: rgb(209, 209, 209);  margin-bottom: 0.2em;  text-align: center;">
+        &nbsp;</div>
+    </div>
+    <div id="leftoptions" style="position: absolute; left: 8; top: 7; touch-action: none; user-select: none;">
+        <div id="wakelock" class="wakeoff" style="font-size: 2em;  display: block; margin-left: -3px; margin-bottom: 0.2em; cursor: pointer;">
             💡</div>
-        <br>
-        <div id="stats" style="font-size: 1.5em; display: block;">
+
+        <div id="stats" style="font-size: 1.5em; display: block; margin-bottom: 0.6em; cursor: pointer;">
             &#128202;</div>
-        <br>
+
     </div>
     <div id="main"></div>
     <div id="pageselect">

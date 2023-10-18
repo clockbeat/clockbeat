@@ -1,6 +1,6 @@
-let cacheName = /*time!*/ "65282ea0";
+let cacheName = /*time!*/ "652fe2d8";
 
-const contentToCache = ["index.html", "js/wordgame.js", "js/validwords.js", "js/solutionwords.js", "js/storage.js", "css/wordgame.css", "stats.html"];
+const contentToCache = ["index.html", "js/wordgame.js", "js/validwords.js", "js/solutionwords.js", "js/storage.js", "js/gametypes.js", "css/wordgame.css", "stats.html"];
 
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets

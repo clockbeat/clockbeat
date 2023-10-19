@@ -487,7 +487,7 @@ function refreshPage() {
             }
             if (combinePages && guessChar) {
                 let page = combinedPageLetters[guessChar];
-                if (page && pageResults[page].pageDone) {
+                if (page !== undefined && pageResults[page].pageDone) {
                     cell.className = "completed";
                 }
             }

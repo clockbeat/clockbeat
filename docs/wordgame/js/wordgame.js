@@ -21,6 +21,9 @@ let needsReload = false;
 let randomKey;
 let guesses;
 
+share.style.display = "none";
+helper.style.display = "none";
+
 let hash = location.hash.substring(1);
 let params = hash ? hash.split("&").reduce((res, item) => {
     var parts = item.split('=');
@@ -158,9 +161,9 @@ stats.onclick = function (e) {
     location.href = "stats.html#type=" + storageName;
 }
 
-if (!navigator.share) {
-    share.style.display = "none";    
-}
+// if (!navigator.share) {
+//     share.style.display = "none";    
+// }
 
 share.onclick = function (e) {
     const gs = guesses.join("");
@@ -740,6 +743,7 @@ function mulberry32WithKey(code) {
             t = a += 0x6D2B79F5;
             t = Math.imul(t ^ t >>> 15, t | 1);
             t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+            console.log(t);
             return ((t ^ t >>> 14) >>> 0) / 4294967296;
         }
     };

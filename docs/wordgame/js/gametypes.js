@@ -39,7 +39,7 @@ let gametypes = {
     },
     "wordgame-wax": {
         pageCount: 3,
-        rowCount: 13,
+        rowCount: 12,
         cellCount: 5,
         prefill: 0,
         background: "#660000" ,

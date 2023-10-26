@@ -6,7 +6,9 @@ let stats = document.getElementById("stats");
 let boxes = document.getElementById("boxes");
 let pageselect = document.getElementById("pageselect");
 let wakelock = document.getElementById("wakelock");
-let hints = document.getElementById("hints");
+let share = document.getElementById("share");
+let helper = document.getElementById("helper");
+let solutionCode;
 let wakelockSentinel;
 let table = addET(main, "table");
 //let keyList = [];
@@ -15,6 +17,9 @@ let white = "&#9633;";
 let tick = "&#10003;";
 let goodInput = "";
 let gameOver = false;
+let needsReload = false;
+let randomKey;
+let guesses;
 
 let hash = location.hash.substring(1);
 let params = hash ? hash.split("&").reduce((res, item) => {
@@ -23,22 +28,45 @@ let params = hash ? hash.split("&").reduce((res, item) => {
     return res;
 }, {}) : {}; //If no hash params is empty
 
-if (!params.type) {
-    location = location.pathname + "#type=wordgame-wle";
-    location.reload();
-    params.type = "1";
+if (!params.type || !gametypes[params.type]) {
+    params.type = "wordgame-wle";
+    needsReload = true;
 }
 
 let storageName = params.type;
 let statsStore = new CbStorage("stats");
 let storage = new CbStorage(storageName);
-let guesses = storage.getItem("guesses") ?? [];
+const typeDetails = gametypes[params.type];
+let {pageCount, rowCount, cellCount, background, prefill, combinePages, showProgress} = typeDetails;
+
+if (params.share) {
+    if (params.randomKey) {
+        randomKey = params.randomKey;
+        storage.setItem("solutions", []);
+        storage.setItem("randomKey", params.randomKey);
+    }
+    if (params.guesses != undefined) {
+        const re = new RegExp(`.{1,${cellCount}}`, "g");
+        guesses = params.guesses.match(re);
+        storage.setItem("guesses", guesses);
+    }
+    needsReload = true;
+}
+if (needsReload) {
+    location = location.pathname + `#type=${params.type}`;
+    location.reload();
+}
+
 let pageNumber = storage.getItem("currentKey") ?? "0";
 let solutions = storage.getItem("solutions") ?? [];
+guesses = storage.getItem("guesses") ?? [];
+randomKey = storage.getItem("randomKey");
 
-const typeDetails = gametypes[params.type];
-console.log(params.type, typeDetails);
-let {pageCount, rowCount, cellCount, background, prefill, combinePages, showProgress} = typeDetails;
+let random = mulberry32WithKey(randomKey); //returns new key if blank
+storage.setItem("randomKey", random.key);
+randomKey = random.key;
+
+console.log(params, typeDetails);
 
 if (pageNumber >= pageCount) {
     pageNumber = pageCount - 1;
@@ -122,13 +150,39 @@ reload.onclick = function (e) {
     location.reload();
 }
 
+window.addEventListener('hashchange', function () {
+    location.reload();
+});
+
 stats.onclick = function (e) {
     location.href = "stats.html#type=" + storageName;
 }
 
-// hints.onclick = function (e) {
-//     showHints();
-// }
+if (!navigator.share) {
+    share.style.display = "none";    
+}
+
+share.onclick = function (e) {
+    const gs = guesses.join("");
+    console.log(gs);
+    const url = location.href + `&share=1&randomKey=${randomKey}&guesses=${gs}`;
+    const shareData = {
+        title: "Steve's word game " + typeDetails.iconChar,
+        text: "Please help me with this ",
+        url
+    };
+    if (navigator.share) {
+        navigator.share(shareData);
+    } else {
+        open(url); //Just for testing
+    }
+}
+
+helper.onclick = function (e) {
+    let {hitString, missString} = createHints("-");
+    let qs = `hits=${hitString}&miss=${missString}&cellCount=${cellCount}`;
+    open("../wordhelper/index.html#" + qs);
+}
 
 wakelock.onclick = async e => {
     if (!wakelockSentinel) {
@@ -184,7 +238,6 @@ function makeOverview(pageResults) {
     boxes.innerHTML = "";
     let barMult = 100 / cellCount;
     for (let p = 0; p < pageCount; p++) {
-
         let sp = addET(boxes, "div", "box");
         sp.style.borderColor = background;
         let foundbar = addET(sp, "div", "boxbar");
@@ -199,7 +252,9 @@ function makeOverview(pageResults) {
             continue;
         }
         let letterHints = pageResults[p].letterHints.total;
-        if (!combinePages) {
+        if (combinePages) {
+
+        } else {
             sp.onclick = e => {
                 storage.setItem("currentKey", p);
                 location.reload();
@@ -283,7 +338,7 @@ function addET(target, type, className) {
 
 function showHints() {
     document.body.className = "notransition";
-    let {rowResults, letterHints} = calculatePage(pageNumber);
+    let {letterHints} = calculatePage(pageNumber);
     pageselect.className = "gameover";
     //keyboard.className = "gameover";
     let misses = Object.entries(letterHints.help.missed);
@@ -316,6 +371,54 @@ function showHints() {
         row.style.marginBottom = "initial";
     }
 }
+
+function createHints(fill) {
+    let solutionRows = 1;
+    let hitString = "";
+    let missString = "";
+    let pno = combinePages ? 0 : pageNumber;
+    do {
+        let {letterHints} = calculatePage(pno);
+        let misses = Object.entries(letterHints.help.missed);
+        for (let r = 0; r < rowCount; r++) {
+            let [missChar, missVals] = [null, null];
+            if (r >= solutionRows && r < misses.length + solutionRows) {
+                [missChar, missVals] = misses[r - solutionRows];
+                console.log(missChar, missVals);
+            }
+            for (let c = 0; c < cellCount; c++) {
+                let sol = letterHints.help.solved[c];
+                if (r < solutionRows) {
+                    hitString += sol || fill;
+                } else if (missChar && !missVals[c] && !sol) {
+                    missString += missChar;
+                } else if (missVals) {
+                    missString += fill;
+                }
+            }
+        }
+        pno++;
+    } while (combinePages && pno < pageCount);
+    return {hitString, missString};
+}
+
+// function shuffle(array) {
+//     let currentIndex = array.length, randomIndex;
+
+//     // While there remain elements to shuffle.
+//     while (currentIndex > 0) {
+
+//         // Pick a remaining element.
+//         randomIndex = Math.floor(Math.random() * currentIndex);
+//         currentIndex--;
+
+//         // And swap it with the current element.
+//         [array[currentIndex], array[randomIndex]] = [
+//             array[randomIndex], array[currentIndex]];
+//     }
+
+//     return array;
+// }
 
 function save() {
     storage.setItem("guesses", guesses);
@@ -453,7 +556,7 @@ function calculatePage(pagenum) {
     });
     letterHints.total.matchedOnly = letterHints.total.matched - letterHints.total.found;
     delete letterResults["?"];
-    console.log(pagenum, partSolved.join(""), letterHints);
+    //console.log(pagenum, partSolved.join(""), letterHints);
     return {rowResults, letterResults, letterHints, pageDone};
 }
 
@@ -556,6 +659,7 @@ function combinePageRows(pageResults) {
 
 function makeSolutions() {
     let loopCount = 0;
+    let hasGuesses = !!guesses.length;
     do {
         loopCount = 0;
         solutions = [];
@@ -566,7 +670,7 @@ function makeSolutions() {
             let isOk;
             do {
                 isOk = true;
-                pos = Math.floor(solutionWords.length * Math.random());
+                pos = Math.floor(solutionWords.length * random.calc());
                 if (combinePages && p < pageCount) {
                     isOk = solutionWords[pos].split("").every(letter => {
                         return !lettersUsed.has(letter);
@@ -582,7 +686,9 @@ function makeSolutions() {
                 solutions.push(word);
                 wordsUsed.push(word);
             } else {
-                guesses.push(word.toUpperCase());
+                if (!hasGuesses) {
+                    guesses.push(word.toUpperCase());
+                }
                 wordsUsed.push(word);
             }
         }
@@ -615,4 +721,26 @@ function makeKeyboard(letterResults) {
         }
         kb.appendChild(key);
     });
+}
+
+function mulberry32WithKey(code) {
+    const letters = "BCDFGHJKMPRSTWXY";
+    let t;
+    if (!code) {
+        code = "";
+        for (let n = 0; n < 6; n++) {
+            code += letters[Math.floor(Math.random() * 16)];
+        }
+    }
+    let a = code.split("").reduce((cum, char) => {
+        return (cum << 4) + letters.indexOf(char);
+    }, 0);
+    return {
+        key: code, calc: function () {
+            t = a += 0x6D2B79F5;
+            t = Math.imul(t ^ t >>> 15, t | 1);
+            t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        }
+    };
 }

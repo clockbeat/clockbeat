@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "64b2ba32";
+let cacheName = /*time!*/ "653a97c7";
 
 const contentToCache = ["index.html", "wordhelper.js", "storage.js", "wordhelper.css"];
 

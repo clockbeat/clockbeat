@@ -26,6 +26,19 @@ if (storage.getItem("wakelock") == "on") {
     })();
 }
 
+let params = location.hash.substring(1).split("&").reduce((res, item) => {
+    var parts = item.split('=');
+    res[parts[0]] = parts[1];
+    return res;
+}, {}); //If no hash params is empty
+let cellCount = params["cellCount"];
+let hitsString = params["hits"];
+let missString = params["miss"];
+if (cellCount && hitsString != undefined && missString != undefined) {
+    currentKey = "html0";
+    html = null;
+}
+
 let lsKeys = storage.keys();
 if (lsKeys.length > 0) {
     lsKeys.forEach(key => {
@@ -140,6 +153,49 @@ keyList.forEach(key => {
     sp.style.margin = "auto";
     boxes.appendChild(sp);
 });
+
+if (currentKey == "html0" && hitsString) {
+    let rows = hitsString.length / cellCount;
+    let n;
+    let charPtr = 0;
+    let char;
+    let trs = [...document.querySelectorAll("tr")].sort((a, b) => {
+        return a.id < b.id;
+    });
+    for (n = 0; n < rows; n++) {
+        let td;
+        trs[n].className = "b";
+        for (let c = 0; c < cellCount; c++) {
+            char = hitsString[charPtr++];
+            if (char != "-") {
+                td = document.getElementById("r" + n + "c" + c);
+                td.innerHTML = char;
+                td.className = "found";
+            }
+        }
+        td = document.getElementById("r" + n + "c" + 5);
+        td.innerHTML = "&#10006;";
+    }
+    charPtr = 0;
+    for (; n < trs.length; n++) {
+        if (charPtr >= missString.length) {
+            break;
+        }
+        trs[n].className = "a";
+        for (let c = 0; c < cellCount; c++) {
+            char = missString[charPtr++];
+            let td = document.getElementById("r" + n + "c" + c);
+            if (char != "-") {
+                td.innerHTML = char;
+            } else {
+                td.className = "selected";
+            }
+        }
+    }
+    save();
+    location = location.href.split("#")[0];;
+}
+
 
 reload.onclick = function (e) {
     storage.removeItem(currentKey);

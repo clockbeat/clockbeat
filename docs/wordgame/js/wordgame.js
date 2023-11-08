@@ -9,6 +9,8 @@ function runIt() {
     let pageselect = document.getElementById("pageselect");
     let wakelock = document.getElementById("wakelock");
     let share = document.getElementById("share");
+    let favwords = document.getElementById("favwords");
+    let wordlistDiv = document.getElementById("wordlist");
     let wakelockSentinel;
     let table = addET(main, "table");
     let tick = "&#10003;";
@@ -33,6 +35,7 @@ function runIt() {
     let storageName = params.type;
     let statsStore = new CbStorage("stats");
     let storage = new CbStorage(storageName);
+    let settings = new CbStorage("wordgame-settings");
     const typeDetails = gametypes[params.type];
     let {pageCount, rowCount, cellCount, background, prefill, combinePages, showProgress} = typeDetails;
 
@@ -48,6 +51,9 @@ function runIt() {
             guesses = params.guesses.match(re);
             storage.setItem("guesses", guesses);
         }
+        if (params.pageNumber) {
+            storage.setItem("pageNumber", params.pageNumber);
+        }
         needsReload = true;
     }
     if (needsReload) {
@@ -56,7 +62,8 @@ function runIt() {
         return;
     }
 
-    let pageNumber = storage.getItem("currentKey") ?? "0";
+    let recentWords = settings.require("recentWords" + cellCount, {});
+    let pageNumber = storage.getItem("pageNumber") ?? "0";
     let solutions = storage.getItem("solutions") ?? [];
     guesses = storage.getItem("guesses") ?? [];
     randomKey = storage.getItem("randomKey");
@@ -127,6 +134,7 @@ function runIt() {
             td.id = "r" + r + "c" + c;
             td.innerHTML = "";
             td.style.transitionDelay = (c * 2) / (cellCount + 1) + "s";
+            td.onclick = showFavWords;
         }
     }
 
@@ -163,7 +171,7 @@ function runIt() {
 
     share.onclick = function (e) {
         const gs = guesses.join("");
-        const url = location.href + `&share=1&randomKey=${randomKey}&guesses=${gs}`;
+        const url = location.href + `&share=1&randomKey=${randomKey}&guesses=${gs}&pageNumber=${pageNumber}`;
         const shareData = {
             title: "Steve's word game " + typeDetails.iconChar,
             text: "Please help me with this ",
@@ -224,7 +232,32 @@ function runIt() {
         }
     }
 
+    document.onclick = e => {
+        favwords.close();
+    }
+
     //-------------------------------------------------------------------
+
+    function showFavWords(e) {
+        let words = getRecentWords().slice(0, 10);
+        wordlistDiv.innerHTML = "";
+        words.forEach(w => {
+            let wDiv = document.createElement("div");
+            wDiv.innerHTML = w;
+            wDiv.onclick = e => {
+                goodInput = w;
+                applyWord();
+                refreshPage();
+                favwords.close();
+                e.stopPropagation();
+            }
+            wordlistDiv.appendChild(wDiv);
+        });
+        favwords.showModal();
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
 
     function makeOverview(pageResults) {
         let foundCount = 0;
@@ -233,6 +266,7 @@ function runIt() {
         for (let p = 0; p < pageCount; p++) {
             let sp = addET(boxes, "div", "box");
             sp.style.borderColor = background;
+            sp.style.position = "relative";
             let foundbar = addET(sp, "div", "boxbar");
             foundbar.className = "foundbar";
 
@@ -249,7 +283,7 @@ function runIt() {
 
             } else {
                 sp.onclick = e => {
-                    storage.setItem("currentKey", p);
+                    storage.setItem("pageNumber", p);
                     location.reload();
                 };
                 if (pageNumber == p) {
@@ -267,7 +301,7 @@ function runIt() {
             if (pageResults[p].pageDone) {
                 foundbar.innerHTML = tick;
                 foundCount++;
-            }
+            }           
         }
         if (foundCount >= pageCount) {
             gameOver = true;
@@ -309,6 +343,7 @@ function runIt() {
         }
         if (validWords.includes(goodInput.toLowerCase())) {
             guesses.push(goodInput);
+            addRecentWord(goodInput);
             goodInput = "";
             return;
         }
@@ -331,7 +366,7 @@ function runIt() {
 
     function save() {
         storage.setItem("guesses", guesses);
-        storage.setItem("currentKey", pageNumber);
+        storage.setItem("pageNumber", pageNumber);
         if (guesses.length == rowCount) {
             gameOver = true;
         }
@@ -649,5 +684,39 @@ function runIt() {
                 return ((t ^ t >>> 14) >>> 0) / 4294967296;
             }
         };
+    }
+
+    function addRecentWord(word) {
+        let least = 9999999;
+        let leastWord;
+        let count = 0;
+        Object.keys(recentWords).forEach(w => {
+            let low = recentWords[w] *= 0.9999;
+            if (low < least) {
+                leastWord = w;
+                least = low;
+            }
+            count++;
+        });
+        
+        if (!recentWords[word]) {
+            if (count >= 20) {
+                delete recentWords[leastWord];
+            }
+            recentWords[word] = 0;
+        }
+        recentWords[word]++;
+        settings.setItem("recentWords"+cellCount,recentWords);
+    }
+
+    function getRecentWords() {
+        let wordList = [];
+        let sorted = [... Object.entries(recentWords)];
+        sorted.sort((a, b) => {
+            return b[1] - a[1];
+        }).forEach(w => {
+            wordList.push(w[0]);
+        });
+        return wordList;
     }
 }

@@ -119,7 +119,7 @@ if (html) {
         }
     });
 } else {
-    for (let r = 0; r < 12; r++) {
+    for (let r = 0; r < 15; r++) {
         let tr = addET(table, "tr");
         tr.className = "";
         tr.id = "r" + r;
@@ -263,10 +263,9 @@ function applyTdOnClick(td) {
                     tx.innerHTML = "";
                     tx.className = "";
                 }
-                if (tr.className == "a") {
-                    tr.remove();
-                    table.appendChild(tr);
-                }
+                tr.remove();
+                tr.className == "a";
+                table.appendChild(tr);
                 td.innerHTML = "&#9776;";
                 tr.className = "";
             }

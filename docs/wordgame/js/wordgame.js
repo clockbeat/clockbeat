@@ -239,7 +239,7 @@ function runIt() {
     //-------------------------------------------------------------------
 
     function showFavWords(e) {
-        let words = getRecentWords().slice(0, 10);
+        let words = getRecentWords().slice(0, 6);
         wordlistDiv.innerHTML = "";
         words.forEach(w => {
             let wDiv = document.createElement("div");
@@ -248,9 +248,11 @@ function runIt() {
                 goodInput = w;
                 applyWord();
                 refreshPage();
+                save();
                 favwords.close();
                 e.stopPropagation();
             }
+            wDiv.className = "favword";
             wordlistDiv.appendChild(wDiv);
         });
         favwords.showModal();

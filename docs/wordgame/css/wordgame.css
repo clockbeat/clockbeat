@@ -212,3 +212,8 @@ input {
     width: 1.3em;
     color: black;
 }
+
+.favword {
+    padding: 0.6em;
+    border: solid 1px;
+}

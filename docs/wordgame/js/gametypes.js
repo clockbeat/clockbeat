@@ -33,7 +33,7 @@ let gametypes = {
         cellCount: 5,
         prefill: 1,
         background: "#666666" ,
-        iconChar: "Z",
+        iconChar: "2",
         combinePages: true,
         showProgress: false
     },
@@ -43,7 +43,7 @@ let gametypes = {
         cellCount: 5,
         prefill: 0,
         background: "#660000" ,
-        iconChar: "X",
+        iconChar: "3",
         combinePages: true,
         showProgress: true
     },    

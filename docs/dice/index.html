@@ -1,0 +1,104 @@
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Box2web</title>
+  <link rel="stylesheet" href="css/dice.css">
+  <script src='js/dimension.js'></script>
+  <script src='js/extrapages.js'></script>
+  <script src='js/dice.js'></script>
+
+</head>
+
+<body style="margin: 0; user-select: none; overflow: hidden;">
+  <div id="container"
+    style="border: 1px solid; width: 100vw; height: 100vh; background-color: green; position: relative; box-shadow: inset 0 0 100px rgb(0, 0, 0);">
+
+    <div id="scores" style="margin: 0.5em; color: rgb(219, 198, 102); font-size: 2em; position: absolute;"></div>
+    <div id="reload"
+    style="font-size: 2em; cursor: pointer; display: block; color: rgba(209, 209, 209, 0.4);  margin-bottom: 0.2em;  text-align: center; position: absolute; right: 0;">&#10006;</div>
+
+</div>
+  </div>
+
+  <div style="display: none;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" version="1.1" id="dice">
+      <path id="cl"
+        d="M46.909 78.278a16 16 0 0 1-14.175 17.627 16 16 0 0 1-17.637-14.163 16 16 0 0 1 14.149-17.647 16 16 0 0 1 17.658 14.137"
+        display="inline" opacity="1" fill="#1d1d1d" fill-opacity=".577" fill-rule="nonzero" stroke="#000"
+        stroke-width="2.1" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="4" stroke-dasharray="none"
+        stroke-dashoffset="0" stroke-opacity="1" />
+      <path id="bl"
+        d="M46.909 127.278a16 16 0 0 1-14.175 17.627 16 16 0 0 1-17.637-14.163 16 16 0 0 1 14.149-17.647 16 16 0 0 1 17.658 14.137"
+        display="inline" opacity="1" fill="#1d1d1d" fill-opacity=".577" fill-rule="nonzero" stroke="#000"
+        stroke-width="2.1" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="4" stroke-dasharray="none"
+        stroke-dashoffset="0" stroke-opacity="1" />
+      <path id="cr"
+        d="M144.909 78.278a16 16 0 0 1-14.175 17.627 16 16 0 0 1-17.637-14.163 16 16 0 0 1 14.149-17.647 16 16 0 0 1 17.658 14.137"
+        display="inline" opacity="1" fill="#1d1d1d" fill-opacity=".577" fill-rule="nonzero" stroke="#000"
+        stroke-width="2.1" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="4" stroke-dasharray="none"
+        stroke-dashoffset="0" stroke-opacity="1" />
+      <path id="br"
+        d="M144.909 127.278a16 16 0 0 1-14.175 17.627 16 16 0 0 1-17.637-14.163 16 16 0 0 1 14.149-17.647 16 16 0 0 1 17.658 14.137"
+        display="inline" opacity="1" fill="#1d1d1d" fill-opacity=".577" fill-rule="nonzero" stroke="#000"
+        stroke-width="2.1" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="4" stroke-dasharray="none"
+        stroke-dashoffset="0" stroke-opacity="1" />
+      <path id="cc"
+        d="M95.909 78.278a16 16 0 0 1-14.175 17.627 16 16 0 0 1-17.637-14.162 16 16 0 0 1 14.149-17.647 16 16 0 0 1 17.658 14.136"
+        display="inline" opacity="1" fill="#1d1d1d" fill-opacity=".577" fill-rule="nonzero" stroke="#000"
+        stroke-width="2.1" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="4" stroke-dasharray="none"
+        stroke-dashoffset="0" stroke-opacity="1" />
+      <path id="tr"
+        d="M144.958 29.228a16 16 0 0 1-14.175 17.627 16 16 0 0 1-17.637-14.162 16 16 0 0 1 14.15-17.647 16 16 0 0 1 17.657 14.136"
+        display="inline" opacity="1" fill="#1d1d1d" fill-opacity=".577" fill-rule="nonzero" stroke="#000"
+        stroke-width="2.1" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="4" stroke-dasharray="none"
+        stroke-dashoffset="0" stroke-opacity="1" />
+      <path id="tl"
+        d="M46.908 29.228a16 16 0 0 1-14.175 17.627 16 16 0 0 1-17.637-14.162 16 16 0 0 1 14.15-17.647 16 16 0 0 1 17.657 14.136"
+        display="inline" opacity="1" fill="#1d1d1d" fill-opacity=".577" fill-rule="nonzero" stroke="#000"
+        stroke-width="2.1" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="4" stroke-dasharray="none"
+        stroke-dashoffset="0" stroke-opacity="1" />
+    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="goicon" version="1.1"
+      height="160" width="160">
+      <defs id="defs2">
+        <radialGradient xlink:href="#linearGradient824" id="radialGradient830" cx="81.354" cy="79.323" fx="81.354"
+          fy="79.323" r="80" gradientTransform="matrix(.6875 0 0 .69068 24.07 24.959)" gradientUnits="userSpaceOnUse" />
+        <linearGradient id="linearGradient824">
+          <stop offset="0" id="stop820" stop-color="#fff" stop-opacity="1" />
+          <stop id="stop832" offset=".475" stop-color="#f5ec00" stop-opacity="1" />
+          <stop offset="1" id="stop822" stop-color="#0afa00" stop-opacity="1" />
+        </linearGradient>
+        <filter id="filter906" color-interpolation-filters="sRGB">
+          <feFlood flood-opacity=".498" flood-color="#000" result="flood" id="feFlood896" />
+          <feComposite in="flood" in2="SourceGraphic" operator="in" result="composite1" id="feComposite898" />
+          <feGaussianBlur in="composite1" stdDeviation="6" result="blur" id="feGaussianBlur900" />
+          <feOffset dx="6" dy="6" result="offset" id="feOffset902" />
+          <feComposite in="SourceGraphic" in2="offset" operator="over" result="composite2" id="feComposite904" />
+        </filter>
+      </defs>
+      <path id="path816"
+        d="M134.676 73.804a54.995 55.25 0 0 1-48.722 60.867 54.995 55.25 0 0 1-60.622-48.904A54.995 55.25 0 0 1 73.967 24.83a54.995 55.25 0 0 1 60.692 48.815"
+        opacity="1" fill="url(#radialGradient830)" fill-opacity="1" fill-rule="nonzero" stroke="#000" stroke-width="0"
+        stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="4" stroke-dasharray="none"
+        stroke-dashoffset="0" stroke-opacity="1" />
+      <path d="m65.034 58.915 38.336 20.72-38.336 20.72Z" id="path834" fill="#7c76fc" fill-opacity="1" stroke="#000"
+        stroke-width="2.067" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="4" stroke-dasharray="none"
+        stroke-opacity="1" />
+    </svg>
+    <h2 id="diecount">
+      Number of dice: One <input id="count1" type="radio" name="count" checked value="1" style="transform: scale(2);">
+      Two <input id="count2" type="radio" name="count" value="2" style="transform: scale(2);">
+    </h2>
+  </div>
+
+  <script type="text/javascript">
+    startIt();
+  </script>
+
+</body>
+
+</html>

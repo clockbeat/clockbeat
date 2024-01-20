@@ -1,0 +1,56 @@
+.dieBody {
+    width: 120px;
+    height: 120px;
+    perspective: 1000px;
+    perspective-origin: 45vw 45vh;
+    position: absolute;
+}
+
+
+.dieSpinner {
+    position: absolute;
+    transform-style: preserve-3d;
+    transform-origin: 60px 60px 0;
+    top: 100px;
+    left: 200px;
+}
+
+
+.dieFace {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    background: rgb(218, 215, 177);
+    box-shadow: inset 0 0 20px rgb(253, 253, 253);
+    backface-visibility: visible;
+    text-align: center;
+    font-size: 100px;
+}
+
+:is(.face1) #tl {
+    display: none;
+}
+
+:is(.face1, .face2, .face3, .face4, .face5) #cl {
+    display: none;
+}
+
+:is(.face1, .face2, .face3) #bl {
+    display: none;
+}
+
+:is(.face2, .face4, .face6) #cc {
+    display: none;
+}
+
+:is(.face1, .face2, .face3) #tr {
+    display: none;
+}
+
+:is(.face1, .face2, .face3, .face4, .face5) #cr {
+    display: none;
+}
+
+:is(.face1) #br {
+    display: none;
+}

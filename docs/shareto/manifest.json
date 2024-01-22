@@ -16,7 +16,7 @@
   ],
   "share_target": {
     "action": "/shareto/shareto.html",
-    "method": "GET",
+    "method": "POST",
     "params": {
       "title": "name",
       "text": "description",

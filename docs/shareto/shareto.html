@@ -24,7 +24,7 @@
 	<script src="storage.js"></script>
 	<script>
 		try {
-			console.clear();
+			console.log("---------------------");
 			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
 				window.addEventListener("load", () => {
 					navigator.serviceWorker.register('sw.js')
@@ -43,7 +43,8 @@
 	<div id="subfrom">
 		<div>Title <span id="info"></span></div>
 		<textarea id="title" wrap="soft" style="width: 90vw; height: 20vh;"></textarea>
-		<div>Url (<a id="link" href="#">open</a>)</div>
+		<div>Url (<a id="link" href="#">open</a>
+		<a id="combine" href="#">combine</a>)</div>
 		<textarea id="url" wrap="soft" style="width: 90vw; height: 20vh;"></textarea>
 		<div id="buts"></div>
 		<div><input id="toqueue" type="button" value="Add to Queue" style="background-color: bisque;"></div>
@@ -52,7 +53,7 @@
 	</div>
 
 	<script type="text/javascript">
-		console.clear();
+		//console.clear();
 		const page = {};
 		const all = document.querySelectorAll("*[id]");
 		all.forEach((val) => {
@@ -89,7 +90,7 @@
 
 		page.queuelink.innerHTML = "Queue (" + queue.length + ")";
 
-		let search = Object.fromEntries(new URLSearchParams(location.search));
+		let search = Object.fromEntries(new URLSearchParams(location.hash.replace("#", "?")));console.log(location);
 		if (search.queue === undefined) {
 			page.title.value = search.name ?? "";
 			page.url.value = search.description ?? "";
@@ -138,6 +139,11 @@
 				throw ("Not http/s");
 			}
 			location = page.url.value;
+		}
+
+		page.combine.onclick = e => {
+			e.preventDefault();
+			page.title.value = page.title.value + "\n\n" + page.url.value;
 		}
 
 		function applyEdits() {

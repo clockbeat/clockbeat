@@ -22,19 +22,35 @@
 		}
 	</style>
 	<script src="storage.js"></script>
+	<script src="version.js"></script>
 	<script>
+		let swCacheName;
 		try {
-			console.log("---------------------");
+			console.clear();
 			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
 				window.addEventListener("load", () => {
 					navigator.serviceWorker.register('sw.js')
-						.then(reg => console.log("Service worker registered"))
+						.then(reg => {
+							console.log("Service worker registered");
+							navigator.serviceWorker.addEventListener("message", (event) => {
+								if (event.type == "message") {
+									if (event.data.name) {
+										swCacheName = event.data.name;
+										if (swCacheName !== cacheName) {
+											reg.update();
+											console.log(swCacheName, cacheName, "Service worker updated");
+										}
+									}
+								}
+							});
+							reg.active.postMessage("name");
+						})
 						.catch(err => console.error(`Service Worker Error: ${err}`));
 				});
 			}
 		} catch (e) {
 			console.error(e);
-		}		
+		}			
 	</script>
 </head>
 
@@ -90,7 +106,8 @@
 
 		page.queuelink.innerHTML = "Queue (" + queue.length + ")";
 
-		let search = Object.fromEntries(new URLSearchParams(location.hash.replace("#", "?")));console.log(location);
+		let search = Object.fromEntries(new URLSearchParams(location.hash.replace("#", "?")));
+		console.log(location);
 		if (search.queue === undefined) {
 			page.title.value = search.name ?? "";
 			page.url.value = search.description ?? "";

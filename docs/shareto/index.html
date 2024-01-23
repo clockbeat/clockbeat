@@ -14,13 +14,29 @@
 		}
 	</style>
 	<script src="storage.js"></script>
+	<script src="version.js"></script>
 	<script>
+		let swCacheName;
 		try {
 			console.clear();
 			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
 				window.addEventListener("load", () => {
 					navigator.serviceWorker.register('sw.js')
-						.then(reg => console.log("Service worker registered"))
+						.then(reg => {
+							console.log("Service worker registered");
+							navigator.serviceWorker.addEventListener("message", (event) => {
+								if (event.type == "message") {
+									if (event.data.name) {
+										swCacheName = event.data.name;
+										if (swCacheName !== cacheName) {
+											reg.update();
+											console.log(swCacheName, cacheName, "Service worker updated");
+										}
+									}
+								}
+							});
+							reg.active.postMessage("name");
+						})
 						.catch(err => console.error(`Service Worker Error: ${err}`));
 				});
 			}
@@ -56,7 +72,7 @@
 	<button id="export">Backup</button>
 	<input id="import" type="file" accept=".json" style="display: none;" aria-label="load" />
 	<button id="importproxy">Restore</button>
-	<br><br>V2.3
+	<br><br>V2.4.
 	<script>
 		console.clear();
 		const page = {};
@@ -68,6 +84,9 @@
 		let storage = new CbStorage("shareto");
 		let queue = storage.require("queue", []);
 		document.getElementById("queuelink").innerHTML = "Queue (" + queue.length + ")";
+
+		let ver = document.createTextNode(cacheName);
+		document.body.appendChild(ver);
 
 		page.importproxy.onclick = e => {
 			page.import.click();

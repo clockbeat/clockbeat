@@ -31,18 +31,22 @@
 			console.error(e);
 		}		
 	</script>
+	<script src="version.js"></script>
 	<script src="moveit.js"></script>
 	<script src="suntimes.js"></script>
 	<script src="clock.js"></script>
 	<style>
 		input[type=checkbox]+label {
-			border: 3px solid transparent
+			border: 3px solid;
+			border-radius: 15px;
+			opacity: 0.3;
 		}
 		input[type=checkbox]:checked+label {
-			background-color: rgb(255, 0, 0);
+			background-color: rgb(250, 126, 126);
 			color: rgb(0, 0, 0);
 			border: 3px solid white;
 			border-radius: 15px;
+			opacity: 1;
 		}
 
 		input[type=time] {
@@ -81,7 +85,7 @@
 
 		<input id="alarm" type="checkbox" value="" oninput="setAlarm(event.target.checked, 0)" style="display: none;">
 		<label id="alarmlabel" for="alarm"
-			style="font-size: 3vw; padding: 0.3em; display: block; position: absolute; top: 0; left: 0; max-width: 10vw;"><span
+			style="font-size: 4vw; padding: 0.3em; display: block; position: absolute; top: 1.5vw; left: 1vw;"><span
 				id="alarmtimetext"></span></label>
 	</div>
 	<div id="settings" style="padding: 1vw;  margin-bottom: 4vw;">
@@ -90,6 +94,16 @@
 		<br><br>Alarm Time <input id="alarmtime" type="time" value=""
 			onchange="setAlarmTime(event.target.value, 0);">
 		Disable <input id="disablealarm" type="checkbox">
+		<br><br>Chime start <input id="chimestart" type="time" value=""
+			onchange="setChimeTime(event.target.value, 0);">
+			end <input id="chimeend" type="time" value=""
+			onchange="setChimeTime(event.target.value, 1);">
+		<select id="chimetype" onchange="setChimeTime(event.target.value, 2)">
+			<option value="0">Off</option>
+			<option value="15">every quarter</option>
+			<option value="30">every half</option>
+			<option value="60">every hour</option>
+		</select>
 		<br><br><br>24 hour display <input id="hr24" type="checkbox" onchange="change24hr(event.target.checked)" >
 		<br><br><div id="choices" class="len1"></div>
 		<br><br>Add color change <input type="button" value="Timed" onclick="addColor();"> <input type="button" value="Dawn" onclick="addColor('dawn');"> <input type="button" value="Dusk" onclick="addColor('dusk');">
@@ -98,8 +112,7 @@
 	<script>
 		//runIt();
 	</script>
-	<div style="font-size: 0.7em; font-style: oblique; float: right; margin-right: 1em;">V9.1</div>
-	<br><br><br>
+	<br><br><br>Version 
 </body>
 
 </html>

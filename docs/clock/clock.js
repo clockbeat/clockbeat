@@ -5,14 +5,14 @@ if (ls) {
     ls = JSON.parse(ls);
 }
 
-let {colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24} = ls ?? {
+let {colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime} = ls ?? {
     colors: [
         {
             from: "00:00",
             color: "#ffffff",
             bg: "#000000"
         }
-    ], currentColor: 0, alarmOn: false, alarmTime: ""
+    ], currentColor: 0, alarmOn: false, alarmTime: "", chimestart: "", chimeend: "", chime: 0
 };
 
 let descriptions = {
@@ -21,6 +21,7 @@ let descriptions = {
 }
 
 let alarmPlay = 0;
+let chimeOn = false;
 let audio = new Audio("bong.mp3");
 let page = {};
 let userInteract = false;
@@ -47,16 +48,18 @@ document.addEventListener("DOMContentLoaded", e => {
     document.addEventListener("pointerdown", doScroll);
     document.addEventListener("pointerup", doScroll);
     document.addEventListener("pointermove", doScroll);
-    document.addEventListener("scroll", doScroll);
+    
+    let ver = document.createTextNode(cacheName);
+    document.body.appendChild(ver);
 });
 
 function runIt() {
     console.clear();
 
-    let moveitMapping = new moveit(document.body, {
-        start: startDrag,
-        end: endDrag
-    });
+    // let moveitMapping = new moveit(document.body, {
+    //     start: startDrag,
+    //     end: endDrag
+    // });
 
     document.addEventListener("visibilitychange", async () => {
         if (wakeLock !== null && document.visibilityState === "visible") {
@@ -69,10 +72,15 @@ function runIt() {
     setColorChoices();
     page.alarm.checked = alarmOn;
     setAlarm(alarmOn);
+    checkForChime();
 
     calcCurrentColor();
 
     page.alarmtime.value = alarmTime;
+    page.chimestart.value = chimestart;
+    page.chimeend.value = chimeend;
+    page.chimetype.value = chime;
+
 
     page.hr24.checked = !!hr24;
 
@@ -81,6 +89,7 @@ function runIt() {
         let hh = date.getHours();
         let mm = date.getMinutes();
         let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        let chimePlay = false;
 
         let {time, time24Hour, session} = formatTime(hh, mm);
 
@@ -91,6 +100,20 @@ function runIt() {
             if (alarmOn && alarmTime == time24Hour) {
                 //console.log("Alarm");
                 alarmPlay = 600; //seconds max
+            }
+            if (chime && chimestart && chimeend) {
+                if (chimestart == time24Hour) {
+                    chimeOn = true;
+                }
+                if (chimeend == time24Hour) {
+                    chimeOn = false;
+                }
+                if (chimeOn) {
+                    let mod = mm % chime;
+                    if (mod == 0) {
+                        chimePlay = true;
+                    }
+                }
             }
             for (let n = 0; n < colors.length; n++) {
                 if (colors[n].from == time24Hour) {
@@ -108,11 +131,11 @@ function runIt() {
             }
 
             if (colors[currentColor].color != colors[currentColor].bg) {
-                page.main.style.transitionDuration= "10s";
+                page.main.style.transitionDuration = "10s";
                 page.main.style.color = colors[currentColor].color;
                 page.main.style.backgroundColor = colors[currentColor].bg;
             } else {
-                page.main.style.transitionDuration= "60s";
+                page.main.style.transitionDuration = "60s";
                 page.main.style.backgroundColor = bgRand["str"];
                 page.main.style.color = colorRand["str"];
                 console.log(bgRand["str"], colorRand["str"]);
@@ -130,7 +153,7 @@ function runIt() {
         }
 
         if (userInteract) {
-            if (alarmPlay > 0) {
+            if (alarmPlay > 0 || chimePlay) {
                 audio.play();
                 if (alarmPlay == 1) {
                     page.alarmlabel.innerText = "Alarm " + alarmTime + " On x";
@@ -150,8 +173,8 @@ function randomColorPart(part) {
 }
 
 function randomColorComposite(c) {
-   let comp = (c["r"] << 16) + (c["g"] << 8) + c["b"];
-   c["str"] = "#" + comp.toString(16);
+    let comp = (c["r"] << 16) + (c["g"] << 8) + c["b"];
+    c["str"] = "#" + comp.toString(16);
 }
 
 function formatTime(hh, mm) {
@@ -235,8 +258,32 @@ let setWakelock = async () => {
     }
 }
 
+function checkForChime() {
+    let date = new Date();
+    let hhnow = date.getHours();
+    let mmnow = date.getMinutes();
+    let timeNow = formatTime(hhnow, mmnow).time24Hour;
+    let willChime = false;
+    mmnow++;
+    let time24Hour = "";
+    for (let hh = hhnow; timeNow != time24Hour; hh = (hh + 1) % 24) {
+        for (let mm = mmnow; mm < 60 && timeNow != time24Hour; mm++) {
+            time24Hour = formatTime(hh, mm).time24Hour;
+            if (chimestart == time24Hour) {
+                willChime = true;
+            }
+            if (chimeend == time24Hour) {
+                willChime = false;
+            }
+        }
+        mmnow = 0;
+    }
+    chimeOn = willChime;
+    console.log("chime ", chimeOn)
+}
+
 function store() {
-    localStorage.setItem("clock", JSON.stringify({colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24}));
+    localStorage.setItem("clock", JSON.stringify({colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime}));
     oldTime = "";
 }
 
@@ -262,8 +309,10 @@ function setBg(val, ix) {
 
 function setPreviewColors() {
     colors.forEach((col, ix) => {
-        page["pre" + ix].style.color = col.color;
-        page["pre" + ix].style.backgroundColor = col.bg;
+        if (page["pre" + ix]) {
+            page["pre" + ix].style.color = col.color;
+            page["pre" + ix].style.backgroundColor = col.bg;
+        }
     });
 }
 
@@ -357,7 +406,11 @@ function setAlarm(checked) {
         return;
     }
     alarmOn = !!checked
-    page.alarmlabel.innerText = "Alarm " + alarmTime + (alarmOn ? " On" : " Off");
+    if (alarmOn) {
+        page.alarmlabel.innerText = alarmTime;
+    } else {
+        page.alarmlabel.innerText = "Alarm ";
+    }
     if (!alarmOn) {
         alarmPlay = 0;
     }
@@ -369,6 +422,16 @@ function setAlarmTime(val) {
     page.alarm.checked = true;
     setAlarm(true);
     store();
+}
+
+function setChimeTime(value, type) {
+    switch (type) {
+        case 0: chimestart = value; break;
+        case 1: chimeend = value; break;
+        case 2: chime = value * 1; break;
+    }
+    store();
+    checkForChime();
 }
 
 function locationAction(action) {

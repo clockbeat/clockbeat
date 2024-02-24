@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "64dcfff6";
+importScripts("version.js");
 
 const contentToCache = ["index.html", "clock.js", "bong.mp3", "clock.svg", "manifest.json"];
 

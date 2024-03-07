@@ -1,6 +1,6 @@
 importScripts("version.js");
 
-const contentToCache = ["index.html", "clock.js", "bong.mp3", "clock.svg", "manifest.json"];
+const contentToCache = ["index.html", "clock.js", "bong.mp3", "clock.svg", "manifest.json", "moveit.js", "suntimes.js", "version.js", "sw.js"];
 
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets

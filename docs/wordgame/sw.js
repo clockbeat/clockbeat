@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "656f42b2";
+importScripts("version.js");
 
 const contentToCache = ["index.html", "js/wordgame.js", "js/validwords.js", "js/solutionwords.js", "js/storage.js", "js/gametypes.js", "css/wordgame.css", "stats.html"];
 

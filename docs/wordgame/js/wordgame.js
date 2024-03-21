@@ -407,6 +407,7 @@ function runIt() {
             if (stats["last"] !== sols) {
                 stats["last"] = sols;
                 stats.scores[balance]++;
+                stats["lastScore"]  = balance; //how much left
                 statsStore.setItem(storageName, stats);
             }
         }

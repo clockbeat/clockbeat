@@ -3,6 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/wordgame.css">
+    <script src="version.js"></script>
     <script src="js/storage.js"></script>
 
 </head>
@@ -15,7 +16,6 @@
     <div id="main">
         <table id="stats"></table>
     </div>
-    <div style="font-size: 0.7em; font-style: oblique; float: right; margin-right: 1em;">V4</div>
 
     <script>
         console.clear();
@@ -35,10 +35,14 @@
         let statsTable = document.getElementById("stats");
         let largest = [...stats.scores].sort((a, b) => b - a)[0];
         let mult = 100 / largest;
+        let lastScorePos = stats.scores.length - (stats.lastScore ?? 9999) - 1
         stats.scores.toReversed().forEach((stat, ix) => {
             let row = addET(statsTable, "tr");
             let rowd = addET(row, "td");
             rowd.className = "stats";
+            if (ix == lastScorePos) {
+                rowd.className = "statslast";
+            }
             let bar = addET(rowd, "div");
             bar.style.width = (stat * mult) + "%";
             bar.innerHTML = stat > 0 ? stat : "&nbsp;";
@@ -52,7 +56,13 @@
             return el;
         }
 
+    document.addEventListener("DOMContentLoaded", e => {
+        let ver = document.createTextNode(cacheName);
+        document.body.appendChild(ver);
+    });
+
     </script>
+    <br><br><br>Version 
 </body>
 
 </html>

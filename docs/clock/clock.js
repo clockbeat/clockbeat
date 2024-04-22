@@ -155,9 +155,6 @@ function runIt() {
         if (userInteract) {
             if (alarmPlay > 0 || chimePlay) {
                 audio.play();
-                if (alarmPlay == 1) {
-                    page.alarmlabel.innerText = "Alarm " + alarmTime + " On x";
-                }
                 alarmPlay--;
             }
         }
@@ -378,6 +375,7 @@ function goToWork(e) {
     page.runit.value = "Full screen"
     runIt();
     store();
+    audio.play();
 }
 
 function calculateDawnAndDusk() {

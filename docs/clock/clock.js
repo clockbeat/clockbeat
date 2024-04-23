@@ -147,7 +147,9 @@ function runIt() {
             page.alarm.checked = false;
             alarmTime = "";
             page.alarmtime.value = "";
-            setAlarm(false);
+            if (alarmOn) {
+                setAlarm(false);
+            }
         } else {
             page.alarmlabel.style.display = "block";
         }

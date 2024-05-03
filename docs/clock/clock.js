@@ -105,15 +105,15 @@ function runIt() {
                 if (chimestart == time24Hour) {
                     chimeOn = true;
                 }
-                if (chimeend == time24Hour) {
-                    chimeOn = false;
-                }
                 if (chimeOn) {
                     let mod = mm % chime;
                     if (mod == 0) {
                         chimePlay = true;
                     }
                 }
+                if (chimeend == time24Hour) {
+                    chimeOn = false;
+                }                
             }
             for (let n = 0; n < colors.length; n++) {
                 if (colors[n].from == time24Hour) {

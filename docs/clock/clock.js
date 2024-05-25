@@ -5,15 +5,17 @@ if (ls) {
     ls = JSON.parse(ls);
 }
 
-let {colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime} = ls ?? {
+let {colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime, tick} = ls ?? {
     colors: [
         {
             from: "00:00",
             color: "#ffffff",
             bg: "#000000"
         }
-    ], currentColor: 0, alarmOn: false, alarmTime: "", chimestart: "", chimeend: "", chime: 0
+    ], currentColor: 0, alarmOn: false, alarmTime: "", chimestart: "", chimeend: "", chime: 0, tick: 0
 };
+
+tick = tick ?? 0;
 
 let descriptions = {
     dawn: "Dawn",
@@ -22,7 +24,8 @@ let descriptions = {
 
 let alarmPlay = 0;
 let chimeOn = false;
-let audio = new Audio("bong.mp3");
+let bong = new Audio("bong.mp3");
+let tickSound = new Audio("tick.mp3");
 let page = {};
 let userInteract = false;
 let wakeLock;
@@ -80,6 +83,7 @@ function runIt() {
     page.chimestart.value = chimestart;
     page.chimeend.value = chimeend;
     page.chimetype.value = chime;
+    page.ticktype.value = tick;
 
 
     page.hr24.checked = !!hr24;
@@ -88,6 +92,7 @@ function runIt() {
         let date = new Date();
         let hh = date.getHours();
         let mm = date.getMinutes();
+        let secs = date.getSeconds();
         let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
         let chimePlay = false;
 
@@ -96,16 +101,16 @@ function runIt() {
         if (oldTime !== time) {
             page.clock.innerText = time;
             page.clockhead.innerText = days[date.getDay()] + "   " + session;
-            oldTime = time;
             if (alarmOn && alarmTime == time24Hour) {
                 //console.log("Alarm");
                 alarmPlay = 600; //seconds max
             }
-            if (chime && chimestart && chimeend) {
+
+            if (chimestart && chimeend) {
                 if (chimestart == time24Hour) {
                     chimeOn = true;
                 }
-                if (chimeOn) {
+                if (chime && chimeOn) {
                     let mod = mm % chime;
                     if (mod == 0) {
                         chimePlay = true;
@@ -115,6 +120,7 @@ function runIt() {
                     chimeOn = false;
                 }                
             }
+
             for (let n = 0; n < colors.length; n++) {
                 if (colors[n].from == time24Hour) {
                     currentColor = n;
@@ -156,11 +162,13 @@ function runIt() {
 
         if (userInteract) {
             if (alarmPlay > 0 || chimePlay) {
-                audio.play();
+                bong.play();
                 alarmPlay--;
+            } else if (chimeOn && (mm % tick) == 0 && oldTime != time) {
+                tickSound.play();
             }
         }
-
+        oldTime = time;
         setTimeout(function () {currentTime()}, 1000);
     }
     currentTime();
@@ -282,7 +290,7 @@ function checkForChime() {
 }
 
 function store() {
-    localStorage.setItem("clock", JSON.stringify({colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime}));
+    localStorage.setItem("clock", JSON.stringify({colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime, tick}));
     oldTime = "";
 }
 
@@ -377,7 +385,7 @@ function goToWork(e) {
     page.runit.value = "Full screen"
     runIt();
     store();
-    audio.play();
+    tickSound.play();
 }
 
 function calculateDawnAndDusk() {
@@ -432,6 +440,11 @@ function setChimeTime(value, type) {
     }
     store();
     checkForChime();
+}
+
+function setTickType(type) {
+    tick = type  * 1;
+    store();
 }
 
 function locationAction(action) {

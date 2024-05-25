@@ -94,16 +94,24 @@
 		<br><br>Alarm Time <input id="alarmtime" type="time" value=""
 			onchange="setAlarmTime(event.target.value, 0);">
 		Disable <input id="disablealarm" type="checkbox">
-		<br><br>Chime start <input id="chimestart" type="time" value=""
-			onchange="setChimeTime(event.target.value, 0);">
-			end <input id="chimeend" type="time" value=""
-			onchange="setChimeTime(event.target.value, 1);">
+		<br><br>Chime 
 		<select id="chimetype" onchange="setChimeTime(event.target.value, 2)">
 			<option value="0">Off</option>
 			<option value="15">every quarter</option>
 			<option value="30">every half</option>
 			<option value="60">every hour</option>
 		</select>
+		<br><br>Tick 
+		<select id="ticktype" onchange="setTickType(event.target.value)">
+			<option value="0">Off</option>
+			<option value="1">every 1 minute</option>
+			<option value="5">every 5 minutes</option>
+			<option value="15">every 15 minutes</option>
+		</select>
+		<br><br>Chime and tick start <input id="chimestart" type="time" value=""
+		onchange="setChimeTime(event.target.value, 0);">
+		end <input id="chimeend" type="time" value=""
+		onchange="setChimeTime(event.target.value, 1);">
 		<br><br><br>24 hour display <input id="hr24" type="checkbox" onchange="change24hr(event.target.checked)" >
 		<br><br><div id="choices" class="len1"></div>
 		<br><br>Add color change <input type="button" value="Timed" onclick="addColor();"> <input type="button" value="Dawn" onclick="addColor('dawn');"> <input type="button" value="Dusk" onclick="addColor('dusk');">

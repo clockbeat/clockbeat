@@ -29,7 +29,8 @@ function doStats(storageName) {
         <br>Low ${stats.low}
         <br>High ${stats.high}
         <br>Last ${stats.last}
-    `
+        <br><br><br><br><br><br><br><br><br><br><br><br><br>Version ${cacheName}
+    `   
 
     exit.onclick = e => {
         doExitStats();

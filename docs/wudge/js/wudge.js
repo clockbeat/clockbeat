@@ -19,10 +19,6 @@ let daily = storage.getItem("daily") ?? 0;
 let rowCount = 8;
 let cellCount = 5;
 let gameOver = false;
-let moveitMapping = new moveit(main, {
-    start: e => {return true;},
-    end: dragged
-});
 let page = {};
 // let datenumber;
 // let seed = Math.random();
@@ -92,7 +88,7 @@ function startUp() {
     });
 
     fillBoard();
-    console.log(solutions);
+    //console.log(solutions);
 
     if (!gameOver) {
         page.main.className = "";
@@ -248,7 +244,7 @@ function fillBoard(disp) {
         if (solutions.includes(board[r])) {
             page["r" + r].className = disp ?? "found";
         } else if (validWords.includes(board[r]) || solutionWords.includes(board[r])) {
-            page["r" + r].className = "foundagain";
+            page["r" + r].className = "misplacedagain";
             if (!foundlings.includes(board[r])) {
                 foundlings.push(board[r]);
                 clicks += 3;

@@ -5,7 +5,8 @@
     --myred: rgb(255, 171, 171);
     --myyellow: rgb(247, 226, 132);
     --mygreen: rgb(142, 233, 106);
-    --mygrey: rgb(187, 187, 187);
+    --myyellowgrey: rgb(170, 156, 94);
+    --mygreengrey: rgb(108, 158, 89);
     --cells: 100;
     font-size: 2vh;
 }
@@ -139,13 +140,18 @@ input {
     color: black;
 }
 
-.foundagain td {
-    background-color: var(--mygrey);
+.misplacedagain td {
+    background-color: var(--myyellowgrey);
     color: black;
 }
 
 .found td {
     background-color: var(--mygreen);
+    color: black;
+}
+
+.foundagain td {
+    background-color: var(--mygreengrey);
     color: black;
 }
 

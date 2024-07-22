@@ -113,6 +113,9 @@
 		end <input id="chimeend" type="time" value=""
 		onchange="setChimeTime(event.target.value, 1);">
 		<br><br><br>24 hour display <input id="hr24" type="checkbox" onchange="change24hr(event.target.checked)" >
+		<br><br><fieldset id="show">
+			Show AM/PM<input id="ampm" type="radio" name="show" value="ampm" checked> Date<input id="date" type="radio" name="show" value="date">
+		</fieldset>
 		<br><br><div id="choices" class="len1"></div>
 		<br><br>Add color change <input type="button" value="Timed" onclick="addColor();"> <input type="button" value="Dawn" onclick="addColor('dawn');"> <input type="button" value="Dusk" onclick="addColor('dusk');">
 		<br><br><div id="location" style="display: none;">Location <input type="button" value="Clear" onclick="locationAction('clear');"> <input type="button" value="Change" onclick="locationAction('change');"> </div>

@@ -5,15 +5,17 @@ if (ls) {
     ls = JSON.parse(ls);
 }
 
-let {colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime, tick} = ls ?? {
+let {colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime, tick, show} = ls ?? {
     colors: [
         {
             from: "00:00",
             color: "#ffffff",
             bg: "#000000"
         }
-    ], currentColor: 0, alarmOn: false, alarmTime: "", chimestart: "", chimeend: "", chime: 0, tick: 0
+    ], currentColor: 0, alarmOn: false, alarmTime: "", chimestart: "", chimeend: "", chime: 0, tick: 0, show: "ampm"
 };
+
+show = show ?? "ampm";
 
 tick = tick ?? 0;
 
@@ -35,6 +37,7 @@ let dragFrom = null;
 var randomColor = "000000";
 let bgRand = [];
 let colorRand = [];
+let dayOfMonth = ";"
 
 document.onpointerdown = e => {
     userInteract = true;
@@ -85,7 +88,12 @@ function runIt() {
     page.chimetype.value = chime;
     page.ticktype.value = tick;
 
-
+    page[show].checked = true;
+    page.show.onchange = e => {
+        show = e.target.value;
+        store();
+    }
+    
     page.hr24.checked = !!hr24;
 
     function currentTime() {
@@ -93,10 +101,23 @@ function runIt() {
         let hh = date.getHours();
         let mm = date.getMinutes();
         let secs = date.getSeconds();
-        let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+        let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        let months = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        let suffixes = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"];
+        console.log(date.getDate(), months[date.getMonth()])
         let chimePlay = false;
 
         let {time, time24Hour, session} = formatTime(hh, mm);
+
+        if (show == "date") {
+            let monthDay = date.getDate();
+            let suffix = suffixes[monthDay % 10]
+            if (monthDay > 10 && monthDay < 14) {
+                suffix = "th";
+            }
+            session =  date.getDate()  + suffix + " " + months[date.getMonth()];
+            days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        }
 
         if (oldTime !== time) {
             page.clock.innerText = time;
@@ -200,6 +221,11 @@ function formatTime(hh, mm) {
 
     let time = hh + ":" + mm;
     let time24Hour = hhx + ":" + mm;
+
+    if (show == "date") {
+
+    }
+
     return {time, time24Hour, session};
 }
 
@@ -290,7 +316,7 @@ function checkForChime() {
 }
 
 function store() {
-    localStorage.setItem("clock", JSON.stringify({colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime, tick}));
+    localStorage.setItem("clock", JSON.stringify({colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime, tick, show}));
     oldTime = "";
 }
 

@@ -63,7 +63,7 @@
 			encState = encState.replace(/\//g, "-");
 			encState = encState.replace(/\+/g, "_");
 
-			location = `https://ticktick.com/oauth/authorize?client_id=${clientId}&scope=tasks:write&state=$(encState}&redirect_uri=${thisUrl}&response_type=code`;
+			location = `https://ticktick.com/oauth/authorize?client_id=${clientId}&scope=tasks:write&state=${encState}&redirect_uri=${thisUrl}&response_type=code`;
 		}
 
 

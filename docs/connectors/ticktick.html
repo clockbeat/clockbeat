@@ -11,6 +11,10 @@
 	<script>
 		//crypt/decrypt from chrisveness/crypto-aes-gcm.js https://gist.github.com/chrisveness/43bcda93af9f646d083fad678071b90a
 		//console.clear();
+		//secondStep("c2tekCA_w7rTLU6cug2F1mqCVVGlqM-bZzpjJy3Do5pupEPWPhhVmT9tclQnmf9zIIVUu6lrnl4Fw91sMd-sayY9YKzH", 
+		"beo6nu87h2i8tuwyloy2kmh0a");
+
+
 		let ticktickauth = new CbStorage("ticktick");
 		ticktickauth.save();
 		let clientId = ticktickauth.getItem("clientid");
@@ -47,10 +51,10 @@
 			thirdStep();
 		}
 
-		async function firstStep(plaintext, pw) {//encrypt and send
+		async function firstStep(plaintext, password) {//encrypt and send
 			console.log("step 1");
 			debugger
-			const pwUtf8 = new TextEncoder().encode(pw);
+			const pwUtf8 = (new TextEncoder()).encode(password);
 			const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
 			const iv = crypto.getRandomValues(new Uint8Array(12));
 			const ivStr = Array.from(iv).map(b => String.fromCharCode(b)).join('');
@@ -71,12 +75,12 @@
 
 
 		async function secondStep(ciphertext, password) {
+			//c2tekCA_w7rTLU6cug2F1mqCVVGlqM-bZzpjJy3Do5pupEPWPhhVmT9tclQnmf9zIIVUu6lrnl4Fw91sMd-sayY9YKzH
 			console.log("step 2");
 			debugger
-			let cyphertext = params.state;
-			cyphertext = cyphertext.replace(/-/g, "/");
-			cyphertext = cyphertext.replace(/_/g, "+");
-			const pwUtf8 = new TextEncoder().encode(password);
+			ciphertext = ciphertext.replace(/-/g, "/");
+			ciphertext = ciphertext.replace(/_/g, "+");
+			const pwUtf8 = (new TextEncoder()).encode(password);
 			const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
 
 			const ivStr = atob(ciphertext).slice(0, 12);

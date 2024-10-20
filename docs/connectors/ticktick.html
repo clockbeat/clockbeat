@@ -1,1 +1,115 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script src="js/storage.js"></script>
+</head>
+
+<body>
+	<script>
+		//crypt/decrypt from chrisveness/crypto-aes-gcm.js https://gist.github.com/chrisveness/43bcda93af9f646d083fad678071b90a
+		console.clear();
+		let ticktickauth = new CbStorage("ticktick");
+		ticktickauth.save();
+		let clientId = ticktickauth.getItem("clientid");
+		let secret = ticktickauth.getItem("secret");
+		let key = ticktickauth.getItem("key");
+		if (!clientId) {
+			clientId = prompt("Enter clientId");
+			ticktickauth.setItem("clientid", clientId);
+			secret = prompt("Enter secret");
+			ticktickauth.setItem("secret", secret);
+
+			let key = "";
+			for (let n = 0; n < 5; n++) {
+				key += (Math.random() + 1).toString(36).substring(7);
+			}
+			ticktickauth.setItem("key", key);
+		}
+
+		let params = Object.fromEntries((new URLSearchParams(location.search)).entries());
+		console.log(params);
+		console.log(ticktickauth.getStorage());
+		let thisUrl = "https://clockbeat.com/connectors/ticktick.html";
+
+		if (!params.code && !params.state) {
+			if (!params.task || !params.content) {
+				throw new Error("Bad request - needs task and content");
+			}
+			firstStep(JSON.stringify({task: params.task, content: params.content}), key);
+		} else if (!params.access_token) {
+			let state = secondStep(params.state, key);
+			console.log(state);
+		} else {
+			thirdStep();
+		}
+
+		async function firstStep(plaintext, pw) {//encrypt and send
+			const pwUtf8 = new TextEncoder().encode(pw);
+			const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
+			const iv = crypto.getRandomValues(new Uint8Array(12));
+			const ivStr = Array.from(iv).map(b => String.fromCharCode(b)).join('');
+			const alg = {name: 'AES-GCM', iv: iv};
+			const key = await crypto.subtle.importKey('raw', pwHash, alg, false, ['encrypt']);
+			const ptUint8 = new TextEncoder().encode(plaintext);
+			const ctBuffer = await crypto.subtle.encrypt(alg, key, ptUint8);
+
+			const ctArray = Array.from(new Uint8Array(ctBuffer));
+			const ctStr = ctArray.map(byte => String.fromCharCode(byte)).join('');
+
+			let encState = btoa(ivStr + ctStr);
+			encState = encState.replace(/\//g, "-");
+			encState = encState.replace(/\+/g, "_");
+
+			location = `https://ticktick.com/oauth/authorize?client_id=${clientId}&scope=tasks:write&state=$(encState}&redirect_uri=${thisUrl}&response_type=code`;
+		}
+
+
+		async function secondStep(ciphertext, password) {
+			let cyphertext = params.state;
+			const pwUtf8 = new TextEncoder().encode(password);
+			const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
+
+			const ivStr = atob(ciphertext).slice(0, 12);
+			const iv = new Uint8Array(Array.from(ivStr).map(ch => ch.charCodeAt(0)));
+
+			const alg = {name: 'AES-GCM', iv: iv};
+
+			const key = await crypto.subtle.importKey('raw', pwHash, alg, false, ['decrypt']);
+
+			const ctStr = atob(ciphertext).slice(12);
+			const ctUint8 = new Uint8Array(Array.from(ctStr).map(ch => ch.charCodeAt(0)));
+			try {
+				const plainBuffer = await crypto.subtle.decrypt(alg, key, ctUint8);
+				const plaintext = new TextDecoder().decode(plainBuffer);
+			} catch (e) {
+				throw new Error('Decrypt failed', e);
+			}
+
+			fetch("https://ticktick.com/oauth/token", {
+				method: "POST",
+				body: JSON.stringify({
+					client_id,
+					client_secret,
+					code,
+					grant_type,
+					scope,
+					redirect_uri
+				})
+			});
+
+			return plaintext;
+		}
+
+		async function thirdStep(ciphertext, password) {
+			console.log(params);
+		}
+
+
+	</script>
+
+</body>
+
+</html>

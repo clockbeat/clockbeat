@@ -48,6 +48,7 @@
 
 		async function firstStep(plaintext, pw) {//encrypt and send
 			console.log("step 1");
+			debugger
 			const pwUtf8 = new TextEncoder().encode(pw);
 			const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
 			const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -70,6 +71,7 @@
 
 		async function secondStep(ciphertext, password) {
 			console.log("step 2");
+			debugger
 			let cyphertext = params.state;
 			const pwUtf8 = new TextEncoder().encode(password);
 			const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
@@ -107,6 +109,7 @@
 
 		async function thirdStep(ciphertext, password) {
 			console.log("step 3");
+			debugger
 			console.log(params);
 		}
 

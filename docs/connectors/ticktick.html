@@ -73,6 +73,8 @@
 			console.log("step 2");
 			debugger
 			let cyphertext = params.state;
+			cyphertext = cyphertext.replace(/-/g, "/");
+			cyphertext = cyphertext.replace(/_/g, "+");
 			const pwUtf8 = new TextEncoder().encode(password);
 			const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
 

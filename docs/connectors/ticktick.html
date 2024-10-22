@@ -8,119 +8,119 @@
 </head>
 
 <body>
+	<div id="main" style="display: none;">
+		<h2>Add Task</h2>
+		<div id="message"></div>
+		<div id="title"></div>
+		<div id="url"></div>
+	</div>
 	<script>
-		//crypt/decrypt from chrisveness/crypto-aes-gcm.js https://gist.github.com/chrisveness/43bcda93af9f646d083fad678071b90a
-		//console.clear();
-		secondStep('dAsBxzVF9f2h0qqT8d1TRuOXk6siV7X85OtWTzSUFMitwIELBhpHcDsQ-ZTR5HGuaL6lhPkswa6iWUl-ZB2FLsigAtpX', "beo6nu87h2i8tuwyloy2kmh0a");
-
-
-		let ticktickauth = new CbStorage("ticktick");
-		ticktickauth.save();
-		let clientId = ticktickauth.getItem("clientid");
-		let secret = ticktickauth.getItem("secret");
-		let key = ticktickauth.getItem("key");
-		if (!clientId) {
-			clientId = prompt("Enter clientId");
-			ticktickauth.setItem("clientid", clientId);
-			secret = prompt("Enter secret");
-			ticktickauth.setItem("secret", secret);
-
-			let key = "";
-			for (let n = 0; n < 5; n++) {
-				key += (Math.random() + 1).toString(36).substring(7);
-			}
-			ticktickauth.setItem("key", key);
-		}
-
-		let params = Object.fromEntries((new URLSearchParams(location.search)).entries());
-		console.log(params);
-		alert("check console");
-		console.log(ticktickauth.getStorage());
-		let thisUrl = "https://clockbeat.com/connectors/ticktick.html";
-
-		if (!params.code && !params.state) {
-			if (!params.task || !params.content) {
-				throw new Error("Bad request - needs task and content");
-			}
-			firstStep(JSON.stringify({task: params.task, content: params.content}), key);
-		} else if (!params.access_token) {
-			let state = secondStep(params.state, key);
-			console.log(state);
-		} else {
-			thirdStep();
-		}
-
-		async function firstStep(plaintext, password) {//encrypt and send
-			console.log("step 1");
-			debugger
-			const pwUtf8 = (new TextEncoder()).encode(password);
-			const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
-			const iv = crypto.getRandomValues(new Uint8Array(12));
-			const ivStr = Array.from(iv).map(b => String.fromCharCode(b)).join('');
-			const alg = {name: 'AES-GCM', iv: iv};
-			const key = await crypto.subtle.importKey('raw', pwHash, alg, false, ['encrypt']);
-			const ptUint8 = new TextEncoder().encode(plaintext);
-			const ctBuffer = await crypto.subtle.encrypt(alg, key, ptUint8);
-
-			const ctArray = Array.from(new Uint8Array(ctBuffer));
-			const ctStr = ctArray.map(byte => String.fromCharCode(byte)).join('');
-
-			let encState = btoa(ivStr + ctStr);
-			encState = encState.replace(/\//g, "-");
-			encState = encState.replace(/\+/g, "_");
-
-			location = `https://ticktick.com/oauth/authorize?client_id=${clientId}&scope=tasks:write&state=${encState}&redirect_uri=${thisUrl}&response_type=code`;
-		}
-
-
-		async function secondStep(ciphertext, password) {
-			//c2tekCA_w7rTLU6cug2F1mqCVVGlqM-bZzpjJy3Do5pupEPWPhhVmT9tclQnmf9zIIVUu6lrnl4Fw91sMd-sayY9YKzH
-			console.log("step 2");
-			debugger
-			ciphertext = ciphertext.replace(/-/g, "/");
-			ciphertext = ciphertext.replace(/_/g, "+");
-			const pwUtf8 = (new TextEncoder()).encode(password);
-			const pwHash = await crypto.subtle.digest('SHA-256', pwUtf8);
-
-			const ivStr = atob(ciphertext).slice(0, 12);
-			const iv = new Uint8Array(Array.from(ivStr).map(ch => ch.charCodeAt(0)));
-
-			const alg = {name: 'AES-GCM', iv: iv};
-
-			const key = await crypto.subtle.importKey('raw', pwHash, alg, false, ['decrypt']);
-
-			const ctStr = atob(ciphertext).slice(12);
-			const ctUint8 = new Uint8Array(Array.from(ctStr).map(ch => ch.charCodeAt(0)));
-			let plaintext;
-			try {
-				const plainBuffer = await crypto.subtle.decrypt(alg, key, ctUint8);
-				plaintext = new TextDecoder().decode(plainBuffer);
-			} catch (e) {
-				throw new Error('Decrypt failed', e);
-			}
-			console.log(plaintext);
-
-			fetch("https://ticktick.com/oauth/token", {
-				method: "POST",
-				body: JSON.stringify({
-					client_id,
-					client_secret,
-					code,
-					grant_type,
-					scope,
-					redirect_uri
-				})
+		(function () {
+			const page = {};
+			const all = document.querySelectorAll("*[id]");
+			all.forEach((val) => {
+				page[val.id] = val;
 			});
+			let storage = new CbStorage("ticktick");
+			storage.save();
+			let clientId = storage.getItem("clientid");
+			let secret = storage.getItem("secret");
+			let key = storage.getItem("key");
+			let state;
+			if (!clientId) {
+				clientId = prompt("Enter clientId");
+				storage.setItem("clientid", clientId);
+				secret = prompt("Enter secret");
+				storage.setItem("secret", secret);
 
-			return plaintext;
-		}
+				let key = "";
+				for (let n = 0; n < 5; n++) {
+					key += (Math.random() + 1).toString(36).substring(7);
+				}
+				storage.setItem("key", key);
+			}
 
-		async function thirdStep(ciphertext, password) {
-			console.log("step 3");
-			debugger
+			let params = Object.fromEntries((new URLSearchParams(location.search)).entries());
 			console.log(params);
-		}
+			alert("check console");
+			console.log(storage.getStorage());
+			let thisUrl = window.location.href.split("?")[0];
 
+			if (!params.code && !params.state) {
+				if (!params.task || !params.content) {
+					return showPage("Bad request - needs task and content", params);
+				}
+				let state = new Date().getTime();
+				storage.setItem("state", {state, code: params.task, content: params.content});
+				params.state = state;
+				firstStep(params);
+			} else if (!params.access_token) {
+				if (!params.code || !params.state) {
+					return showPage("Bad response - needs code and state", params);
+				}
+				let state = storage.getItem("state");
+				if (!state || state.state != params.state) {
+					return showPage("State not found", params);
+				}
+				state = secondStep(params.state);
+				console.log(state);
+			} else {
+				thirdStep(params);
+			}
+
+			async function firstStep(params) {
+				console.log("Step 1", params);
+				let dest = `https://ticktick.com/oauth/authorize?client_id=${clientId}&scope=tasks:write&state=${params.state}&redirect_uri=${thisUrl}&response_type=code`;
+
+				location = dest;
+			}
+
+			async function secondStep(params) {
+				console.log("Step 2", params);
+
+				let postParams = {
+						client_id: clientId,
+						client_secret: secret,
+						code: params.code,
+						grant_type: "authorization_code",
+						scope: "tasks: write",
+						redirect_uri: thisUrl
+					};
+				post("https://ticktick.com/oauth/token", postParams);
+			}
+
+			async function thirdStep(params) {
+				console.log("Step 3", params);
+				showPage("Done", params)
+			}
+
+			function showPage(message = "Ready", params) {
+				page.main.style.display = "initial";
+				page.message.innerHTML = message;
+
+			}
+		})();
+
+		function post(path, params) {
+			//https://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
+			const form = document.createElement('form');
+			form.method = "post";
+			form.action = path;
+
+			for (const key in params) {
+				if (params.hasOwnProperty(key)) {
+					const hiddenField = document.createElement('input');
+					hiddenField.type = 'hidden';
+					hiddenField.name = key;
+					hiddenField.value = params[key];
+
+					form.appendChild(hiddenField);
+				}
+			}
+
+			document.body.appendChild(form);
+			form.submit();
+		}
 
 	</script>
 

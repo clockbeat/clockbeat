@@ -72,32 +72,41 @@
 				console.log("Step 1", params);
 				let dest = `https://ticktick.com/oauth/authorize?client_id=${clientId}&scope=tasks:write&state=${params.state}&redirect_uri=${thisUrl}&response_type=code`;
 
-				location = dest;
+				//location = dest;
 			}
 
 			async function secondStep(params) {
 				console.log("Step 2", params);
 
 				let postParams = {
-						client_id: clientId,
-						client_secret: secret,
-						code: params.code,
-						grant_type: "authorization_code",
-						scope: "tasks:write",
-						redirect_uri: thisUrl
-					};
+					client_id: clientId,
+					client_secret: secret,
+					code: params.code,
+					grant_type: "authorization_code",
+					scope: "tasks:write",
+					redirect_uri: thisUrl
+				};
 				post("https://ticktick.com/oauth/token", postParams);
 			}
 
 			async function thirdStep(params) {
 				console.log("Step 3", params);
-				showPage("Done", params)
+				let postParams = {
+					title: params.state.task,
+					content: params.state.content
+				};
+				fetch("https://api.ticktick.com/open/v1/task", {
+					body: postParams,
+					method: "POST",
+					headers: {
+						"Authorization": "Bearer " + params.access_token
+					}
+				});
 			}
 
 			function showPage(message = "Ready", params) {
 				page.main.style.display = "initial";
 				page.message.innerHTML = message;
-
 			}
 		})();
 

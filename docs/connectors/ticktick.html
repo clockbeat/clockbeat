@@ -83,7 +83,7 @@
 						client_secret: secret,
 						code: params.code,
 						grant_type: "authorization_code",
-						scope: "tasks: write",
+						scope: "tasks:write",
 						redirect_uri: thisUrl
 					};
 				post("https://ticktick.com/oauth/token", postParams);

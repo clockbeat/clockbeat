@@ -62,7 +62,7 @@
 				if (!state || state.state != params.state) {
 					return showPage("State not found", params);
 				}
-				state = secondStep(params.state);
+				state = secondStep(params);
 				console.log(state);
 			} else {
 				thirdStep(params);

@@ -1,0 +1,142 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+	<script>
+		var swk;
+		try {
+			console.clear();
+			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+				window.addEventListener("load", () => {
+					navigator.serviceWorker.register('sw.js')
+						.then(reg => console.log("Service worker registered"))
+						.catch(err => console.error(`Service Worker Error: ${err}`));
+
+
+					navigator.serviceWorker.ready.then((registration) => {
+						swk = registration.active;
+
+						navigator.serviceWorker.addEventListener("message", msg => {
+							console.log("from sw", msg.data);
+							document.body.innerHTML = msg.data.reply;
+							document.body.style.backgroundColor = "white";
+						});
+					});
+				});
+			}
+		} catch (e) {
+			console.error(e);
+		}		
+	</script>
+	<script src="version.js"></script>
+	<script src="js/moveit.js"></script>
+	<script src="js/storage.js"></script>
+	<script src="js/suntimes.js"></script>
+	<script src="js/clock.js"></script>
+	<style>
+		input, select {
+			border-radius: 0.3em;
+			background-color: white;
+		}
+
+		input[type=checkbox]+label {
+			border: 3px solid;
+			opacity: 0.3;
+			border-radius: 0.3em;
+		}
+
+		input[type=checkbox]:checked+label {
+			background-color: rgb(250, 126, 126);
+			color: rgb(0, 0, 0);
+			border: 3px solid white;
+			opacity: 0.6;
+		}
+
+		input[type=time] {
+			font-size: 1.5em;
+		}
+
+		input[type=color] {
+			touch-action: none;
+		}
+
+		input[type=button] {
+			font-size: 1.2em;
+			margin-left: 1em;
+		}
+
+		#choices.len1 #spa0 {
+			display: none;
+		}
+
+		#choices.len1 #del0 {
+			display: none;
+		}
+
+		.small {
+			font-size: 50%;
+		}
+	</style>
+</head>
+
+<body style="font-family: sans-serif; padding-bottom: 3vw; user-select: none; margin: 0;">
+	<div id="everything">
+		<div id="main" style="min-height: 100vh; margin: 0; font-weight: bold;">
+			<div id="clockhead" style="font-size: 10vw; text-align: right; padding-right: 0.5em;"></div>
+			<div
+				style="position: relative; font-size: 36vw; text-align: center; margin-top: -4vw; margin-bottom: -4vw;">
+				<div id="clock" style="width: 100%; "></div>
+			</div>
+			<div style="font-size: 4vw; display: block; position: absolute; top: 1.5vw; left: 1vw;">
+				<input id="alarm" type="checkbox" value="" oninput="setAlarm(event.target.checked, 0)"
+					style="display: none;">
+				<label id="alarmlabel" for="alarm" style="padding: 0.3em;"><span id="alarmtimetext"></span></label>
+			</div>
+		</div>
+		<div id="settings" style="padding: 1vw;  margin-bottom: 4vw; background-color: #ccc;">
+			<input id="runit" type="button" value="&#9658;" onclick="goToWork(event.target.value);"
+				style="position: absolute; top: 10vw; left: 20vw; font-size: 20vw;">
+			<br><br>Alarm Time <input id="alarmtime" type="time" value=""
+				onchange="setAlarmTime(event.target.value, 0);">
+			Disable <input id="disablealarm" type="checkbox">
+			<br><br>Chime
+			<select id="chimetype" onchange="setChimeTime(event.target.value, 2)">
+				<option value="0">Off</option>
+				<option value="15">every quarter</option>
+				<option value="30">every half</option>
+				<option value="60">every hour</option>
+			</select>
+			<br><br>Tick
+			<select id="ticktype" onchange="setTickType(event.target.value)">
+				<option value="0">Off</option>
+				<option value="1">every 1 minute</option>
+				<option value="5">every 5 minutes</option>
+				<option value="15">every 15 minutes</option>
+			</select>
+			<br><br>Chime and tick start <input id="chimestart" type="time" value=""
+				onchange="setChimeTime(event.target.value, 0);">
+			end <input id="chimeend" type="time" value="" onchange="setChimeTime(event.target.value, 1);">
+			<br><br><br>24 hour display <input id="hr24" type="checkbox" onchange="change24hr(event.target.checked)">
+			<br><br>
+			<fieldset id="show">
+				Show AM/PM<input id="ampm" type="radio" name="show" value="ampm" checked> Date<input id="date"
+					type="radio" name="show" value="date">
+			</fieldset>
+			<br><br>
+			<div id="choices" class="len1"></div>
+			<br><br>Add color change <input type="button" value="Timed" onclick="addColor();"> <input type="button"
+				value="Dawn" onclick="addColor('dawn');"> <input type="button" value="Dusk" onclick="addColor('dusk');">
+			<br><br>
+			<div id="location" style="display: none;">Location <input type="button" value="Clear"
+					onclick="locationAction('clear');"> <input type="button" value="Change"
+					onclick="locationAction('change');"> </div>
+			<div style="min-height: 50em;"></div>
+			<br><br><br>Version
+		</div>
+	</div>
+</body>
+
+</html>

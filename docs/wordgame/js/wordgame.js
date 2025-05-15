@@ -239,6 +239,9 @@ function runIt() {
     //-------------------------------------------------------------------
 
     function showFavWords(e) {
+        if (gameOver) {
+            return;
+        }
         let words = getRecentWords().slice(0, 6);
         wordlistDiv.innerHTML = "";
         words.forEach(w => {

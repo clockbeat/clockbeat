@@ -89,7 +89,7 @@ input {
 
 .box {
     background-color: var(--mygrey);
-    width: 1.5em;
+    width: 1.45em;
     margin: auto;
     display: flex;
     height: 1.5em;

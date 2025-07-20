@@ -120,7 +120,7 @@ function runIt() {
             video: {
                 muted: true,
                 playsinline: true,
-                facingMode: "user",
+                facingMode: "environment",
                 width: 128,
                 height: 72,
                 framerate: 1

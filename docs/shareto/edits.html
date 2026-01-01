@@ -6,47 +6,12 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+	<link rel="stylesheet" href="shareto.css">
 	<script src="storage.js"></script>
-	<script>
-		try {
-			console.clear();
-			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-				window.addEventListener("load", () => {
-					navigator.serviceWorker.register('sw.js')
-						.then(reg => console.log("Service worker registered"))
-						.catch(err => console.error(`Service Worker Error: ${err}`));
-				});
-			}
-		} catch (e) {
-			console.error(e);
-		}		
-	</script>
-	<style>
-		:root {
-			font-family: sans-serif;
-		}
-
-		div {
-			margin: 2vw auto 0 auto;
-			font-size: 105%;
-			width: 90vw;
-		}
-
-		textarea {
-			margin: 2vw auto 0 auto;
-			font-size: 120%;
-			width: 90vw;
-		}
-
-		button {
-			width: 5em;
-			margin: 2vw auto 0 auto;
-		}
-	</style>
+	<script src="common.js"></script>
 </head>
 
-<body style="text-align: center;">
-	<image src="submit.svg" style="width: 30vw; max-width: 20vh;"></image>
+<body>
 	<h3>Edits</h3>
 	<div>Auto remove text in title</div>
 	<input id="artitle" style="width: 80%">
@@ -59,9 +24,6 @@
 	<input id="applyarurl" type="button" style="width: 15%" value="Apply">
 	<div id="editsarurl"
 		style="display: grid; grid-template-columns: 7fr 1fr; gap: 0; grid-auto-rows: auto; text-align: initial;"></div>
-	<div>&nbsp;</div>
-
-	<div><a href="index.html">Home</a></div>
 
 	<script type="text/javascript">
 		console.clear();

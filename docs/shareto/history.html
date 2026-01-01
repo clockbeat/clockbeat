@@ -1,0 +1,144 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+	<link rel="stylesheet" href="shareto.css">
+	<script src="storage.js"></script>
+	<script src="common.js"></script>
+</head>
+
+<body >
+	<h3>History</h3>
+	<div>
+		<ul id="buttons" class="button-choice">
+			<li>
+				<input type="radio" id="History" name="label" checked />
+				<label for="History">History</label>
+			</li>
+			<li>
+				<input type="radio" id="Queue" name="label" />
+				<label for="Queued">Queued</label>
+			</li>
+		</ul>
+	</div>
+	<div style="clear: left; padding-top: 0.5em;">
+		<div id="historylist"
+			style="display: grid; grid-template-columns: 7fr 1fr; gap: 2vw; grid-auto-rows: auto; text-align: initial; ">
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		console.clear();
+		const page = {};
+		const all = document.querySelectorAll("*[id]");
+		all.forEach((val) => {
+			page[val.id] = val;
+		});
+		let search = Object.fromEntries(new URLSearchParams(location.search.replace("?", "")));
+
+		const storage = new CbStorage("shareto");
+		let history = storage.require("history", {});
+		let histAge = storage.require("histAge", []);
+		let dests = storage.require("destinations", []);
+
+		let buttons = document.getElementById("buttons");
+
+		document.getElementById("History").onclick = (e => {
+			refreshList();
+		});
+		document.getElementById("Queue").onclick = (e => {
+			refreshList("Queue");
+		});
+
+		dests.forEach(dest => {
+			let li = document.createElement("li");
+			let radio = document.createElement("input");
+			let label = document.createElement("label");
+			radio.type = "radio";
+			radio.name = "label";
+			radio.id = dest.name;
+			radio.onclick = e => {
+				refreshList(dest.name);
+			}
+			label.htmlFor = dest.name;
+			label.innerHTML = dest.name;
+			li.appendChild(radio);
+			li.appendChild(label);
+			buttons.appendChild(li);
+		});
+
+
+
+		refreshList(search.label);
+
+		function refreshList(label) {
+			if (label) {
+				document.getElementById(label).checked = true;
+			}
+			page.historylist.innerHTML = "";
+			histAge.forEach((key, ix) => {
+
+				let item = history[key];
+				if (label && !item[label]) {
+					return;
+				}
+
+				let itemSpan = document.createElement("span");
+				if (label) {
+					itemSpan.style.gridColumn = "span 1";
+				} else {
+					itemSpan.style.gridColumn = "span 2";
+				}
+
+				let title = document.createElement("span");
+				title.style.cursor = "pointer";
+				title.style.overflowWrap = "anywhere";
+				title.innerHTML = item.title;
+
+				let link = document.createElement("span");
+				link.style.cursor = "pointer";
+				link.style.overflowWrap = "anywhere";
+				link.style.color = "blue";
+				link.innerHTML = item.url;
+
+				let br = document.createTextNode(" ");
+				itemSpan.appendChild(title);
+				itemSpan.appendChild(br);
+				itemSpan.appendChild(link);
+				itemSpan.style.textOverflow = "ellipsis";
+				itemSpan.style.whiteSpace = "nowrap";
+				itemSpan.style.overflow = "hidden";
+
+				let del = document.createElement("span");
+				del.style.gridColumn = "span 1";
+				if (label) {
+					del.style.cursor = "pointer";
+					del.style.marginLeft = "1em";
+					del.style.fontSize = "150%";
+					del.innerHTML = "&#9447;";
+					del.onclick = e => {
+						console.log(ix);
+						item[label] = false;
+						storage.save();
+						refreshList(label);
+						e.stopPropagation();
+					}
+				}
+				title.onclick = link.onclick = e => {
+
+					location = "shareto.html#history=" + key;
+				}
+				page.historylist.appendChild(itemSpan);
+				page.historylist.appendChild(del);
+			});
+		}
+
+	</script>
+
+</body>
+
+</html>

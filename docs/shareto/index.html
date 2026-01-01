@@ -6,14 +6,9 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
-	<style>
-		:root {
-			font-family: sans-serif;
-			font-size: 100%;
-			margin: 2vw;
-		}
-	</style>
+	<link rel="stylesheet" href="shareto.css">
 	<script src="storage.js"></script>
+	<script src="common.js"></script>
 	<script src="version.js"></script>
 	<script>
 		let swCacheName;
@@ -46,8 +41,7 @@
 	</script>
 </head>
 
-<body style="text-align: center;">
-	<image src="submit.svg" style="width: 30vw; max-width: 20vh;"></image>
+<body>
 	<br><br>Easily submit stories to other sites from your mobile phone.
 	<br><br>
 	<script>
@@ -61,18 +55,10 @@
 	<br><br>Using the share option next to the URL may result in getting the url only. Use the side menu share option to
 	get url and title.
 	<br><br>
-	<div><a href="destinations.html">Destinations</a></div>
-	<br>
-	<div><a id="queuelink" href="queue.html">Queue</a></div>
-	<br>
-	<div><a href="shareto.html">Share form</a></div>
-	<br>
-	<div><a href="edits.html">Edits</a></div>
-	<br>
 	<button id="export">Backup</button>
 	<input id="import" type="file" accept=".json" style="display: none;" aria-label="load" />
 	<button id="importproxy">Restore</button>
-	<br><br>V2.4.
+	<br><br>Version 
 	<script>
 		console.clear();
 		const page = {};
@@ -83,7 +69,7 @@
 
 		let storage = new CbStorage("shareto");
 		let queue = storage.require("queue", []);
-		document.getElementById("queuelink").innerHTML = "Queue (" + queue.length + ")";
+		//document.getElementById("queuelink").innerHTML = "Queue (" + queue.length + ")";
 
 		let ver = document.createTextNode(cacheName);
 		document.body.appendChild(ver);

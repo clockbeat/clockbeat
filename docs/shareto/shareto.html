@@ -6,22 +6,9 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
-	<style>
-		:root {
-			font-family: sans-serif;
-		}
-
-		div,
-		input {
-			margin: 2vw;
-			font-size: 105%;
-		}
-
-		textarea {
-			font-size: 120%;
-		}
-	</style>
+	<link rel="stylesheet" href="shareto.css">
 	<script src="storage.js"></script>
+	<script src="common.js"></script>
 	<script src="version.js"></script>
 	<script>
 		let swCacheName;
@@ -54,22 +41,21 @@
 	</script>
 </head>
 
-<body style="text-align: center;">
-	<image src="submit.svg" style="width: 30vw; max-width: 20vh;"></image>
+<body>
 	<div id="subfrom">
-		<div>Title <span id="info"></span></div>
+		<div>Title (<span id="info"></span><a id="revert" href="#"> revert</a>)</div>
 		<textarea id="title" wrap="soft" style="width: 90vw; height: 20vh;"></textarea>
 		<div>Url (<a id="link" href="#">open</a>
-		<a id="combine" href="#">combine</a>)</div>
+			<a id="combine" href="#">combine</a>)
+		</div>
 		<textarea id="url" wrap="soft" style="width: 90vw; height: 20vh;"></textarea>
 		<div id="buts"></div>
-		<div><input id="toqueue" type="button" value="Add to Queue" style="background-color: bisque;"></div>
-		<div><a id="queuelink" href="queue.html">Queue</a></div>
-		<div><a href="index.html">Home</a></div>
+		<div><input id="toqueue" type="button" style="background-color: bisque;"></div>
 	</div>
 
 	<script type="text/javascript">
 		//console.clear();
+		const tick = " ✔"; // &#10003;";
 		const page = {};
 		const all = document.querySelectorAll("*[id]");
 		all.forEach((val) => {
@@ -77,13 +63,45 @@
 		});
 		let storage = new CbStorage("shareto");
 		let dests = storage.require("destinations", []);
-		let queue = storage.require("queue", []);
+		let history = storage.require("history", {});
+		let histAge = storage.require("histAge", []);
+		let histhash;
 		page.buts.innerHTML = "";
+		let newWin = false;
+
+		let search = Object.fromEntries(new URLSearchParams(location.hash.replace("#", "?")));
+		console.log(location);
+		if (search.history === undefined) {
+			page.title.value = search.name ?? "";
+			page.url.value = search.description ?? "";
+			histhash = generateHash(page.url.value);
+			let histAgeIndex = histAge.lastIndexOf(histhash);
+			if (histAgeIndex !== -1) {
+				histAge.splice(histAgeIndex, 1);
+			}
+			history[histhash] = {title: page.title.value, url: page.url.value};
+			histAge.unshift(histhash);
+			while (histAge.length > 100) {
+				let key = histAge.pop();
+				delete history[key];
+			}
+			storage.save();
+
+		} else {
+			let item = history[search.history];
+			if (item !== undefined) {
+				page.title.value = item.title ?? "";
+				page.url.value = item.url ?? "";
+				histhash = search.history;
+			}
+		}
+		applyEdits();
+
 		dests.forEach(dest => {
 			let inp = document.createElement("input");
 			let newWin = false;
 			inp.type = "button";
-			inp.value = "Send to " + dest.name;
+			destinationSet(inp, dest.name);
 			inp.onclick = e => {
 				let loc = dest.url.replace("$title", encodeURIComponent(page.title.value)).replace("$url", encodeURIComponent(page.url.value));
 				try {
@@ -92,10 +110,12 @@
 					if (!url.protocol.startsWith("http")) {
 						throw ("Not http/s");
 					}
-					if (newWin) {
-						window.open(loc, '_blank').focus();
-					} else {
-						location = loc;
+					if (destinationClick(e, inp, dest.name)) {
+						if (newWin) {
+							window.open(loc, '_blank').focus();
+						} else {
+							location = loc;
+						}
 					}
 				} catch (e) {
 					alert("Not a valid URL '" + loc + "'");
@@ -104,46 +124,29 @@
 			buts.appendChild(inp);
 		});
 
-		page.queuelink.innerHTML = "Queue (" + queue.length + ")";
+		destinationSet(page.toqueue, "Queue")
 
-		let search = Object.fromEntries(new URLSearchParams(location.hash.replace("#", "?")));
-		console.log(location);
-		if (search.queue === undefined) {
-			page.title.value = search.name ?? "";
-			page.url.value = search.description ?? "";
-		} else {
-			let item = queue[search.queue];
-			if (item) {
-				page.title.value = item.name ?? "";
-				page.url.value = item.url ?? "";
-				page.toqueue.value = "Remove from Queue";
-			}
-		}
-		applyEdits();
 
 		page.title.oninput = page.url.oninput = e => {
-			page.info.innerHTML = "(" + page.title.value.length + ")";
-			if (search.queue !== undefined) {
-				queue[search.queue].name = page.title.value;
-				queue[search.queue].url = page.url.value;
-				storage.save();
+			let item = history[histhash];
+			page.revert.style.display = "none";
+			if (page.title.value !== item.title || page.url.value !== item.url){
+				page.revert.style.display = "inline";
+				if (item !== undefined) {
+					revert.onclick = e => {
+						page.title.value = item.title;
+						page.url.value = item.url;
+						page.revert.style.display = "none";
+					}
+				}
 			}
+			page.info.innerHTML = page.title.value.length;
 		}
 
 		page.title.oninput();
 
 		page.toqueue.onclick = e => {
-			if (search.queue !== undefined) {
-				queue.splice(search.queue, 1);
-			} else {
-				let queueitem = {};
-				queueitem.name = page.title.value;
-				queueitem.url = page.url.value;
-				queue.push(queueitem);
-			}
-			storage.save();
-			page.toqueue.disabled = true;
-			page.queuelink.innerHTML = "Queue (" + queue.length + ")";
+			destinationClick(e, page.toqueue, "Queue");
 		}
 
 		page.link.onclick = e => {
@@ -182,6 +185,50 @@
 				page.url.value = page.url.value.replace("  ", " ");
 			}
 		}
+
+		function destinationClick(e, inp, name) {
+			e.preventDefault();
+			if (histhash) {
+				let item = history[histhash];
+				if (item !== undefined) {
+					if (item[name]) {
+						delete item[name];
+						storage.save();
+						inp.value = "Send to " + name + "    ";
+						return false;
+					}
+					item[name] = true;
+					inp.value = "Send to " + name + tick;
+					storage.save();
+				}
+				return true;
+			}
+			return false;
+		}
+
+		function destinationSet(inp, name) {
+			if (histhash) {
+				let item = history[histhash];
+				if (item !== undefined) {
+					if (item[name]) {
+						inp.value = "Send to " + name + tick;
+					} else {
+						inp.value = "Send to " + name + "    ";
+					}
+				}
+			} else {
+				inp.value = "Send to " + name + "    ";
+			}
+		}
+
+		function generateHash(string) {
+			let hash = 0;
+			for (const char of string) {
+				hash = (hash << 5) - hash + char.charCodeAt(0);
+				hash |= 0; // Constrain to 32bit integer
+			}
+			return hash;
+		};
 
 	</script>
 

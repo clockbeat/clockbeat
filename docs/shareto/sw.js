@@ -1,6 +1,6 @@
 importScripts("version.js");
 
-const contentToCache = ["destinations.html", "index.html", "queue.html", "shareto.html", "submit.svg", "edits.html", "manifest.json", "storage.js"];
+const contentToCache = projectFiles
 
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets

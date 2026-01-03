@@ -11,17 +11,17 @@
 	<script src="common.js"></script>
 </head>
 
-<body >
+<body>
 	<h3>History</h3>
 	<div>
 		<ul id="buttons" class="button-choice">
 			<li>
-				<input type="radio" id="History" name="label" checked />
+				<input type="radio" id="History" name="histOption" checked style="display: none;"/>
 				<label for="History">History</label>
 			</li>
 			<li>
-				<input type="radio" id="Queue" name="label" />
-				<label for="Queued">Queued</label>
+				<input type="radio" id="Queue" name="histOption" style="display: none;" />
+				<label for="Queue">Queued</label>
 			</li>
 		</ul>
 	</div>
@@ -48,10 +48,14 @@
 		let buttons = document.getElementById("buttons");
 
 		document.getElementById("History").onclick = (e => {
-			refreshList();
+			if (!window.commonMenuOpen) {
+				refreshList();
+			}
 		});
 		document.getElementById("Queue").onclick = (e => {
-			refreshList("Queue");
+			if (!window.commonMenuOpen) {
+				refreshList("Queue");
+			}
 		});
 
 		dests.forEach(dest => {
@@ -59,12 +63,13 @@
 			let radio = document.createElement("input");
 			let label = document.createElement("label");
 			radio.type = "radio";
-			radio.name = "label";
+			radio.name = "histOption";
 			radio.id = dest.name;
-			radio.onclick = e => {
+			radio.style.display = "none";
+			label.onclick = e => {
 				refreshList(dest.name);
 			}
-			label.htmlFor = dest.name;
+			label.for = dest.name;
 			label.innerHTML = dest.name;
 			li.appendChild(radio);
 			li.appendChild(label);
@@ -121,15 +126,16 @@
 					del.style.fontSize = "150%";
 					del.innerHTML = "&#9447;";
 					del.onclick = e => {
-						console.log(ix);
-						item[label] = false;
-						storage.save();
-						refreshList(label);
-						e.stopPropagation();
+						if (!window.commonMenuOpen) {
+							console.log(ix);
+							item[label] = false;
+							storage.save();
+							refreshList(label);
+							e.stopPropagation();
+						}
 					}
 				}
 				title.onclick = link.onclick = e => {
-
 					location = "shareto.html#history=" + key;
 				}
 				page.historylist.appendChild(itemSpan);

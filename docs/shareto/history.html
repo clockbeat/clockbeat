@@ -11,21 +11,21 @@
 	<script src="common.js"></script>
 </head>
 
-<body>
+<body style="margin: 0;">
 	<h3>History</h3>
 	<div>
-		<ul id="buttons" class="button-choice">
-			<li>
-				<input type="radio" id="History" name="histOption" checked style="display: none;"/>
+		<div id="buttons" class="xbutton">
+			<span>
+				<input type="radio" id="History" name="histOption" checked style="display: none;" />
 				<label for="History">History</label>
-			</li>
-			<li>
+			</span>
+			<span>
 				<input type="radio" id="Queue" name="histOption" style="display: none;" />
 				<label for="Queue">Queued</label>
-			</li>
-		</ul>
+			</span>
+		</div>
 	</div>
-	<div style="clear: left; padding-top: 0.5em;">
+	<div style="clear: left;">
 		<div id="historylist"
 			style="display: grid; grid-template-columns: 7fr 1fr; gap: 2vw; grid-auto-rows: auto; text-align: initial; ">
 		</div>
@@ -59,7 +59,7 @@
 		});
 
 		dests.forEach(dest => {
-			let li = document.createElement("li");
+			let li = document.createElement("span");
 			let radio = document.createElement("input");
 			let label = document.createElement("label");
 			radio.type = "radio";
@@ -67,10 +67,14 @@
 			radio.id = dest.name;
 			radio.style.display = "none";
 			label.onclick = e => {
-				refreshList(dest.name);
+				if (!window.commonMenuOpen) {
+					refreshList(dest.name);
+				}
 			}
 			label.htmlFor = dest.name;
 			label.innerHTML = dest.name;
+			var space = document.createTextNode(" ");
+			li.appendChild(space);
 			li.appendChild(radio);
 			li.appendChild(label);
 			buttons.appendChild(li);

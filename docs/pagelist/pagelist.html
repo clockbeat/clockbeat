@@ -1,15 +1,112 @@
-<!DOCTYPE HTML>
-<html>
-  <head>
-    <style>
-     </style>
-     <script>
-        console.clear();
-        location.pathname = "pagestore/pagelist.html";
-        console.log(location);
-      </script>
-  </head>
-  <body>
-    Hello world!
-  </body>
-</html> 
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+	<style>
+		body {
+			text-align: center;
+			font-family: sans-serif;
+			font-size: 120%;
+			padding-top: 0em;
+			padding-bottom: 5em;
+			margin: 0;
+		}
+
+		#headtitle {
+			font-size: 1.5em;
+			padding: 0.5em;
+			font-weight: bold;
+			background-color: yellow;
+		}
+	</style>
+	<script src="storage.js"></script>
+	<script src="common.js"></script>
+	<script src="version.js"></script>
+</head>
+
+<body>
+	<div id="headtitle">Chose from the menu</div>
+
+	<div id="subfrom">
+		<div style="clear: left;">
+			<div id="historylist" style="text-align: initial; ">
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		console.clear();
+		const tick = " ✔"; // &#10003;";
+		const page = {};
+		const all = document.querySelectorAll("*[id]");
+		all.forEach((val) => {
+			page[val.id] = val;
+		});
+		let storage = new CbStorage("pagestore");
+		let groups = storage.require("groups", {});
+		let currentPage;
+		let currentGroup;
+		let newWin = false;
+		menu = [];
+
+		window.addEventListener("hashchange", () => {
+			location.reload();
+		});
+
+		console.log(location);
+
+		Object.keys(groups).forEach(group => {
+			let link = new URL(location);
+			link.hash = group;
+			menu.push({ title: group, url: link })
+		});
+
+		let add = document.createElement("span");
+
+		refreshList(location.hash.replace("#", ""));
+
+		function refreshList(group) {
+			if (!group || !groups[group]) {
+				return;
+			}
+			page.headtitle.innerHTML = group;
+			page.headtitle.style.backgroundColor = stringToColour(group);
+			currentLabel = group;
+			page.historylist.innerHTML = "";
+			groups[group].forEach((pageData, ix) => {
+				let itemSpan = document.createElement("div");
+				let title = document.createElement("span");
+				title.style.cursor = "pointer";
+				title.innerHTML = pageData.title;
+				itemSpan.appendChild(title);
+				itemSpan.style.margin = "1.5em";
+				title.onclick = e => {
+					window.open(pageData.url, '_blank').focus();
+				}
+				page.historylist.appendChild(itemSpan);
+
+			});
+		}
+
+		function stringToColour(string) {
+			let hash = 0;
+			string.split('').forEach(char => {
+				hash = char.charCodeAt(0) + ((hash << 5) - hash);
+			})
+			let colour = '#';
+			for (let i = 0; i < 3; i++) {
+				const value = ((hash >> (i * 8)) & 0xff) | 0x80;
+				colour += value.toString(16).padStart(2, '0');
+			}
+			return colour
+		}
+
+	</script>
+
+</body>
+
+</html>

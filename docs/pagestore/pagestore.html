@@ -1,0 +1,331 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+	<link rel="stylesheet" href="pagestore.css">
+	<script src="storage.js"></script>
+	<script src="common.js"></script>
+	<script src="version.js"></script>
+	<script>
+		let swCacheName;
+		try {
+			console.clear();
+			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+				window.addEventListener("load", () => {
+					navigator.serviceWorker.register('sw.js')
+						.then(reg => {
+							console.log("Service worker registered");
+							navigator.serviceWorker.addEventListener("message", (event) => {
+								if (event.type == "message") {
+									if (event.data.name) {
+										swCacheName = event.data.name;
+										if (swCacheName !== cacheName) {
+											reg.update();
+											console.log(swCacheName, cacheName, "Service worker updated");
+										}
+									}
+								}
+							});
+							reg.active.postMessage("name");
+						})
+						.catch(err => console.error(`Service Worker Error: ${err}`));
+				});
+			}
+		} catch (e) {
+			console.error(e);
+		}			
+	</script>
+</head>
+
+<body>
+	<div id="subfrom">
+		<div>Title (<span id="info"></span><a id="revert" href="#"> revert</a>)</div>
+		<textarea id="title" wrap="soft" style="width: 90vw; height: 10vh;"></textarea>
+		<div>Url (<a id="link" href="#">open</a>)</div>
+		<textarea id="url" wrap="soft" style="width: 90vw; height: 10vh;"></textarea>
+		<div>
+			<div id="buttons" class="xbutton"></div>
+		</div>
+		<div style="clear: left;">
+			<div id="historylist"
+				style="display: grid; grid-template-columns: 7fr 1fr; gap: 2vw; grid-auto-rows: auto; text-align: initial; ">
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript">
+		//console.clear();
+		const tick = " ✔"; // &#10003;";
+		const page = {};
+		const all = document.querySelectorAll("*[id]");
+		all.forEach((val) => {
+			page[val.id] = val;
+		});
+		let storage = new CbStorage("pagestore");
+		let groups = storage.require("groups", {});
+		let currentPage;
+		let currentGroup;
+		page.buttons.innerHTML = "";
+		let newWin = false;
+
+		let search = Object.fromEntries(new URLSearchParams(location.hash.replace("#", "?")));
+		console.log(location);
+		if (search.group === undefined) {
+			page.title.value = search.name ?? "";
+			page.url.value = search.description ?? "";
+			currentPage = { title: page.title.value, url: page.url.value };
+			storage.save();
+		}
+		//applyEdits();
+
+		Object.keys(groups).forEach(group => {
+			let li = document.createElement("span");
+			let radio = document.createElement("input");
+			let label = document.createElement("label");
+			radio.type = "radio";
+			radio.name = "histOption";
+			radio.id = group;
+			radio.style.display = "none";
+			label.onclick = e => {
+				currentGroup = group;
+				if (!window.commonMenuOpen) {
+					refreshList(group);
+				}
+			}
+			label.htmlFor = group;
+			label.innerHTML = group;
+			var space = document.createTextNode(" ");
+			li.appendChild(space);
+			li.appendChild(radio);
+			li.appendChild(label);
+			buttons.appendChild(li);
+		});
+
+		let add = document.createElement("span");
+		add.innerHTML = "&nbsp;+&nbsp;";
+		add.title = "Add new group";
+		add.className = "link";
+		add.onclick = e => {
+			let name = prompt("Name of new group", "New");
+			if (name) {
+				if (name) {
+					if (!groups[name]) {
+						groups[name] = [];
+						storage.save();
+						location.reload();
+					}
+				}
+			};
+			e.stopPropagation();
+		};
+		buttons.appendChild(add);
+
+		let apply = document.createElement("span");
+		apply.innerHTML = "Set page";
+		apply.title = "apply new group";
+		apply.className = "link";
+		apply.onclick = e => {
+			if (!currentGroup) {
+				return;
+			}
+			if (page.title.value && page.url.value) {
+				putPageInGroup(currentGroup, { title: page.title.value, url: page.url.value });
+			}
+			refreshList(currentGroup);
+			e.stopPropagation();
+		};
+		buttons.appendChild(apply);
+
+		let dragSrcIndex = null;
+		function handleDragStart(e) {
+			dragSrcIndex = parseInt(this.getAttribute('data-index'));
+			e.dataTransfer.effectAllowed = 'move';
+		}
+
+		function handleDragOver(e) {
+			if (e.preventDefault) e.preventDefault();
+			return false;
+		}
+
+		function handleDrop(e) {
+			if (e.stopPropagation) e.stopPropagation();
+			let targetIndex = parseInt(this.getAttribute('data-index'));
+			let groupData = groups[currentGroup];
+			if (dragSrcIndex !== null && dragSrcIndex !== targetIndex) {
+				let temp = groupData[dragSrcIndex];
+				groupData.splice(dragSrcIndex, 1);
+				groupData.splice(targetIndex, 0, temp);
+				storage.save();
+				refreshList(currentLabel);
+			}
+			return false;
+		}
+
+		refreshList(search.label);
+
+		function refreshList(group) {
+			if (!group) {
+				return;
+			}
+			currentLabel = group;
+			if (group) {
+				document.getElementById(group).checked = true;
+			} else {
+				let manageBtn = document.getElementById("Manage");
+				if (manageBtn) manageBtn.checked = true;
+			}
+			page.historylist.innerHTML = "";
+			groups[group].forEach((pageData, ix) => {
+				let itemSpan = document.createElement("span");
+				itemSpan.style.gridColumn = "span 1";
+				itemSpan.draggable = true;
+				itemSpan.setAttribute('data-index', ix);
+				itemSpan.ondragstart = handleDragStart;
+				itemSpan.ondragover = handleDragOver;
+				itemSpan.ondrop = handleDrop;
+
+				let title = document.createElement("span");
+				title.style.cursor = "pointer";
+				title.style.overflowWrap = "anywhere";
+				title.innerHTML = pageData.title;
+
+				itemSpan.appendChild(title);
+				itemSpan.style.textOverflow = "ellipsis";
+				itemSpan.style.whiteSpace = "nowrap";
+				itemSpan.style.overflow = "hidden";
+
+				let del = document.createElement("span");
+				del.style.gridColumn = "span 1";
+				del.setAttribute('data-index', ix);
+				del.ondragover = handleDragOver;
+				del.ondrop = handleDrop;
+				if (group) {
+					del.style.cursor = "pointer";
+					del.style.marginLeft = "1em";
+					del.style.fontSize = "150%";
+					del.innerHTML = "&#9447;";
+					del.onclick = e => {
+						if (!window.commonMenuOpen) {
+							console.log(ix);
+							groups[group].splice(ix, 1);
+							storage.save();
+							refreshList(group);
+							e.stopPropagation();
+						}
+					}
+				}
+				title.onclick = url.onclick = e => {
+					//window.open(pageData.url, '_blank').focus();
+					let currentPage = { ...pageData };
+					currentPage.ix = ix;
+					currentPage.group = group;
+					if (currentPage !== undefined) {
+						page.title.value = currentPage.title ?? "";
+						page.url.value = currentPage.url ?? "";
+					}
+
+				}
+				page.historylist.appendChild(itemSpan);
+				page.historylist.appendChild(del);
+			});
+		}
+
+
+		page.title.oninput = page.url.oninput = e => {
+			page.revert.style.display = "none";
+			if (page.title.value !== currentPage.title || page.url.value !== currentPage.url) {
+				page.revert.style.display = "inline";
+				if (currentPage !== undefined) {
+					revert.onclick = e => {
+						page.title.value = currentPage.title;
+						page.url.value = currentPage.url;
+						page.revert.style.display = "none";
+					}
+				}
+			}
+			page.info.innerHTML = page.title.value.length;
+		}
+
+		page.title.oninput();
+
+		page.link.onclick = e => {
+			e.preventDefault();
+			if (!page.url.value) {
+				return;
+			}
+			let url = new URL(page.url.value); //Fail if invalid
+			if (!url.protocol.startsWith("http")) {
+				throw ("Not http/s");
+			}
+			window.open(url, '_blank').focus();
+		}
+
+		function applyEdits() {
+			let edits = storage.getItem("edits");
+			if (!edits) {
+				return;
+			}
+			//Auto remove
+			if (edits.artitle) {
+				edits.artitle.forEach(str => {
+					page.title.value = page.title.value.replace(str, "");
+				});
+				page.title.value = page.title.value.replace("  ", " ");
+			}
+			if (edits.arurl) {
+				edits.arurl.forEach(str => {
+					page.url.value = page.url.value.replace(str, "");
+				});
+				page.url.value = page.url.value.replace("  ", " ");
+			}
+		}
+
+		function groupClick(e, inp, name) {
+			e.preventDefault();
+			if (currentPage !== undefined) {
+				putPageInGroup()
+				return true;
+			}
+			return false;
+		}
+
+		function putPageInGroup(group, pageData) {
+			if (!pageData || !pageData.title || !pageData.url) {
+				return;
+			}
+			if (!groups[group]) {
+				groups[group] = [];
+			}
+			let updated = false;
+			groups[group].forEach(page => {
+				if (page.url === pageData.url) {
+					page.title = pageData.title;
+					updated = true;
+					storage.save()
+				}
+			});
+			if (updated) {
+				return;
+			}
+			groups[group].push(pageData);
+			storage.save();
+		}
+
+		function generateHash(string) {
+			let hash = 0;
+			for (const char of string) {
+				hash = (hash << 5) - hash + char.charCodeAt(0);
+				hash |= 0; // Constrain to 32bit integer
+			}
+			return hash;
+		};
+
+	</script>
+
+</body>
+
+</html>

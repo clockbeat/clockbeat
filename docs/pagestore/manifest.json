@@ -1,0 +1,26 @@
+{
+  "name": "Page Store",
+  "short_name": "pagestore",
+  "start_url": "/pagestore/index.html",
+  "scope": "/pagestore/",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#777777",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "pagestore.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "share_target": {
+    "action": "/pagestore/pagestore.html",
+    "method": "POST",
+    "params": {
+      "title": "name",
+      "text": "description",
+      "url": "link"
+    }
+  }
+}

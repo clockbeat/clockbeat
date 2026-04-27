@@ -1,0 +1,73 @@
+        /* :root {
+
+        } */
+
+        body {
+        	text-align: center;
+        	font-family: sans-serif;
+        	font-size: 100%;
+        	margin: 2vw;
+        	background-image: url("pagestore.svg");
+        	background-repeat: no-repeat;
+        	background-position: top;
+        	background-size: auto 7em;
+        	padding-top: 7em;			
+        }
+
+        div,
+        input {
+        	margin: 2vw 0.5em 0 auto;
+        	font-size: 105%;
+        }
+
+        textarea {
+        	margin: 1vh auto 0 auto;
+        	font-size: 120%;
+        	width: 90vw;
+        }
+
+        button {
+        	width: 5em;
+        	margin: 2vw auto 0 auto;
+        }
+
+		#headtitle {
+			font-weight: bold;
+			margin-bottom: 2em;
+		}
+
+        .menu-item {
+        	min-width: 100%;
+        	padding: 1em;
+			margin: 2vw;
+        }
+
+		.xbutton {
+			line-height: 2em;
+			text-align: left;
+			margin: 0;
+			padding: 0;
+			user-select: none;
+		}
+
+        .xbutton input[type="radio"]:checked+label,
+        .checked+label {
+        	background: rgb(206, 197, 255);
+        }
+
+        .xbutton label, .link {
+        	padding: 5px;
+        	border: 1px solid #CCC;
+        	cursor: pointer;
+        	white-space: nowrap;
+        	min-height: 10px;
+        }
+
+        .xbutton label:hover {
+        	background: #DDD;
+        }
+
+		.link {
+			background-color: aquamarine;
+			margin-left: 15px;
+		}

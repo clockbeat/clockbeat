@@ -7,7 +7,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	<link rel="stylesheet" href="pagestore.css">
-	<script src="storage.js"></script>
+	<script src="common/storage.js"></script>
+	<script src="common/menu.js"></script>
 	<script src="common.js"></script>
 	<script src="version.js"></script>
 	<script>
@@ -30,7 +31,6 @@
 									}
 								}
 							});
-							reg.active.postMessage("name");
 						})
 						.catch(err => console.error(`Service Worker Error: ${err}`));
 				});
@@ -47,15 +47,15 @@
 	<script>
 		if (window.matchMedia('(display-mode: standalone)').matches) {
 			document.body.innerHTML += "The app is installed";
+			if (location.hash != "here") {
+				location.href = "pagestore.html";
+			}
 		} else {
 			document.body.innerHTML += "** Use the page options to install this web app **<br>It won't work until you do.";
 		}
 	</script>
 	<br><br>To add a page use the browser Share option
 	<br><br>
-	<button id="export">Backup</button>
-	<input id="import" type="file" accept=".json" style="display: none;" aria-label="load" />
-	<button id="importproxy">Restore</button>
 	<br><br>Version 
 	<script>
 		console.clear();
@@ -66,43 +66,12 @@
 		});
 
 		let storage = new CbStorage("pagestore");
-		let queue = storage.require("queue", []);
-		//document.getElementById("queuelink").innerHTML = "Queue (" + queue.length + ")";
+		menuStorage = storage;
 
 		let ver = document.createTextNode(cacheName);
 		document.body.appendChild(ver);
 
-		page.importproxy.onclick = e => {
-			page.import.click();
-		}
 
-		page.import.onchange = e => {
-			console.clear();
-			let file = page.import.files[0];
-			let reader = new FileReader();
-			reader.readAsText(file);
-			reader.onload = e => {
-				let imported = JSON.parse(reader.result);
-				console.log(imported);
-				storage.setStorage(imported);
-			}
-			location.reload();
-		}
-
-
-		page.export.onclick = e => {
-			download(storage.toString(), "pagestore.json");
-		}
-
-		function download(text, filename) {
-			let element = document.createElement('a');
-			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-			element.setAttribute('download', filename);
-			element.style.display = 'none';
-			document.body.appendChild(element);
-			element.click();
-			document.body.removeChild(element);
-		}
 	</script>
 </body>
 

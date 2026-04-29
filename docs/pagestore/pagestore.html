@@ -7,7 +7,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	<link rel="stylesheet" href="pagestore.css">
-	<script src="storage.js"></script>
+	<script src="common/storage.js"></script>
+	<script src="common/menu.js"></script>
 	<script src="common.js"></script>
 	<script src="version.js"></script>
 	<script>
@@ -30,7 +31,6 @@
 									}
 								}
 							});
-							reg.active.postMessage("name");
 						})
 						.catch(err => console.error(`Service Worker Error: ${err}`));
 				});
@@ -54,11 +54,13 @@
 			<div id="historylist"
 				style="display: grid; grid-template-columns: 7fr 1fr; gap: 2vw; grid-auto-rows: auto; text-align: initial; ">
 			</div>
+			<div id="delgroup" style="display: none">Delete group  x</div>
 		</div>
 	</div>
 
 	<script type="text/javascript">
-		//console.clear();
+		console.clear();
+		console.log(location.hash);
 		const tick = " ✔"; // &#10003;";
 		const page = {};
 		const all = document.querySelectorAll("*[id]");
@@ -66,6 +68,7 @@
 			page[val.id] = val;
 		});
 		let storage = new CbStorage("pagestore");
+		menuStorage = storage;
 		let groups = storage.require("groups", {});
 		let currentPage;
 		let currentGroup;
@@ -73,8 +76,7 @@
 		let newWin = false;
 
 		let search = Object.fromEntries(new URLSearchParams(location.hash.replace("#", "?")));
-		console.log(location);
-		if (search.group === undefined) {
+		if (search.description) {
 			page.title.value = search.name ?? "";
 			page.url.value = search.description ?? "";
 			currentPage = { title: page.title.value, url: page.url.value };
@@ -172,13 +174,22 @@
 				return;
 			}
 			currentLabel = group;
-			if (group) {
-				document.getElementById(group).checked = true;
-			} else {
-				let manageBtn = document.getElementById("Manage");
-				if (manageBtn) manageBtn.checked = true;
-			}
+			document.getElementById(group).checked = true;
 			page.historylist.innerHTML = "";
+			if (groups[group].length == 0) {
+				page.delgroup.style.display = "block";
+				page.delgroup.style.cursor = "pointer";
+				page.delgroup.onclick = e => {
+					if (!window.commonMenuOpen) {
+						delete groups[group];
+						storage.save();
+						location.reload();
+					}
+				}
+				return;
+			} else {
+				page.delgroup.style.display = "none";
+			}
 			groups[group].forEach((pageData, ix) => {
 				let itemSpan = document.createElement("span");
 				itemSpan.style.gridColumn = "span 1";
@@ -237,9 +248,9 @@
 
 		page.title.oninput = page.url.oninput = e => {
 			page.revert.style.display = "none";
-			if (page.title.value !== currentPage.title || page.url.value !== currentPage.url) {
-				page.revert.style.display = "inline";
-				if (currentPage !== undefined) {
+			if (currentPage !== undefined) {
+				if (page.title.value !== currentPage.title || page.url.value !== currentPage.url) {
+					page.revert.style.display = "inline";
 					revert.onclick = e => {
 						page.title.value = currentPage.title;
 						page.url.value = currentPage.url;
@@ -314,15 +325,6 @@
 			groups[group].push(pageData);
 			storage.save();
 		}
-
-		function generateHash(string) {
-			let hash = 0;
-			for (const char of string) {
-				hash = (hash << 5) - hash + char.charCodeAt(0);
-				hash |= 0; // Constrain to 32bit integer
-			}
-			return hash;
-		};
 
 	</script>
 

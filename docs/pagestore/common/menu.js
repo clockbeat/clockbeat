@@ -54,7 +54,7 @@ function updateMenu() {
             menuItem.href = item.url;
         } else if (item.func) {
             menuItem = document.createElement("a");
-            menuItem.href = "#";
+            menuItem.href = "javascript:void(0)";
             menuItem.onclick = item.func;
         } else {
             console.log("Invalid menu item", item);
@@ -70,3 +70,4 @@ function updateMenu() {
         };
     });
 }
+

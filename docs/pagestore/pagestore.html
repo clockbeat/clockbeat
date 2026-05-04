@@ -81,6 +81,8 @@
 			page.url.value = search.description ?? "";
 			currentPage = { title: page.title.value, url: page.url.value };
 			storage.save();
+		} else if (search.group && groups[search.group]) {
+			currentGroup = search.group;
 		}
 		//applyEdits();
 
@@ -93,10 +95,14 @@
 			radio.id = group;
 			radio.style.display = "none";
 			label.onclick = e => {
+				if (currentGroup == group) {
+					location = "/pagelist/pagelist.html#" + group;
+				}
 				currentGroup = group;
 				if (!window.commonMenuOpen) {
 					refreshList(group);
-				}
+					location.hash = "group=" + group;
+				}				
 			}
 			label.htmlFor = group;
 			label.innerHTML = group;
@@ -167,10 +173,10 @@
 			return false;
 		}
 
-		refreshList(search.label);
+		refreshList(currentGroup);
 
 		function refreshList(group) {
-			if (!group) {
+			if (!group || !groups[group]) {
 				return;
 			}
 			currentLabel = group;

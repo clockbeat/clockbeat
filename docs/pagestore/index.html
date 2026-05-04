@@ -47,7 +47,7 @@
 	<script>
 		if (window.matchMedia('(display-mode: standalone)').matches) {
 			document.body.innerHTML += "The app is installed";
-			if (location.hash != "here") {
+			if (location.hash != "#here") {
 				location.href = "pagestore.html";
 			}
 		} else {
@@ -59,6 +59,7 @@
 	<br><br>Version 
 	<script>
 		console.clear();
+		console.log(location.href);
 		const page = {};
 		const all = document.querySelectorAll("*[id]");
 		all.forEach((val) => {

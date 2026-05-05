@@ -205,12 +205,12 @@
 				itemSpan.ondragover = handleDragOver;
 				itemSpan.ondrop = handleDrop;
 
-				let title = document.createElement("span");
-				title.style.cursor = "pointer";
-				title.style.overflowWrap = "anywhere";
-				title.innerHTML = pageData.title;
+				let itemTitle = document.createElement("span");
+				itemTitle.style.cursor = "pointer";
+				itemTitle.style.overflowWrap = "anywhere";
+				itemTitle.innerHTML = pageData.title;
 
-				itemSpan.appendChild(title);
+				itemSpan.appendChild(itemTitle);
 				itemSpan.style.textOverflow = "ellipsis";
 				itemSpan.style.whiteSpace = "nowrap";
 				itemSpan.style.overflow = "hidden";
@@ -235,7 +235,7 @@
 						}
 					}
 				}
-				title.onclick = url.onclick = e => {
+				itemTitle.onclick = e => {
 					//window.open(pageData.url, '_blank').focus();
 					let currentPage = { ...pageData };
 					currentPage.ix = ix;
@@ -281,25 +281,6 @@
 			window.open(url, '_blank').focus();
 		}
 
-		function applyEdits() {
-			let edits = storage.getItem("edits");
-			if (!edits) {
-				return;
-			}
-			//Auto remove
-			if (edits.artitle) {
-				edits.artitle.forEach(str => {
-					page.title.value = page.title.value.replace(str, "");
-				});
-				page.title.value = page.title.value.replace("  ", " ");
-			}
-			if (edits.arurl) {
-				edits.arurl.forEach(str => {
-					page.url.value = page.url.value.replace(str, "");
-				});
-				page.url.value = page.url.value.replace("  ", " ");
-			}
-		}
 
 		function groupClick(e, inp, name) {
 			e.preventDefault();

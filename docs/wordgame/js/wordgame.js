@@ -66,7 +66,7 @@ function runIt() {
     }
 
     let recentWords = settings.require("recentWords" + cellCount, {});
-    let pageNumber = storage.getItem("pageNumber") ?? "0";
+    let pageNumber = storage.getItem("pageNumber") ?? 0;
     let solutions = storage.getItem("solutions") ?? [];
     guesses = storage.getItem("guesses") ?? [];
     randomKey = storage.getItem("randomKey");

@@ -1,5 +1,7 @@
 function runIt() {
 
+    console.clear();
+
     let root = document.querySelector(':root');
     let main = document.getElementById("main");
     let keyboard = document.getElementById("keyboard");
@@ -19,6 +21,7 @@ function runIt() {
     let needsReload = false;
     let randomKey;
     let guesses;
+    let currentPageResults;
 
     let hash = location.hash.substring(1);
     let params = hash ? hash.split("&").reduce((res, item) => {
@@ -72,7 +75,7 @@ function runIt() {
     storage.setItem("randomKey", random.key);
     randomKey = random.key;
 
-    console.log(params, typeDetails, randomKey);
+    //console.log(params, typeDetails, randomKey);
 
     if (pageNumber >= pageCount) {
         pageNumber = pageCount - 1;
@@ -114,6 +117,15 @@ function runIt() {
         rightOptions.appendChild(document.createElement("div"));
     });
 
+    if (!combinePages) {
+        rightOptions.appendChild(document.createElement("div"));
+        let div = document.createElement("div");
+        div.className = "lettercount";
+        div.style.fontWeight = "bold";
+        div.style.color = "white"
+        div.innerHTML = pageNumber + 1;
+        rightOptions.appendChild(div);
+    }
 
     if (storage.getItem("wakelock") == "on") {
         (async () => {
@@ -218,15 +230,15 @@ function runIt() {
             } else if (e.key === "Backspace") {
                 goodInput = goodInput.substring(0, goodInput.length - 1);
                 applyWord();
-                refreshPage();
+                refreshUserInput();
                 save();
-            } else if (e.key.toLowerCase() == e.key.toUpperCase() || e.key.length != 1) {
+            } else if (e.key.toLowerCase() == e.key.toUpperCase() || e.key.length != 1) { //Not alpha
                 e.stopPropagation();
                 e.preventDefault();
             } else {
                 goodInput += e.key.toUpperCase();
                 goodInput = goodInput.substring(0, cellCount);
-                refreshPage();
+                refreshUserInput();
                 save();
             }
         }
@@ -249,6 +261,9 @@ function runIt() {
             wDiv.innerHTML = w;
             wDiv.onclick = e => {
                 goodInput = w;
+                if (!refreshUserInput()) {
+                    return;
+                }
                 applyWord();
                 refreshPage();
                 save();
@@ -283,7 +298,7 @@ function runIt() {
                 }
                 continue;
             }
-            let letterHints = pageResults[p].letterHints.total;
+            let letterHintsTotal = pageResults[p].letterHints.total;
             if (combinePages) {
 
             } else {
@@ -297,16 +312,16 @@ function runIt() {
                 sp.style.cursor = "pointer";
             }
 
-            foundbar.style.height = (letterHints.found * barMult) + "%";
+            foundbar.style.height = (letterHintsTotal.found * barMult) + "%";
 
             let matchedbar = addET(sp, "div", "boxbar");
-            matchedbar.style.height = (letterHints.matchedOnly * barMult) + "%";
+            matchedbar.style.height = (letterHintsTotal.matchedOnly * barMult) + "%";
             matchedbar.className = "matchedbar";
 
             if (pageResults[p].pageDone) {
                 foundbar.innerHTML = tick;
                 foundCount++;
-            }           
+            }
         }
         if (foundCount >= pageCount) {
             gameOver = true;
@@ -318,20 +333,21 @@ function runIt() {
         if (!gameOver) {
             goodInput += e.target.innerHTML.toUpperCase();
             goodInput = goodInput.substring(0, cellCount);
-            refreshPage();
+            refreshUserInput();
             save();
         }
     }
 
     function specialPress(type) {
-        if (type == 2 && goodInput.length > 0) {
+        if (type == 2 && goodInput.length > 0) { //Backspace on screen
             goodInput = goodInput.substring(0, goodInput.length - 1);
             applyWord();
-        }
-        if (type == 3) {
+        } else if (type == 3) { //Enter on screen
             applyWord();
+            refreshPage();
+        } else {
+            refreshUserInput();
         }
-        refreshPage();
         save();
     }
 
@@ -339,12 +355,8 @@ function runIt() {
         let row = document.getElementById("r" + guesses.length);
         row.className = "";
         if (goodInput.length != cellCount || guesses.length >= rowCount) {
+            //Do this on backspace just to clear error className
             return;
-        }
-        if (goodInput.toLowerCase() === "swswz") {
-            if (swk) {
-                swk.postMessage({type: "name"});
-            }
         }
         if (validWords.includes(goodInput.toLowerCase())) {
             guesses.push(goodInput);
@@ -410,7 +422,7 @@ function runIt() {
             if (stats["last"] !== sols) {
                 stats["last"] = sols;
                 stats.scores[balance]++;
-                stats["lastScore"]  = balance; //how much left
+                stats["lastScore"] = balance; //how much left
                 statsStore.setItem(storageName, stats);
             }
         }
@@ -422,9 +434,15 @@ function runIt() {
         let pageFull = false;
         let rowResults = []; // 0=no match 1=misplaced 2=found
         let letterResults = {};
-        let letterHints = {total: {matched: 0, found: 0}, help: {solved: new Array(cellCount).fill(""), missed: {}}};
-        let hintsData = {};
         let partSolved = new Array(cellCount).fill("");
+        let letterHints = {
+            total: {matched: 0, found: 0},
+            misplaced: {},
+            solved: new Array(cellCount).fill(0),
+            partSolved
+        };
+        let misplaced = letterHints.misplaced;
+        let hintsData = {};
         let solution = solutions[pagenum].toUpperCase().split("");
         guesses.forEach((guess, ix) => {
             let matchedLetters = {};
@@ -433,6 +451,7 @@ function runIt() {
             if (!pageFull) {
                 rowResults.push(rowResult);
                 let sol = [...solution];
+                let solMiss = [...solution];
                 foundCount = 0;
                 for (let c = 0; c < cellCount; c++) {
                     rowResult[c] = 0;
@@ -444,17 +463,28 @@ function runIt() {
                         matchedLetters[workGuess[c]] = (matchedLetters[workGuess[c]] ?? 0) + 1;
                         workGuess[c] = "?";
                         partSolved[c] = solution[c];
-                        letterHints.help.solved[c] = solution[c];
+                        letterHints.solved[c] = 1;
+                    } else {
+                        if (solMiss.includes(workGuess[c])) {
+                            misplaced[workGuess[c]] = misplaced[workGuess[c]] ?? new Array(cellCount).fill(0);
+                            misplaced[workGuess[c]][c] = 1;
+                            solMiss[solMiss.indexOf(workGuess[c])] = "*";
+                        }
                     }
                 }
                 if (foundCount == cellCount) {
                     pageDone = true;
                     if (combinePages) {
                         letterResults = {};
+                        solution.forEach(let => {
+                            misplaced[let] = new Array(cellCount).fill(1); 
+                        })
                     } else {
                         pageFull = true;
                     }
                 }
+                //When we get here correct workGuess[n] will contain "?"
+                //and sol[n]  will contain "*"
                 for (let c = 0; c < cellCount; c++) {
                     const char = workGuess[c]; //already has full matches as "?"
                     const hit = sol.indexOf(char);
@@ -465,10 +495,6 @@ function runIt() {
                         if (!letterResults[char]) {
                             letterResults[char] = 1;
                         }
-                        if (!letterHints.help.missed[char]) {
-                            letterHints.help.missed[char] = new Array(cellCount).fill(0);
-                        }
-                        letterHints.help.missed[char][c] = 1;
                         sol[hit] = "*"; //overwrite so duplicates match next occurence
                         matchedLetters[char] = (matchedLetters[char] ?? 0) + 1;
                     } else {
@@ -498,9 +524,6 @@ function runIt() {
                 hintsData[key].matched = hintsData[key].found;
                 //fixed where dup letter found on different rows
             }
-            if (hintsData[key].matched == hintsData[key].found) {
-                delete letterHints.help.missed[key];
-            }
             letterHints.total.matched += hintsData[key].matched;
             letterHints.total.found += hintsData[key].found;
         });
@@ -509,7 +532,54 @@ function runIt() {
         return {rowResults, letterResults, letterHints, pageDone};
     }
 
+    function refreshUserInput() {
+        if (!currentPageResults) {
+            applyUserInput();
+            return true;
+        }
+        let ret = true;
+        let failTypes = Array(cellCount).fill("");
+        goodInput.split("").forEach((letter, ix) => {
+            if (currentPageResults.letterResults[letter] === 0) {
+                failTypes[ix] = "absent";
+                ret = false;
+            }
+
+            let hints = currentPageResults.letterHints;
+
+            let missed = hints.misplaced[letter];
+            if (missed && missed[ix] == 1) {
+                failTypes[ix] = "knownmiss";
+                ret = false;
+            }
+
+            if (hints.solved[ix] && !hints.partSolved[ix].includes(letter)) {
+                failTypes[ix] = "solvedmiss";
+                ret = false;                      
+            }
+
+        });
+
+        applyUserInput(failTypes);
+        if (!ret) {
+            navigator.vibrate(100);
+        }
+        return ret;
+    }
+
+    function applyUserInput(failTypes) {
+        let r = guesses.length;
+        for (let c = 0; c < cellCount; c++) {
+            let cell = document.getElementById("r" + r + "c" + c);
+            cell.innerHTML = goodInput[c] ?? "";
+            if (failTypes) {
+                cell.className = failTypes[c];
+            }
+        }
+    }
+
     function refreshPage() {
+        //New word will have been included
         let pageResults = [];
         let pnum = pageNumber;
         for (let p = 0; p < pageCount; p++) {
@@ -521,8 +591,16 @@ function runIt() {
             pageResults.push(combinePageRows(pageResults));
         }
 
+        console.log(pageResults);
+
         let {rowResults, letterResults, pageDone, combinedPageLetters} = pageResults[pnum];
-        let r = guesses.length;
+
+        //combinedPageLetters have hit or missed letters with the page
+        //they appear on
+        //TODO
+
+        currentPageResults = {...pageResults[pnum]};
+        //let r = guesses.length;
         rowResults.forEach((result, ix) => {
             let foundCount = 0;
             for (let c = 0; c < cellCount; c++) {
@@ -553,10 +631,7 @@ function runIt() {
             }
         });
         if (!pageDone && guesses.length < rowCount) {
-            for (let c = 0; c < cellCount; c++) {
-                let cell = document.getElementById("r" + r + "c" + c);
-                cell.innerHTML = goodInput[c] ?? "";
-            }
+            applyUserInput();
         }
 
         let letterCount = new Array(4).fill(0);
@@ -580,6 +655,7 @@ function runIt() {
             rowResults.push(new Array(cellCount).fill(0));
         }
         let letterResults = {};
+        let letterHints = {solved: new Array(cellCount).fill(1), partSolved: new Array(cellCount).fill(""),misplaced: {}}
         let pageDone = true;
         let combinedPageLetters = {};
         for (let p = 0; p < pageCount; p++) {
@@ -593,6 +669,15 @@ function runIt() {
                 letterResults[key] = Math.max(letterResults[key] ?? 0, cp.letterResults[key]);
             });
 
+            letterHints.misplaced =  {... letterHints.misplaced, ... cp.letterHints.misplaced}
+
+            //letterHints.solved becomes whole column solved
+            //partSolved becomes all column solved letters
+            for (let ix = 0; ix < cellCount; ix++) {
+                letterHints.solved[ix] = letterHints.solved[ix] && cp.letterHints.solved[ix];
+                 letterHints.partSolved[ix] += cp.letterHints.partSolved[ix];
+            }
+
             solutions.forEach((sol, ix) => {
                 sol.split("").forEach(let => {
                     combinedPageLetters[let.toUpperCase()] = ix;
@@ -603,7 +688,7 @@ function runIt() {
                 pageDone = false;
             }
         }
-        return {rowResults, letterResults, pageDone, combinedPageLetters};
+        return {rowResults, letterResults, letterHints, pageDone, combinedPageLetters};
     }
 
     function makeSolutions() {
@@ -704,7 +789,7 @@ function runIt() {
             }
             count++;
         });
-        
+
         if (!recentWords[word]) {
             if (count >= 20) {
                 delete recentWords[leastWord];
@@ -712,12 +797,12 @@ function runIt() {
             recentWords[word] = 0;
         }
         recentWords[word]++;
-        settings.setItem("recentWords"+cellCount,recentWords);
+        settings.setItem("recentWords" + cellCount, recentWords);
     }
 
     function getRecentWords() {
         let wordList = [];
-        let sorted = [... Object.entries(recentWords)];
+        let sorted = [...Object.entries(recentWords)];
         sorted.sort((a, b) => {
             return b[1] - a[1];
         }).forEach(w => {

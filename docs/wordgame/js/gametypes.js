@@ -25,6 +25,7 @@ let gametypes = {
         prefill: 0,
         background: "#000000" ,
         iconChar: "1",
+        combinePages: true,
         showProgress: true
     },
     "wordgame-zor": {

@@ -180,6 +180,13 @@ input {
     transform: rotateX(360deg);
 }
 
+.absent, .knownmiss, .solvedmiss {
+    background-color: var(--myred);
+    color: black;
+    transition-duration: unset;
+    transition-delay: 0s !important;
+}
+
 .bad td,
 .badstat {
     background-color: var(--myred);

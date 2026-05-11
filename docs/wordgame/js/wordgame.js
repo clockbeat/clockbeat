@@ -342,6 +342,7 @@ function runIt() {
         if (type == 2 && goodInput.length > 0) { //Backspace on screen
             goodInput = goodInput.substring(0, goodInput.length - 1);
             applyWord();
+            refreshUserInput();
         } else if (type == 3) { //Enter on screen
             applyWord();
             refreshPage();
@@ -562,7 +563,7 @@ function runIt() {
 
         applyUserInput(failTypes);
         if (!ret) {
-            navigator.vibrate(100);
+            navigator.vibrate(200);
         }
         return ret;
     }

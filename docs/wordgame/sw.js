@@ -1,6 +1,6 @@
 importScripts("version.js");
 
-const contentToCache = ["index.html", "js/wordgame.js", "js/validwords.js", "js/solutionwords.js", "js/storage.js", "js/gametypes.js", "css/wordgame.css", "stats.html"];
+const contentToCache = projectFiles;
 
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets

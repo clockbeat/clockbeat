@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
+	<title>Page Store</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<style>
@@ -27,7 +28,7 @@
 </head>
 
 <body>
-	<div id="headtitle">Choose from menu</div>
+	<div id="headtitle"></div>
 
 	<div id="subfrom">
 		<div style="clear: left;">
@@ -38,7 +39,6 @@
 
 	<script type="text/javascript">
 		console.clear();
-		const tick = " ✔"; // &#10003;";
 		const page = {};
 		const all = document.querySelectorAll("*[id]");
 		all.forEach((val) => {
@@ -61,17 +61,23 @@
 
 		if (!currentGroup || !groups[currentGroup]) {
 			currentGroup = null;
+			menu.push({
+				title: "Edit", url: "/pagestore/pagestore.html"
+			});
 		} else {
 			menu.push({
-				title: "-edit-", func: sendToEdit 
+				title: "Edit", url: "/pagestore/pagestore.html#group=" + currentGroup
+			});
+			menu.push({
+				title: "Index", func: e => { location.hash = ""; }
 			});
 		}
 
-		Object.keys(groups).forEach(group => {
-			let link = new URL(location);
-			link.hash = group;
-			menu.push({ title: group, url: link })
-		});
+		// Object.keys(groups).forEach(group => {
+		// 	let link = new URL(location);
+		// 	link.hash = group;
+		// 	menu.push({ title: group, url: link })
+		// });
 
 		let add = document.createElement("span");
 
@@ -83,13 +89,32 @@
 			location = gotopage;
 		}
 
+		function frontPage() {
+			page.headtitle.innerHTML = "All";
+			page.headtitle.style.backgroundColor = stringToColour("");
+			page.historylist.innerHTML = "";
+			Object.keys(groups).forEach((group, ix) => {
+				let itemSpan = document.createElement("div");
+				let title = document.createElement("span");
+				title.style.cursor = "pointer";
+				title.innerHTML = "&#9776; &nbsp;&nbsp;" + group;
+				itemSpan.appendChild(title);
+				itemSpan.style.margin = "1.5em";
+				title.onclick = e => {
+					location.hash = group;
+				}
+				page.historylist.appendChild(itemSpan);
+
+			});
+		}
+
 		function refreshList(group) {
 			if (!group || !groups[group]) {
+				frontPage();
 				return;
 			}
 			page.headtitle.innerHTML = group;
 			page.headtitle.style.backgroundColor = stringToColour(group);
-			currentLabel = group;
 			page.historylist.innerHTML = "";
 			groups[group].forEach((pageData, ix) => {
 				let itemSpan = document.createElement("div");

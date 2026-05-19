@@ -99,7 +99,9 @@ if (typeof menu !== "undefined") {
                 }
                 processImportedSettings(text);
             }
-        }
+        },
+        {title: "Preview", url: "/pagelist/pagelist.html"},
+        //{title: "Bookmarks", url: "/pagestore/bookmarks.html"}
     ];
 }
 

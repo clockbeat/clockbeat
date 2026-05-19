@@ -1,3 +1,3 @@
-let cacheName = /*time!*/ "69fa41f3";
+let cacheName = /*time!*/ "6a0c800b";
 
-let projectFiles = /*files!*/ ["common.js", "index.html", "manifest.json", "pagestore.css", "pagestore.html", "pagestore.svg", "sw.js", "version.js"];
+let projectFiles = /*files!*/ ["bookmarks.html", "common.js", "index.html", "manifest.json", "pagestore.css", "pagestore.html", "pagestore.svg", "sw.js", "version.js"];

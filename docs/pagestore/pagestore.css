@@ -14,6 +14,14 @@
         	padding-top: 7em;			
         }
 
+		#headtitle {
+			font-size: 1.5em;
+			padding: 0.5em;
+			font-weight: bold;
+			background-color: yellow;
+			margin-bottom: 2em;
+		}		
+
         div,
         input {
         	margin: 2vw 0.5em 0 auto;
@@ -70,4 +78,13 @@
 		.link {
 			background-color: aquamarine;
 			margin-left: 15px;
+		}
+
+		.mybutton {
+			border-width: 1px;
+			border-style: solid;
+			border-color: black;
+			border-radius: 5px;
+			padding: 0.5em;
+			cursor: pointer;
 		}

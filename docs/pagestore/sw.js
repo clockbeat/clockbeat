@@ -2,20 +2,56 @@ importScripts("version.js");
 
 const contentToCache = projectFiles
 
+const pathname = self.location.pathname.split("/")[1];
+cacheName = pathname + "/" + cacheName;
+console.log(cacheName);
+let canvas = new OffscreenCanvas(48, 48);
+let context = canvas.getContext("2d");
+context.fillStyle = "white";
+context.fillRect(0, 0, 48, 48);
+context.strokeStyle = "#888";
+context.lineWidth = 12;
+let path = new Path2D();
+path.moveTo(6, 33);
+path.lineTo(6, 15);
+path.lineTo(24, 15);
+path.lineTo(24, 6);
+path.lineTo(42, 24);
+path.lineTo(24, 42);
+path.lineTo(24, 33);
+path.lineTo(6, 33);
+path.closePath();
+context.fillStyle = "#00D18B";
+context.stroke(path);
+context.fill(path);
+let iconResponse;
+canvas.convertToBlob({type: "image/png"}).then(blob => {
+    iconResponse = new Response(blob, {
+        headers: {
+            "content-type": "image/png"
+        }
+    });
+});
+
+
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets
+    console.log("activate", cacheName);
     e.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
-                cacheNames.map(cache => {
-                    if (cache !== cacheName) {
-                        return caches.delete(cache);
+                cacheNames.map(name => {
+                    if (name !== cacheName) {
+                        if (name.startsWith(pathname)) {
+                            return caches.delete(name);
+                        }
                     }
                 })
             );
         })
     );
- });
+    self.clients.claim();
+});
 
 self.addEventListener("install", (e) => {
     self.skipWaiting();
@@ -36,6 +72,10 @@ async function updateCache(request) {
         const formData = await request.formData();
         let str = new URLSearchParams(formData).toString()
         return Response.redirect(url + "#" + str, 302);
+    }
+
+    if (url.endsWith("favicon.ico") && iconResponse) {
+        return iconResponse;
     }
 
     const cachedResponse = await caches.match(url);

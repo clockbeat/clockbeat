@@ -3,9 +3,10 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-	<title>Page Store</title>
+	<title>Page List</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="" icon" href="/favicon.ico" />
 	<style>
 		body {
 			text-align: center;
@@ -23,8 +24,37 @@
 			background-color: yellow;
 		}
 	</style>
+	<script>
+		let swk;
+		let swr;
+		try {
+			console.clear();
+			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+				window.addEventListener("load", () => {
+					navigator.serviceWorker.register('sw.js')
+						.then(registration => {
+							swr = registration;
+							swk = registration.active;
+							console.log("Service worker registered");
+							navigator.serviceWorker.addEventListener("message", (event) => {
+								let el;
+								if (event.type == "message") {
+									if (event.data.icon) {
+										iconCreated();
+									}
+								}
+							});
+						})
+						.catch(err => console.error(`Service Worker Error: ${err}`));
+				});
+			}
+		} catch (e) {
+			console.error(e);
+		}			
+	</script>
 	<script src="/pagestore/common/storage.js"></script>
 	<script src="/pagestore/common/menu.js"></script>
+	<script src="version.js"></script>
 </head>
 
 <body>
@@ -36,6 +66,7 @@
 			</div>
 		</div>
 	</div>
+	<img id="icon" src="" style="opacity: 0; user-select: none;">
 
 	<script type="text/javascript">
 		console.clear();
@@ -47,9 +78,9 @@
 		let storage = new CbStorage("pagestore");
 		let groups = storage.require("groups", {});
 		let currentPage;
-		let currentGroup;
 		let newWin = false;
 		menu = [];
+		page.icon.src = "/favicon.ico";
 
 		window.addEventListener("hashchange", () => {
 			location.reload();
@@ -57,12 +88,21 @@
 
 		console.log(location.href);
 
-		currentGroup = location.hash.replace("#", "");
+		let currentGroup = location.hash.replace("#", "");
+		let groupColor = stringToColour(currentGroup);
 
 		if (!currentGroup || !groups[currentGroup]) {
 			currentGroup = null;
 			menu.push({
 				title: "Edit", url: "/pagestore/pagestore.html"
+			});
+			menu.push({
+				title: "Reset App", func: e => {
+					swr.unregister();
+					const pathname = location.pathname.split("/")[1];
+					caches.delete(pathname + "/" + cacheName);
+					location.reload();
+				}
 			});
 		} else {
 			menu.push({
@@ -73,13 +113,15 @@
 			});
 		}
 
-		// Object.keys(groups).forEach(group => {
-		// 	let link = new URL(location);
-		// 	link.hash = group;
-		// 	menu.push({ title: group, url: link })
-		// });
+		addEventListener("focus", () => {
+			if (swk) {
+				swk.postMessage({ icon: true, title: currentGroup, color: groupColor });
+			}
+		});
 
-		let add = document.createElement("span");
+		function iconCreated() {
+			page.icon.src = "/favicon.ico";
+		}
 
 		refreshList(currentGroup);
 
@@ -91,7 +133,7 @@
 
 		function frontPage() {
 			page.headtitle.innerHTML = "All";
-			page.headtitle.style.backgroundColor = stringToColour("");
+			page.headtitle.style.backgroundColor = "grey";
 			page.historylist.innerHTML = "";
 			Object.keys(groups).forEach((group, ix) => {
 				let itemSpan = document.createElement("div");
@@ -113,8 +155,9 @@
 				frontPage();
 				return;
 			}
+			document.title = group;
 			page.headtitle.innerHTML = group;
-			page.headtitle.style.backgroundColor = stringToColour(group);
+			page.headtitle.style.backgroundColor = groupColor;
 			page.historylist.innerHTML = "";
 			groups[group].forEach((pageData, ix) => {
 				let itemSpan = document.createElement("div");
@@ -129,19 +172,6 @@
 				page.historylist.appendChild(itemSpan);
 
 			});
-		}
-
-		function stringToColour(string) {
-			let hash = 0;
-			string.split('').forEach(char => {
-				hash = char.charCodeAt(0) + ((hash << 5) - hash);
-			})
-			let colour = '#';
-			for (let i = 0; i < 3; i++) {
-				const value = ((hash >> (i * 8)) & 0xff) | 0x80;
-				colour += value.toString(16).padStart(2, '0');
-			}
-			return colour
 		}
 
 	</script>

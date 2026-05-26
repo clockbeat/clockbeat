@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "6a1520f3";
+let cacheName = /*time!*/ "6a156665";
 
 let projectFiles = /*files!*/ ["pagelist.html", "sw.js", "version.js"];
 

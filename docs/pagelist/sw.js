@@ -72,11 +72,11 @@ async function updateCache(request) {
         let color = stringToColour(hash);
         await makeCustomFavIcon(hash, color);
         const cache = await caches.open(cacheName);
-        await cache.put("/favicon.ico", iconResponse.clone());
+        await cache.put("/favicon.png", iconResponse.clone());
     }
 
     console.log(url, iconResponse);
-    if (url.includes("favicon.ico") && iconResponse) {
+    if (url.includes("favicon.png") && iconResponse) {
         console.log(url + " from iconResponse");
         return iconResponse.clone();
     }

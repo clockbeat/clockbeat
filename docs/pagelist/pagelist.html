@@ -6,7 +6,7 @@
 	<title>Page List</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="icon" type="image/png" href="/favicon.ico" />
+	<link rel="icon" type="image/png" href="/favicon.png" />
 	<style>
 		body {
 			text-align: center;
@@ -80,7 +80,7 @@
 		let currentPage;
 		let newWin = false;
 		menu = [];
-		page.icon.src = "/favicon.ico";
+		page.icon.src = "/favicon.png";
 
 		window.addEventListener("hashchange", () => {
 			location.reload();
@@ -120,7 +120,7 @@
 		});
 
 		function iconCreated() {
-			page.icon.src = "/favicon.ico";
+			page.icon.src = "/favicon.png";
 		}
 
 		refreshList(currentGroup);

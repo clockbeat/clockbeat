@@ -5,34 +5,6 @@ const contentToCache = projectFiles
 const pathname = self.location.pathname.split("/")[1];
 cacheName = pathname + "/" + cacheName;
 console.log(cacheName);
-let canvas = new OffscreenCanvas(48, 48);
-let context = canvas.getContext("2d");
-context.fillStyle = "white";
-context.fillRect(0, 0, 48, 48);
-context.strokeStyle = "#888";
-context.lineWidth = 12;
-let path = new Path2D();
-path.moveTo(6, 33);
-path.lineTo(6, 15);
-path.lineTo(24, 15);
-path.lineTo(24, 6);
-path.lineTo(42, 24);
-path.lineTo(24, 42);
-path.lineTo(24, 33);
-path.lineTo(6, 33);
-path.closePath();
-context.fillStyle = "#00D18B";
-context.stroke(path);
-context.fill(path);
-let iconResponse;
-canvas.convertToBlob({type: "image/png"}).then(blob => {
-    iconResponse = new Response(blob, {
-        headers: {
-            "content-type": "image/png"
-        }
-    });
-});
-
 
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets
@@ -74,10 +46,6 @@ async function updateCache(request) {
         return Response.redirect(url + "#" + str, 302);
     }
 
-    if (url.endsWith("favicon.ico") && iconResponse) {
-        return iconResponse;
-    }
-
     const cachedResponse = await caches.match(url);
     if (cachedResponse) {
         console.log(url + " from cache");
@@ -106,9 +74,4 @@ self.addEventListener("fetch", (e) => {
 });
 
 self.addEventListener('message', (event) => {
-    console.log("to sw", event.data);
-    if (event.data == "name") {
-        event.data = cacheName;
-        event.source.postMessage({name: cacheName});
-    }
 });

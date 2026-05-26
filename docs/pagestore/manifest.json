@@ -1,7 +1,7 @@
 {
   "name": "Page Store",
   "short_name": "pagestore",
-  "start_url": "/pagestore/index.html",
+  "start_url": "/pagestore/pagestore.html",
   "scope": "/pagestore/",
   "display": "standalone",
   "theme_color": "#ffffff",

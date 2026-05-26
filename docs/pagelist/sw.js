@@ -9,15 +9,15 @@ let iconResponse;
 
 async function makeCustomFavIcon(text, color) {
     text = text ?? ""
-    let canvas = new OffscreenCanvas(32, 32);
+    let canvas = new OffscreenCanvas(192, 192);
     let context = canvas.getContext("2d");
     context.fillStyle = color;
-    context.fillRect(0, 0, 32, 32);
+    context.fillRect(0, 0, 192, 192);
     context.fillStyle = "black";
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.font = "18px sans-serif";
-    context.fillText(text.substring(0, 2), 4, 24);
+    context.font = "100px sans-serif";
+    context.fillText(text.substring(0, 2), 4, 130);
     let blob = await canvas.convertToBlob({type: "image/png"}); //.then(blob => //{
     iconResponse = new Response(blob, {
         headers: {

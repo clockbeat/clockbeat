@@ -1,6 +1,4 @@
 {
-  "name": "PageList",
-  "short_name": "PageList",
   "icons": [
     {
       "src": "/favicon.png",
@@ -10,5 +8,5 @@
   ],
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
-  "display": "standalone"
+  "display": "browser"
 }

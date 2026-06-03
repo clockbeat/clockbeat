@@ -1,0 +1,13 @@
+{
+  "name": "dvdlist",
+  "short_name": "dvdlist",
+  "icons": [
+    {
+      "src": "/dvdlist/dvdlist.svg",
+      "sizes": "any"
+    }
+  ],
+  "theme_color": "#aaaaff",
+  "background_color": "#aaaaff",
+  "display": "browser"
+}

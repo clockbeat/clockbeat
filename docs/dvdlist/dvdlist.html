@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-	<title>Page List</title>
+	<title>DVD List</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
@@ -241,28 +241,25 @@
 						return;
 					}
 					let row = document.createElement("tr");
-					row.style.cursor = "pointer";
-					row.onclick = () => {
-						window.open("https://www.themoviedb.org/movie/" + movie.id, "_blank");
-					}
 
 					table.appendChild(row);
 
-					let title = document.createElement("td");
-					title.style.textIndent = "0.5em hanging";
-					title.style.height = "2em";
-					title.style.paddingLeft = "0.5em";
-					title.style.width = "100%";
-					title.style.verticalAlign = "middle";
+					let mainRow = document.createElement("td");
+					mainRow.style.textIndent = "0.5em hanging";
+					mainRow.style.height = "2em";
+					mainRow.style.paddingLeft = "0.5em";
+					mainRow.style.width = "100%";
+					mainRow.style.verticalAlign = "middle";
+					//mainRow.style.display = "inline-block";
+
+					let title = document.createElement("span");			
 					title.innerHTML = movie.title;
-
-					// let rightSide = document.createElement("div");
-					// rightSide.style.float = "right";
-					// rightSide.style.display = "inline-block";
-					// rightSide.style.minWidth = "5em";
-					// row.appendChild(rightSide);
-
-					row.appendChild(title);
+					title.style.cursor = "pointer";
+					title.onclick = () => {
+						window.open("https://www.themoviedb.org/movie/" + movie.id, "_blank");
+					}
+					mainRow.appendChild(title);
+					row.appendChild(mainRow);
 
 					let hoursMins = document.createElement("td");
 					hoursMins.style.verticalAlign = "middle";

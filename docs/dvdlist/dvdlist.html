@@ -1,0 +1,291 @@
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+	<title>Page List</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+	<link rel="icon" type="image/png" href="/favicon.png" />
+	<style>
+		body {
+			text-align: center;
+			font-family: sans-serif;
+			font-size: 120%;
+			padding-top: 0em;
+			padding-bottom: 5em;
+			margin: 0;
+		}
+
+		#headtitle {
+			font-size: 1em;
+			padding: 1em;
+			font-weight: bold;
+			background-color: yellow;
+		}
+	</style>
+	<script>
+		let swk;
+		let swr;
+		try {
+			//console.clear();
+			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+				window.addEventListener("load", () => {
+					navigator.serviceWorker.register('sw.js')
+						.then(registration => {
+							swr = registration;
+							swk = registration.active;
+							console.log("Service worker registered");
+							navigator.serviceWorker.addEventListener("message", (event) => {
+								let el;
+								if (event.type == "message") {
+								}
+							});
+						})
+						.catch(err => console.error(`Service Worker Error: ${err}`));
+				});
+			}
+		} catch (e) {
+			console.error(e);
+		}			
+	</script>
+	<script src="/common/storage.js"></script>
+	<script src="/common/menu2.js"></script>
+	<script src="version.js"></script>
+</head>
+
+<body>
+	<div id="headtitle"></div>
+
+	<div id="subfrom">
+		<div style="clear: left;">
+			<div id="historylist" style="text-align: initial; ">
+			</div>
+		</div>
+	</div>
+
+
+	<script type="text/javascript">
+		let dvdList;
+
+		console.clear();
+		console.log("starting");
+
+		fetch("/test/dvddata.json").then(response => {
+			response.json().then(data => {
+				dvdList = data;
+				console.log("dvddata.json");
+				runIt();
+			});
+		}).catch(e => {
+			console.error(e);
+		});
+
+		function runIt() {
+
+			console.log("runIt");
+			const page = {};
+			const all = document.querySelectorAll("*[id]");
+			all.forEach((val) => {
+				page[val.id] = val;
+			});
+			let storage = new CbStorage("pagestore");
+			let groups = storage.require("groups", {});
+			let currentPage;
+			let newWin = false;
+			menu = [];
+
+			window.addEventListener("hashchange", () => {
+				page.historylist.innerHTML = "";
+				runIt();
+			});
+
+			console.log(location.href);
+
+			let pageSelection = decodeURIComponent(location.hash).replace("#", "");
+			try {
+				pageSelection = JSON.parse(pageSelection);
+			} catch (e) {
+				pageSelection = {};
+			}
+
+			if (pageSelection.sort) {
+				if (pageSelection.sort == "by run time") {
+					dvdList.movies.sort((a, b) => {
+						return a.runtime - b.runtime;
+					});
+				}
+				if (pageSelection.sort == "by year") {
+					dvdList.movies.sort((a, b) => {
+						return a.year - b.year;
+					});
+				}
+			} else { //default sort by title	
+				dvdList.movies.sort((a, b) => {
+					return a.rowNo - b.rowNo;
+				});
+			}
+
+			dvdList.countries.sort();
+			dvdList.genres.sort();
+
+			let genres = () => {
+				let glist = [
+					{
+						title: "-All-", func: x => {
+							delete pageSelection.genre;
+							location.hash = JSON.stringify(pageSelection);
+							return true;
+						}
+					}
+				];
+				dvdList.genres.forEach(genre => {
+					glist.push({
+						title: genre, func: x => {
+							pageSelection.genre = genre;
+							location.hash = JSON.stringify(pageSelection);
+							return true;
+						}
+					})
+				});
+				return glist;
+			};
+
+			let countries = () => {
+				let clist = [
+					{
+						title: "-All-", func: x => {
+							delete pageSelection.country;
+							location.hash = JSON.stringify(pageSelection);
+							return true;
+						}
+					}
+				];
+				dvdList.countries.forEach(country => {
+					clist.push({
+						title: country, func: x => {
+							pageSelection.country = country;
+							location.hash = JSON.stringify(pageSelection);
+							return true;
+						}
+					})
+				});
+				return clist;
+			}
+
+			let sortTypes = () => {
+				let clist = [
+					{
+						title: "Sort by title", func: e => {
+							delete pageSelection.sort;
+							location.hash = JSON.stringify(pageSelection);
+							return true;
+						}
+					}, {
+						title: "Sort by run time", func: e => {
+							pageSelection.sort = "by run time";
+							location.hash = JSON.stringify(pageSelection);
+							return true;
+						}
+					}, {
+						title: "Sort by year", func: e => {
+							pageSelection.sort = "by year";
+							location.hash = JSON.stringify(pageSelection);
+							return true;
+						}
+					}];
+				return clist;
+			}
+
+			CbMakeMenu(() => {
+				return [{
+					title: "Reset App", func: e => {
+						swr.unregister();
+						const pathname = location.pathname.split("/")[1];
+						caches.delete(pathname + "/" + cacheName);
+						location.reload();
+					}
+				}, {
+					title: "Show all", func: e => {
+						location.hash = "";
+						return true;
+					}
+				},
+				{
+					title: "Sort", submenu: sortTypes
+				},
+				{
+					title: "Genre", submenu: genres
+				},
+				{
+					title: "Country", submenu: countries
+				}];
+			});
+
+
+			frontPage();
+
+			function frontPage() {
+				let selections = Object.values(pageSelection).join(", ");
+				page.headtitle.innerHTML = "DVDs " + selections;
+				page.headtitle.style.backgroundColor = "lightgrey";
+				page.historylist.innerHTML = "";
+				let table = document.createElement("table");
+				table.style.width = "100%";
+				dvdList.movies.forEach((movie, ix) => {
+					if (pageSelection.genre && !movie.genres.includes(pageSelection.genre)) {
+						return;
+					}
+					if (pageSelection.country && !movie.country.includes(pageSelection.country)) {
+						return;
+					}
+					let row = document.createElement("tr");
+					row.style.cursor = "pointer";
+					row.onclick = () => {
+						window.open("https://www.themoviedb.org/movie/" + movie.id, "_blank");
+					}
+
+					table.appendChild(row);
+
+					let title = document.createElement("td");
+					title.style.textIndent = "0.5em hanging";
+					title.style.height = "2em";
+					title.style.paddingLeft = "0.5em";
+					title.style.width = "100%";
+					title.style.verticalAlign = "middle";
+					title.innerHTML = movie.title;
+
+					// let rightSide = document.createElement("div");
+					// rightSide.style.float = "right";
+					// rightSide.style.display = "inline-block";
+					// rightSide.style.minWidth = "5em";
+					// row.appendChild(rightSide);
+
+					row.appendChild(title);
+
+					let hoursMins = document.createElement("td");
+					hoursMins.style.verticalAlign = "middle";
+					hoursMins.style.minWidth = "3em";
+					hoursMins.innerHTML = movie.hoursMins;
+					row.appendChild(hoursMins);
+
+					let year = document.createElement("td");
+					year.style.verticalAlign = "middle";
+					year.style.paddingRight = "0.5em";
+					year.innerHTML = movie.year;
+					row.appendChild(year);
+
+					row.style.margin = "0.5em";
+
+					page.historylist.appendChild(row);
+
+				});
+			}
+		}
+
+	</script>
+
+</body>
+
+</html>

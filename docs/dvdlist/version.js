@@ -1,6 +1,8 @@
-let cacheName = /*time!*/ "6a208329";
+"use strict"
 
-let projectFiles = /*files!*/ ["dvdlist.html", "dvdlist.js", "dvdlist.svg", "manifest.json", "sw.js", "version.js"];
+let cacheName = /*time!*/ "6a270f16";
+
+let projectFiles = /*files!*/ ["dvdlist.html", "dvdlist.svg", "manifest.json", "sw.js", "version.js"];
 
 
 function stringToColour(string) {

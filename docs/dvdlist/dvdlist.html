@@ -26,6 +26,7 @@
 		}
 	</style>
 	<script>
+		"use strict"
 		let swk;
 		let swr;
 		try {
@@ -67,6 +68,8 @@
 
 
 	<script type="text/javascript">
+		"use strict"
+
 		let dvdList;
 
 		console.clear();
@@ -82,6 +85,11 @@
 			console.error(e);
 		});
 
+		window.addEventListener("hashchange", () => {
+			document.getElementById("historylist").innerHTML = "";
+			runIt();
+		});
+
 		function runIt() {
 
 			console.log("runIt");
@@ -90,18 +98,11 @@
 			all.forEach((val) => {
 				page[val.id] = val;
 			});
-			let storage = new CbStorage("pagestore");
-			let groups = storage.require("groups", {});
+
 			let currentPage;
 			let newWin = false;
-			menu = [];
-
-			window.addEventListener("hashchange", () => {
-				page.historylist.innerHTML = "";
-				runIt();
-			});
-
-			console.log(location.href);
+			let menu = [];
+			let localFilters = { genres: dvdList.genres, countries: dvdList.countries };
 
 			let pageSelection = decodeURIComponent(location.hash).replace("#", "");
 			try {
@@ -109,6 +110,8 @@
 			} catch (e) {
 				pageSelection = {};
 			}
+
+			console.log(pageSelection);
 
 			if (pageSelection.sort) {
 				if (pageSelection.sort == "by run time") {
@@ -119,6 +122,12 @@
 				if (pageSelection.sort == "by year") {
 					dvdList.movies.sort((a, b) => {
 						return a.year - b.year;
+					});
+				}
+				if (pageSelection.sort == "by recent") {
+					dvdList.movies.sort((a, b) => {
+						// reverse sequence
+						return b.lineNo - a.lineNo;
 					});
 				}
 			} else { //default sort by title	
@@ -134,17 +143,21 @@
 				let glist = [
 					{
 						title: "-All-", func: x => {
-							delete pageSelection.genre;
-							location.hash = JSON.stringify(pageSelection);
+							if (pageSelection.genre) {
+								delete pageSelection.genre;
+								setHash();
+							}
 							return true;
 						}
 					}
 				];
-				dvdList.genres.forEach(genre => {
+				localFilters.genres.forEach(genre => {
 					glist.push({
 						title: genre, func: x => {
-							pageSelection.genre = genre;
-							location.hash = JSON.stringify(pageSelection);
+							if (pageSelection.genre != genre) {
+								pageSelection.genre = genre;
+								setHash();
+							}
 							return true;
 						}
 					})
@@ -156,17 +169,21 @@
 				let clist = [
 					{
 						title: "-All-", func: x => {
-							delete pageSelection.country;
-							location.hash = JSON.stringify(pageSelection);
+							if (pageSelection.country) {
+								delete pageSelection.country;
+								setHash();
+							}
 							return true;
 						}
 					}
 				];
-				dvdList.countries.forEach(country => {
+				localFilters.countries.forEach(country => {
 					clist.push({
 						title: country, func: x => {
-							pageSelection.country = country;
-							location.hash = JSON.stringify(pageSelection);
+							if (pageSelection.country != country) {
+								pageSelection.country = country;
+								setHash();
+							}
 							return true;
 						}
 					})
@@ -178,24 +195,42 @@
 				let clist = [
 					{
 						title: "Sort by title", func: e => {
-							delete pageSelection.sort;
-							location.hash = JSON.stringify(pageSelection);
+							if (pageSelection.sort) {
+								delete pageSelection.sort;
+								setHash();
+							}
 							return true;
 						}
 					}, {
 						title: "Sort by run time", func: e => {
-							pageSelection.sort = "by run time";
-							location.hash = JSON.stringify(pageSelection);
+							if (pageSelection.sort != "by run time") {
+								pageSelection.sort = "by run time";
+								setHash();
+							}
 							return true;
 						}
 					}, {
 						title: "Sort by year", func: e => {
-							pageSelection.sort = "by year";
-							location.hash = JSON.stringify(pageSelection);
+							if (pageSelection.sort != "by year") {
+								pageSelection.sort = "by year";
+								setHash();
+							}
+							return true;
+						}
+					}, {
+						title: "Sort by recent", func: e => {
+							if (pageSelection.sort != "by recent") {
+								pageSelection.sort = "by recent";
+								setHash();
+							}
 							return true;
 						}
 					}];
 				return clist;
+			}
+
+			function setHash() {
+				location.hash = JSON.stringify(pageSelection);
 			}
 
 			CbMakeMenu(() => {
@@ -208,7 +243,8 @@
 					}
 				}, {
 					title: "Show all", func: e => {
-						location.hash = "";
+						pageSelection = {};
+						setHash();
 						return true;
 					}
 				},
@@ -233,12 +269,25 @@
 				page.historylist.innerHTML = "";
 				let table = document.createElement("table");
 				table.style.width = "100%";
+				let genresSet = new Set();
+				let countriesSet = new Set();
 				dvdList.movies.forEach((movie, ix) => {
-					if (pageSelection.genre && !movie.genres.includes(pageSelection.genre)) {
-						return;
+					if (pageSelection.genre) {
+						if (!movie.genres.includes(pageSelection.genre)) {
+							return;
+						}
+
+						movie.country.forEach(country => {
+							countriesSet.add(country);
+						});
 					}
-					if (pageSelection.country && !movie.country.includes(pageSelection.country)) {
-						return;
+					if (pageSelection.country) {
+						if (!movie.country.includes(pageSelection.country)) {
+							return;
+						}
+						movie.genres.forEach(genre => {
+							genresSet.add(genre);
+						});
 					}
 					let row = document.createElement("tr");
 
@@ -252,7 +301,7 @@
 					mainRow.style.verticalAlign = "middle";
 					//mainRow.style.display = "inline-block";
 
-					let title = document.createElement("span");			
+					let title = document.createElement("span");
 					title.innerHTML = movie.title;
 					title.style.cursor = "pointer";
 					title.onclick = () => {
@@ -278,6 +327,16 @@
 					page.historylist.appendChild(row);
 
 				});
+				if (pageSelection.country) {
+					localFilters.genres = [...genresSet];
+				} else {
+					localFilters.genres = dvdList.genres;
+				}
+				if (pageSelection.genre) {
+					localFilters.countries = [...countriesSet];
+				} else {
+					localFilters.countries = dvdList.countries;
+				}
 			}
 		}
 

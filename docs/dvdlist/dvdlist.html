@@ -75,65 +75,44 @@
 		console.clear();
 		console.log("starting");
 
+		let localFilters = { genres: [], countries: [] };
+
 		fetch("/test/dvddata.json").then(response => {
 			response.json().then(data => {
 				dvdList = data;
 				console.log("dvddata.json");
-				runIt();
+				localFilters = { genres: dvdList.genres, countries: dvdList.countries };
+				preProcess();
 			});
 		}).catch(e => {
 			console.error(e);
 		});
 
 		window.addEventListener("hashchange", () => {
-			document.getElementById("historylist").innerHTML = "";
-			runIt();
+			//document.getElementById("historylist").innerHTML = "";
+			frontPage();
 		});
 
-		function runIt() {
+		let pageSelection = decodeURIComponent(location.hash).replace("#", "");
 
-			console.log("runIt");
-			const page = {};
-			const all = document.querySelectorAll("*[id]");
-			all.forEach((val) => {
-				page[val.id] = val;
-			});
+		const page = {};
+		const all = document.querySelectorAll("*[id]");
+		all.forEach((val) => {
+			page[val.id] = val;
+		});
+
+		function preProcess() {
+
+			console.log("preProcess");
 
 			let currentPage;
 			let newWin = false;
 			let menu = [];
-			let localFilters = { genres: dvdList.genres, countries: dvdList.countries };
 
-			let pageSelection = decodeURIComponent(location.hash).replace("#", "");
 			try {
 				pageSelection = JSON.parse(pageSelection);
 			} catch (e) {
 				pageSelection = {};
-			}
-
-			console.log(pageSelection);
-
-			if (pageSelection.sort) {
-				if (pageSelection.sort == "by run time") {
-					dvdList.movies.sort((a, b) => {
-						return a.runtime - b.runtime;
-					});
-				}
-				if (pageSelection.sort == "by year") {
-					dvdList.movies.sort((a, b) => {
-						return a.year - b.year;
-					});
-				}
-				if (pageSelection.sort == "by recent") {
-					dvdList.movies.sort((a, b) => {
-						// reverse sequence
-						return b.lineNo - a.lineNo;
-					});
-				}
-			} else { //default sort by title	
-				dvdList.movies.sort((a, b) => {
-					return a.rowNo - b.rowNo;
-				});
 			}
 
 			dvdList.countries.sort();
@@ -233,110 +212,141 @@
 				location.hash = JSON.stringify(pageSelection);
 			}
 
-			CbMakeMenu(() => {
-				return [{
-					title: "Reset App", func: e => {
-						swr.unregister();
-						const pathname = location.pathname.split("/")[1];
-						caches.delete(pathname + "/" + cacheName);
-						location.reload();
-					}
-				}, {
-					title: "Show all", func: e => {
-						pageSelection = {};
-						setHash();
-						return true;
-					}
-				},
-				{
-					title: "Sort", submenu: sortTypes
-				},
-				{
-					title: "Genre", submenu: genres
-				},
-				{
-					title: "Country", submenu: countries
-				}];
-			});
+			function resetMe() {
+				swr.unregister();
+				const pathname = location.pathname.split("/")[1];
+				caches.delete(pathname + "/" + cacheName);
+				document.body.innerHTML = "Resetting" + cacheName;
+				setTimeout(() => {
+					location.reload();
+				}, 4000);
+			}
 
+			CbMakeMenu(() => {
+				return [
+					{
+						title: "Show all", func: e => {
+							pageSelection = {};
+							setHash();
+							return true;
+						}
+					},
+					{
+						title: "Sort", submenu: sortTypes
+					},
+					{
+						title: "Genre", submenu: genres
+					},
+					{
+						title: "Country", submenu: countries
+					}];
+			}, resetMe);
 
 			frontPage();
+		}
 
-			function frontPage() {
-				let selections = Object.values(pageSelection).join(", ");
-				page.headtitle.innerHTML = "DVDs " + selections;
-				page.headtitle.style.backgroundColor = "lightgrey";
-				page.historylist.innerHTML = "";
-				let table = document.createElement("table");
-				table.style.width = "100%";
-				let genresSet = new Set();
-				let countriesSet = new Set();
-				dvdList.movies.forEach((movie, ix) => {
-					if (pageSelection.genre) {
-						if (!movie.genres.includes(pageSelection.genre)) {
-							return;
-						}
-
-						movie.country.forEach(country => {
-							countriesSet.add(country);
-						});
-					}
-					if (pageSelection.country) {
-						if (!movie.country.includes(pageSelection.country)) {
-							return;
-						}
-						movie.genres.forEach(genre => {
-							genresSet.add(genre);
-						});
-					}
-					let row = document.createElement("tr");
-
-					table.appendChild(row);
-
-					let mainRow = document.createElement("td");
-					mainRow.style.textIndent = "0.5em hanging";
-					mainRow.style.height = "2em";
-					mainRow.style.paddingLeft = "0.5em";
-					mainRow.style.width = "100%";
-					mainRow.style.verticalAlign = "middle";
-					//mainRow.style.display = "inline-block";
-
-					let title = document.createElement("span");
-					title.innerHTML = movie.title;
-					title.style.cursor = "pointer";
-					title.onclick = () => {
-						window.open("https://www.themoviedb.org/movie/" + movie.id, "_blank");
-					}
-					mainRow.appendChild(title);
-					row.appendChild(mainRow);
-
-					let hoursMins = document.createElement("td");
-					hoursMins.style.verticalAlign = "middle";
-					hoursMins.style.minWidth = "3em";
-					hoursMins.innerHTML = movie.hoursMins;
-					row.appendChild(hoursMins);
-
-					let year = document.createElement("td");
-					year.style.verticalAlign = "middle";
-					year.style.paddingRight = "0.5em";
-					year.innerHTML = movie.year;
-					row.appendChild(year);
-
-					row.style.margin = "0.5em";
-
-					page.historylist.appendChild(row);
-
+		function sortMovies() {
+			if (pageSelection.sort) {
+				if (pageSelection.sort == "by run time") {
+					dvdList.movies.sort((a, b) => {
+						return a.runtime - b.runtime;
+					});
+				}
+				if (pageSelection.sort == "by year") {
+					dvdList.movies.sort((a, b) => {
+						return a.year - b.year;
+					});
+				}
+				if (pageSelection.sort == "by recent") {
+					dvdList.movies.sort((a, b) => {
+						// reverse sequence
+						return b.lineNo - a.lineNo;
+					});
+				}
+			} else { //default sort by title	
+				dvdList.movies.sort((a, b) => {
+					return a.rowNo - b.rowNo;
 				});
-				if (pageSelection.country) {
-					localFilters.genres = [...genresSet];
-				} else {
-					localFilters.genres = dvdList.genres;
-				}
+			}
+		}
+
+
+		function frontPage() {
+			console.log(pageSelection);
+			let selections = Object.values(pageSelection).join(", ");
+			page.headtitle.innerHTML = "DVDs " + selections;
+			page.headtitle.style.backgroundColor = "lightgrey";
+			page.historylist.innerHTML = "";
+			let table = document.createElement("table");
+			table.style.width = "100%";
+			let genresSet = new Set();
+			let countriesSet = new Set();
+			sortMovies();
+			dvdList.movies.forEach((movie, ix) => {
 				if (pageSelection.genre) {
-					localFilters.countries = [...countriesSet];
-				} else {
-					localFilters.countries = dvdList.countries;
+					if (!movie.genres.includes(pageSelection.genre)) {
+						return;
+					}
+
+					movie.country.forEach(country => {
+						countriesSet.add(country);
+					});
 				}
+				if (pageSelection.country) {
+					if (!movie.country.includes(pageSelection.country)) {
+						return;
+					}
+					movie.genres.forEach(genre => {
+						genresSet.add(genre);
+					});
+				}
+				let row = document.createElement("tr");
+
+				table.appendChild(row);
+
+				let mainRow = document.createElement("td");
+				mainRow.style.textIndent = "0.5em hanging";
+				mainRow.style.height = "2em";
+				mainRow.style.paddingLeft = "0.5em";
+				mainRow.style.width = "100%";
+				mainRow.style.verticalAlign = "middle";
+				//mainRow.style.display = "inline-block";
+
+				let title = document.createElement("span");
+				title.innerHTML = movie.title;
+				title.style.cursor = "pointer";
+				title.onclick = () => {
+					window.open("https://www.themoviedb.org/movie/" + movie.id, "_blank");
+				}
+				mainRow.appendChild(title);
+				row.appendChild(mainRow);
+
+				let hoursMins = document.createElement("td");
+				hoursMins.style.verticalAlign = "middle";
+				hoursMins.style.minWidth = "3em";
+				hoursMins.innerHTML = movie.hoursMins;
+				row.appendChild(hoursMins);
+
+				let year = document.createElement("td");
+				year.style.verticalAlign = "middle";
+				year.style.paddingRight = "0.5em";
+				year.innerHTML = movie.year;
+				row.appendChild(year);
+
+				row.style.margin = "0.5em";
+
+				page.historylist.appendChild(row);
+
+			});
+			if (pageSelection.country) {
+				localFilters.genres = [...genresSet];
+			} else {
+				localFilters.genres = dvdList.genres;
+			}
+			if (pageSelection.genre) {
+				localFilters.countries = [...countriesSet];
+			} else {
+				localFilters.countries = dvdList.countries;
 			}
 		}
 

@@ -1,13 +1,22 @@
-function CbMakeMenu(menuFunc) {
+"use strict"
+
+function CbMakeMenu(menuFunc, secretFunc) {
+    //Run once only!!
 
     //  mainMenuFunc supplies an array of menu objects
-    // title - the title
+    // title - the title 
     //     url - a simple url
     // or: func - a function to execute
     // or: submenu - a function which will supply an array of menu objects
 
+    if (document.getElementById("menuDiv")) {
+        console.error("Menu already created");
+        return;
+    }
+
     let menuDiv;
     let mainMenu = {func: menuFunc}; //sub menus also have parentMenu:
+    let secretCount = 0;
 
     let img = document.createElement("img");
     img.style.position = "absolute";
@@ -18,10 +27,20 @@ function CbMakeMenu(menuFunc) {
     img.style.padding = "1em";
     img.style.cursor = "pointer";
     img.onclick = e => {
+        if (menuDiv.style.display != "none") {
+            secretCount++;
+            console.log("Secret count", secretCount);
+            if (secretCount >= 5 && secretFunc) {
+                secretFunc();
+            }
+            e.stopPropagation();
+            return;
+        }
         menuDiv.style.display = "block";
         window.commonMenuOpen = true;
         resetMenu();
         e.stopPropagation();
+        secretCount = 0;
     }
     document.documentElement.addEventListener("click", e => {
         closeMenu();
@@ -39,6 +58,7 @@ function CbMakeMenu(menuFunc) {
     menuDiv.style.boxShadow = "10px 5px 5px grey";
     menuDiv.style.padding = "1em";
     menuDiv.style.backgroundColor = "white";
+    menuDiv.style.userSelect = "none";
     menuDiv.onclick = e => {
         //menuDiv.style.display = "block";
         e.stopPropagation();
@@ -61,13 +81,17 @@ function CbMakeMenu(menuFunc) {
             menu = mainMenu;
         }
         let items = menu.func();
-        if (menu.parentMenu) {
-            items.unshift({
-                title: "&#x21a9;", css: "font-size: 200%", func: e => {
+        //if (menu.parentMenu) {
+        items.unshift({
+            title: "&#x21a9;", css: "font-size: 200%", func: e => {
+                if (menu.parentMenu) {
                     updateMenu(menu.parentMenu);
+                } else {
+                    closeMenu();
                 }
-            });
-        }
+            }
+        });
+        //}
 
         menuDiv.innerHTML = "";
         items.forEach(item => {
@@ -114,4 +138,3 @@ function CbMakeMenu(menuFunc) {
         });
     }
 }
-

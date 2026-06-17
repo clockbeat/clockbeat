@@ -130,8 +130,8 @@
 						}
 					}
 				];
-				localFilters.genres.forEach(genre => {
-					glist.push({
+				localFilters.genres.forEach((genre, ix) => {
+					let gn = {
 						title: genre, func: x => {
 							if (pageSelection.genre != genre) {
 								pageSelection.genre = genre;
@@ -139,7 +139,11 @@
 							}
 							return true;
 						}
-					})
+					};
+					if ((ix + 2) % 12 == 0) {
+						gn.break = true;
+					}
+					glist.push(gn)
 				});
 				return glist;
 			};
@@ -156,8 +160,8 @@
 						}
 					}
 				];
-				localFilters.countries.forEach(country => {
-					clist.push({
+				localFilters.countries.forEach((country, ix) => {
+					let ctr = {
 						title: country, func: x => {
 							if (pageSelection.country != country) {
 								pageSelection.country = country;
@@ -165,7 +169,11 @@
 							}
 							return true;
 						}
-					})
+					};
+					if ((ix + 2) % 12 == 0) {
+						ctr.break = true;
+					}
+					clist.push(ctr);
 				});
 				return clist;
 			}
@@ -216,10 +224,7 @@
 				swr.unregister();
 				const pathname = location.pathname.split("/")[1];
 				caches.delete(pathname + "/" + cacheName);
-				document.body.innerHTML = "Resetting" + cacheName;
-				setTimeout(() => {
-					location.reload();
-				}, 4000);
+				document.body.innerHTML = "Resetting " + cacheName;
 			}
 
 			CbMakeMenu(() => {

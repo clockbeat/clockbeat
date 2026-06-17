@@ -94,6 +94,12 @@ function CbMakeMenu(menuFunc, secretFunc) {
         //}
 
         menuDiv.innerHTML = "";
+        let itemsCol;
+        let firstItem = true;
+        //  = document.createElement("div");
+        // itemsCol.style.display = "inline-block";
+        // itemsCol.style.marginRight = "2em";
+        // menuDiv.appendChild(itemsCol);
         items.forEach(item => {
             if (window.location.href.endsWith(item.url)) {
                 //Don't show current page
@@ -104,6 +110,13 @@ function CbMakeMenu(menuFunc, secretFunc) {
                 menuItemDiv.style.cssText = item.css ?? "";
             } else {
                 menuItemDiv.style.marginTop = "1em";
+            }
+            if (firstItem || item.break) {
+                itemsCol = document.createElement("div");
+                itemsCol.style.display = "inline-block";
+                itemsCol.style.marginRight = "2em";
+                menuDiv.appendChild(itemsCol);
+                firstItem = false;
             }
             let menuItem;
             if (item.url) {
@@ -131,7 +144,7 @@ function CbMakeMenu(menuFunc, secretFunc) {
             menuItem.style.textDecoration = "none";
             menuItem.className = "menu-item";
             menuItemDiv.appendChild(menuItem);
-            menuDiv.appendChild(menuItemDiv);
+            itemsCol.appendChild(menuItemDiv);
             menuItemDiv.onclick = e => {
                 window.commonMenuOpen = false;
             };

@@ -8,16 +8,19 @@
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	<link rel="stylesheet" href="pagestore.css">
 	<script src="/common/storage.js"></script>
-	<script src="/common/menu.js"></script>
+	<script src="/common/menu2.js"></script>
 	<script src="common.js"></script>
 	<script src="version.js"></script>
 	<script>
+		"use strict"
+		let swr;
 		try {
 			console.clear();
 			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
 				window.addEventListener("load", () => {
 					navigator.serviceWorker.register('sw.js')
 						.then(reg => {
+							swr = reg;
 							console.log("Service worker registered");
 							navigator.serviceWorker.addEventListener("message", (event) => {
 								if (event.type == "message") {
@@ -42,17 +45,21 @@
 		<textarea id="url" wrap="soft" style="width: 90vw; height: 10vh;"></textarea>
 		<div>
 			<div id="buttons" class="xbutton"></div>
+			<select id="groupsel" style="width: 50%; margin-top: 1em;">
+			</select>
 		</div>
 		<div style="clear: left;">
 			<div id="historylist"
 				style="display: grid; grid-template-columns: 7fr 1fr; gap: 0.5em; grid-auto-rows: auto; text-align: initial; ">
 			</div>
 			<div id="delgroup" style="display: none; cursor: pointer;">Delete group x</div>
-			<div id="renamegroup" style="display: none;  cursor: pointer;">Rename group x</div>
+			<div id="renamegroup" style="display: none;  cursor: pointer;">Rename list x</div>
 		</div>
 	</div>
 
 	<script type="text/javascript">
+		"use strict"
+
 		console.clear();
 
 		function runIt() {
@@ -64,16 +71,18 @@
 			});
 
 			let storage = new CbStorage("pagestore");
-			menuStorage = storage;
 			let groups = storage.require("groups", {});
 			let queue = storage.require("queue", {});
 			let currentPage;
 			let currentGroup;
+			let currentLabel;
+			page.historylist.innerHTML = "";
 			page.buttons.innerHTML = "";
 			let newWin = false;
 			page.title.value = "";
 			page.url.value = "";
 			page.revert.style.display = "none";
+			groupsel.innerHTML = "";
 
 			let search = Object.fromEntries(new URLSearchParams(location.hash.replace("#", "?")));
 			if (search.description) {
@@ -84,39 +93,36 @@
 			} else if (search.group && groups[search.group]) {
 				currentGroup = search.group;
 			}
-			//applyEdits();
+
+			page.groupsel.style.backgroundColor = "white";
+			let option = new Option();
+			option.text = "Choose ...";
+			option.value = "";
+			page.groupsel.appendChild(option);
 
 			Object.keys(groups).forEach(group => {
 				let li = document.createElement("span");
 				let radio = document.createElement("input");
 				let label = document.createElement("label");
-				radio.type = "radio";
-				radio.name = "histOption";
-				radio.id = group;
-				radio.style.display = "none";
-				label.onclick = e => {
-					currentGroup = group;
-					if (!window.commonMenuOpen) {
-						refreshList(group);
-						location.hash = "group=" + group;
-					}
+				option = new Option();
+				option.value = group;
+				option.text = group;
+				if (group == currentGroup) {
+					option.selected = true;
+					page.groupsel.style.backgroundColor = stringToColour(currentGroup);
 				}
-				label.htmlFor = group;
-				label.innerHTML = group;
-				var space = document.createTextNode(" ");
-				li.appendChild(space);
-				li.appendChild(radio);
-				li.appendChild(label);
-				buttons.appendChild(li);
+				page.groupsel.appendChild(option);
 			});
 
-			let add = document.createElement("span");
-			add.innerHTML = "&nbsp;+&nbsp;";
-			add.title = "Add new group";
-			add.className = "link";
-			add.onclick = e => {
-				let name = prompt("Name of new group", "New");
-				if (name) {
+			option = new Option();
+			option.value = "#new#";
+			option.text = ".... New list";
+			page.groupsel.appendChild(option);
+
+			page.groupsel.onchange = e => {
+				currentGroup = null;
+				if (page.groupsel.value == "#new#") {
+					let name = prompt("Name of new list", "");
 					if (name) {
 						if (!groups[name]) {
 							groups[name] = [];
@@ -125,14 +131,41 @@
 								runIt();
 							});
 						}
+						currentGroup = name;
+						page.groupsel.value = name;
 					}
-				};
-				e.stopPropagation();
-			};
-			buttons.appendChild(add);
+				} else {
+					currentGroup = page.groupsel.value;
+					page.groupsel.style.backgroundColor = stringToColour(currentGroup);
+				}
+				refreshList(currentGroup);
+				location.hash = "group=" + currentGroup;
+
+			}
+
+			// let add = document.createElement("span");
+			// add.innerHTML = "&nbsp;+&nbsp;";
+			// add.title = "Add new group";
+			// add.className = "link";
+			// add.onclick = e => {
+			// 	let name = prompt("Name of new group", "New");
+			// 	if (name) {
+			// 		if (name) {
+			// 			if (!groups[name]) {
+			// 				groups[name] = [];
+			// 				storage.save();
+			// 				Promise.resolve().then(() => {
+			// 					runIt();
+			// 				});
+			// 			}
+			// 		}
+			// 	};
+			// 	e.stopPropagation();
+			// };
+			// buttons.appendChild(add);
 
 			let apply = document.createElement("span");
-			apply.innerHTML = "Set page";
+			apply.innerHTML = "Apply";
 			apply.title = "apply new group";
 			apply.className = "link";
 			apply.onclick = e => {
@@ -175,18 +208,25 @@
 			refreshList(currentGroup);
 
 			function refreshList(group) {
+				page.historylist.innerHTML = "";
 				if (!group || !groups[group]) {
+					page.renamegroup.style.display = "none";
+					page.delgroup.style.display = "none";
+					apply.style.display = "none"
+					currentGroup = null;
 					return;
 				}
 				currentLabel = group;
-				document.getElementById(group).checked = true;
-				page.historylist.innerHTML = "";
+				apply.style.display = "initial";
+				//document.getElementById(group).checked = true;
 				if (groups[group].length == 0) {
 					page.delgroup.style.display = "block";
 					page.delgroup.onclick = e => {
 						if (!window.commonMenuOpen) {
 							delete groups[group];
 							storage.save();
+							currentGroup = "";
+							location.hash = "group=" + currentGroup;
 							Promise.resolve().then(() => {
 								runIt();
 							});
@@ -328,9 +368,29 @@
 				groups[group].push(pageData);
 				storage.save();
 			}
+
 		}
 
+		buildMenu();
+
 		runIt();
+
+		function stringToColour(string) {
+			let hash = 0;
+			console.log("Colour of ", string)
+			if (!string) {
+				return "white";
+			}
+			string.split('').forEach(char => {
+				hash = char.charCodeAt(0) + ((hash << 5) - hash);
+			})
+			let colour = '#';
+			for (let i = 0; i < 3; i++) {
+				const value = ((hash >> (i * 8)) & 0xff) | 0x80;
+				colour += value.toString(16).padStart(2, '0');
+			}
+			return colour
+		}
 
 	</script>
 

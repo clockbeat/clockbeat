@@ -11,16 +11,16 @@
         	background-repeat: no-repeat;
         	background-position: top;
         	background-size: auto 7em;
-        	padding-top: 7em;			
+        	padding-top: 7em;
         }
 
-		#headtitle {
-			font-size: 1.5em;
-			padding: 0.5em;
-			font-weight: bold;
-			background-color: yellow;
-			margin-bottom: 2em;
-		}		
+        #headtitle {
+        	font-size: 1.5em;
+        	padding: 0.5em;
+        	font-weight: bold;
+        	background-color: yellow;
+        	margin-bottom: 2em;
+        }
 
         div,
         input {
@@ -32,6 +32,7 @@
         	margin: 1vh auto 0 auto;
         	font-size: 120%;
         	width: 90vw;
+        	border-radius: 0.5em;			
         }
 
         button {
@@ -39,31 +40,35 @@
         	margin: 2vw auto 0 auto;
         }
 
-		#headtitle {
-			font-weight: bold;
-			margin-bottom: 2em;
-		}
+        #headtitle {
+        	font-weight: bold;
+        	margin-bottom: 2em;
+        }
 
         .menu-item {
         	min-width: 100%;
         	padding: 1em;
-			margin: 2vw;
+        	margin: 2vw;
         }
 
-		.xbutton {
-			line-height: 2em;
-			text-align: left;
-			margin: 0;
-			padding: 0;
-			user-select: none;
-		}
+        .xbutton {
+        	line-height: 2em;
+        	text-align: left;
+        	margin: 0.2em;
+        	padding: 0;
+        	user-select: none;
+        	position: absolute;
+        	right: 1em;
+        	display: inline-block;
+        }
 
         .xbutton input[type="radio"]:checked+label,
         .checked+label {
         	background: rgb(206, 197, 255);
         }
 
-        .xbutton label, .link {
+        .xbutton label,
+        .link {
         	padding: 5px;
         	border: 1px solid #CCC;
         	cursor: pointer;
@@ -75,16 +80,40 @@
         	background: #DDD;
         }
 
-		.link {
-			background-color: aquamarine;
-			margin-left: 15px;
-		}
+        .link {
+        	background-color: aquamarine;
+        	margin-left: 15px;
+			border-radius: 0.5em;
+        }
 
-		.mybutton {
-			border-width: 1px;
-			border-style: solid;
-			border-color: black;
-			border-radius: 5px;
-			padding: 0.5em;
-			cursor: pointer;
-		}
+        .mybutton {
+        	border-width: 1px;
+        	border-style: solid;
+        	border-color: black;
+        	border-radius: 5px;
+        	padding: 0.5em;
+        	cursor: pointer;
+        }
+
+        #groupsel option {
+        	border-width: 1px;
+        	border-style: solid;
+        	border-color: black;
+        	border-radius: 5px;
+        	padding: 0.5em;
+        	cursor: pointer;
+        	font-size: 105%;
+        }
+
+        select#groupsel {
+        	appearance: base-select;
+        	font-size: 105%;
+        	/* Style the button */
+        	padding: 10px;
+        	border: 1px solid #ccc;
+        }
+
+        select option {
+        	background-color: white;
+        	padding: 8px;
+        }

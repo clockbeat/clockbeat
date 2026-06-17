@@ -1,7 +1,7 @@
-
-let menuStorage;
+"use strict"
 
 function preProcessExportSettings() {
+    let menuStorage = new CbStorage("pagestore");
     if (menuStorage == undefined) {
         throw "Can't backup without data";
     }
@@ -16,6 +16,7 @@ function preProcessExportSettings() {
 }
 
 function processImportedSettings(importedText) {
+    let menuStorage = new CbStorage("pagestore");
     try {
         let imported = JSON.parse(importedText);
         if (!imported.groups) {
@@ -53,55 +54,70 @@ function processImportedSettings(importedText) {
             window.alert("Some orphans");
 
         }
-        storage.setStorage(imported);
+        menuStorage.setStorage(imported);
         location.reload();
     } catch (e) {
-        window.alert("Invalid settings");
+        window.alert("Invalid settings " + e.toString());
     }
 }
 
-if (typeof menu !== "undefined") {
-    menu = [
-        {title: "Home", url: "index.html#here"},
-        {title: "Manage pages", url: "pagestore.html"},
-        {
-            title: "Backup", func: async function () {
-                let text = preProcessExportSettings();
-                let filename = `pagestore.json`;
-                const fileHandle = await window.showSaveFilePicker({
-                    suggestedName: filename
-                });
-                const writable = await fileHandle.createWritable();
-                await writable.write(text);
-                await writable.close();
-            }
-        },
-        {
-            title: "Restore", func: async function () {
-                const [fileHandle] = await window.showOpenFilePicker();
-                const file = await fileHandle.getFile();
-                const text = await file.text();
-                processImportedSettings(text);
-            }
-        },
-        {
-            title: "Copy settings", func: async function () {
-                let text = preProcessExportSettings();
-                navigator.clipboard.writeText(text);
-                window.alert("Settings copied to clipboard");
-            }
-        },
-        {
-            title: "Paste settings", func: async function () {
-                let text = await navigator.clipboard.readText();
-                if (!window.confirm("Paste settings?")) {
-                    return;
+
+function buildMenu() {
+
+    let menu = () => {
+        let m = [
+            {title: "Home", url: "index.html#here"},
+            {title: "Manage pages", url: "pagestore.html"},
+            {
+                title: "Backup", func: async function () {
+                    let text = preProcessExportSettings();
+                    let filename = `pagestore.json`;
+                    const fileHandle = await window.showSaveFilePicker({
+                        suggestedName: filename
+                    });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(text);
+                    await writable.close();
                 }
-                processImportedSettings(text);
-            }
-        },
-        {title: "Preview", url: "/pagelist/pagelist.html"},
-        //{title: "Bookmarks", url: "/pagestore/bookmarks.html"}
-    ];
+            },
+            {
+                title: "Restore", func: async function () {
+                    const [fileHandle] = await window.showOpenFilePicker();
+                    const file = await fileHandle.getFile();
+                    const text = await file.text();
+                    processImportedSettings(text);
+                }
+            },
+            {
+                title: "Copy settings", func: async function () {
+                    let text = preProcessExportSettings();
+                    navigator.clipboard.writeText(text);
+                    window.alert("Settings copied to clipboard");
+                }
+            },
+            {
+                title: "Paste settings", func: async function () {
+                    let text = await navigator.clipboard.readText();
+                    if (!window.confirm("Paste settings?")) {
+                        return;
+                    }
+                    processImportedSettings(text);
+                }
+            },
+            {title: "Preview", url: "/pagelist/pagelist.html"},
+        ];
+        return m;
+    };
+
+    function resetMe() {
+        swr.unregister();
+        const pathname = location.pathname.split("/")[1];
+        caches.delete(pathname + "/" + cacheName);
+        document.body.innerHTML = "Resetting " + cacheName;
+    }
+
+
+    CbMakeMenu(menu, resetMe);
 }
+
 

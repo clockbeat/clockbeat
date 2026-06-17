@@ -1,3 +1,5 @@
+"use strict"
+
 importScripts("version.js");
 
 const contentToCache = projectFiles

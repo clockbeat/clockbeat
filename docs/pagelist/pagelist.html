@@ -26,6 +26,7 @@
 		}
 	</style>
 	<script>
+		"use strict"
 		let swk;
 		let swr;
 		try {
@@ -54,7 +55,7 @@
 		}			
 	</script>
 	<script src="/common/storage.js"></script>
-	<script src="/common/menu.js"></script>
+	<script src="/common/menu2.js"></script>
 	<script src="version.js"></script>
 </head>
 
@@ -70,6 +71,8 @@
 	<img id="icon" src="" style="opacity: 1; user-select: none;">
 
 	<script type="text/javascript">
+		"use strict"
+
 		console.clear();
 		const page = {};
 		const all = document.querySelectorAll("*[id]");
@@ -80,7 +83,6 @@
 		let groups = storage.require("groups", {});
 		let currentPage;
 		let newWin = false;
-		menu = [];
 		page.icon.src = "/favicon.png";
 
 		window.addEventListener("hashchange", () => {
@@ -92,27 +94,35 @@
 		let currentGroup = location.hash.replace("#", "");
 		let groupColor = stringToColour(currentGroup);
 
-		if (!currentGroup || !groups[currentGroup]) {
-			currentGroup = null;
-			menu.push({
-				title: "Edit", url: "/pagestore/pagestore.html"
-			});
-			menu.push({
-				title: "Reset App", func: e => {
-					swr.unregister();
-					const pathname = location.pathname.split("/")[1];
-					caches.delete(pathname + "/" + cacheName);
-					location.reload();
-				}
-			});
-		} else {
-			menu.push({
-				title: "Edit", url: "/pagestore/pagestore.html#group=" + currentGroup
-			});
-			menu.push({
-				title: "Index", func: e => { location.hash = ""; }
-			});
+		let menuFunc = () => {
+
+
+			let menu = [];
+			if (!currentGroup || !groups[currentGroup]) {
+				currentGroup = null;
+				menu.push({
+					title: "Edit", url: "/pagestore/pagestore.html"
+				});
+			} else {
+				menu.push({
+					title: "Edit", url: "/pagestore/pagestore.html#group=" + currentGroup
+				});
+				menu.push({
+					title: "Index", func: e => { location.hash = ""; }
+				});
+			}
+			return menu;
+		};
+
+		function resetMe() {
+			swr.unregister();
+			const pathname = location.pathname.split("/")[1];
+			caches.delete(pathname + "/" + cacheName);
+			document.body.innerHTML = "Resetting " + cacheName;
 		}
+
+
+		CbMakeMenu(menuFunc, resetMe);
 
 		addEventListener("focus", () => {
 			if (swk) {

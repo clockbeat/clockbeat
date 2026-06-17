@@ -52,11 +52,13 @@ function CbMakeMenu(menuFunc, secretFunc) {
     menuDiv.style.position = "fixed";
     menuDiv.style.top = 0;
     menuDiv.style.left = "3em";
-    menuDiv.style.minWidth = "20vw";
+    menuDiv.style.minWidth = "30vw";
     menuDiv.style.display = "none";
     menuDiv.style.textAlign = "left";
     menuDiv.style.boxShadow = "10px 5px 5px grey";
-    menuDiv.style.padding = "1em";
+    menuDiv.style.borderStyle = "solid";
+    menuDiv.style.borderWidth = "1px";
+    menuDiv.style.padding = "0.5em";
     menuDiv.style.backgroundColor = "white";
     menuDiv.style.userSelect = "none";
     menuDiv.onclick = e => {
@@ -114,7 +116,7 @@ function CbMakeMenu(menuFunc, secretFunc) {
             if (firstItem || item.break) {
                 itemsCol = document.createElement("div");
                 itemsCol.style.display = "inline-block";
-                itemsCol.style.marginRight = "2em";
+                itemsCol.style.margin = "0.5em";
                 menuDiv.appendChild(itemsCol);
                 firstItem = false;
             }

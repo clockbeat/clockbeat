@@ -65,6 +65,12 @@ function processImportedSettings(importedText) {
 function buildMenu() {
 
     let menu = () => {
+
+    let hash = location.hash;
+    if (hash) {
+        hash = hash.replace("group=", "");
+    }
+
         let m = [
             {title: "Home", url: "index.html#here"},
             {title: "Manage pages", url: "pagestore.html"},
@@ -104,7 +110,7 @@ function buildMenu() {
                     processImportedSettings(text);
                 }
             },
-            {title: "Preview", url: "/pagelist/pagelist.html"},
+            {title: "Preview", url: "/pagelist/pagelist.html" + hash},
         ];
         return m;
     };

@@ -178,7 +178,9 @@
 				itemSpan.appendChild(title);
 				itemSpan.style.margin = "1.5em";
 				title.onclick = e => {
-					window.open(pageData.url, '_blank').focus();
+					//Use url as target as simple way to avoid
+					//opening new tab on each request for it
+					window.open(pageData.url, pageData.url).focus();
 				}
 				page.historylist.appendChild(itemSpan);
 

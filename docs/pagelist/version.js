@@ -1,6 +1,6 @@
 "use strict"
 
-let cacheName = /*time!*/ "6a32355f";
+let cacheName = /*time!*/ "6a355bc0";
 
 let projectFiles = /*files!*/ ["manifest.json", "pagelist.html", "sw.js", "version.js"];
 

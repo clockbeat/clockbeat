@@ -51,31 +51,31 @@ function processImportedSettings(importedText) {
         }
         if (orphaned.length > 0) {
             imported.groups["-orphaned-"] = orphaned;
-            window.alert("Some orphans");
+            CbAlert("Some orphans");
 
         }
         menuStorage.setStorage(imported);
         location.reload();
     } catch (e) {
-        window.alert("Invalid settings " + e.toString());
+        CbAlert("Invalid settings ");
     }
 }
 
 
-function buildMenu() {
+function buildMenu(noedit) {
 
     let menu = () => {
 
-    let hash = location.hash;
-    if (hash) {
-        hash = hash.replace("group=", "");
-    }
+        let hash = location.hash;
+        if (hash) {
+            hash = hash.replace("group=", "");
+        }
 
         let m = [
-            {title: "Home", url: "index.html#here"},
-            {title: "Manage pages", url: "pagestore.html"},
+            {title: "Home", url: "index.html"},
+            {title: "Manage pages", url: "pagestore.html", omit: noedit},
             {
-                title: "Backup", func: async function () {
+                title: "Backup to file", func: async function () {
                     let text = preProcessExportSettings();
                     let filename = `pagestore.json`;
                     const fileHandle = await window.showSaveFilePicker({
@@ -84,10 +84,10 @@ function buildMenu() {
                     const writable = await fileHandle.createWritable();
                     await writable.write(text);
                     await writable.close();
-                }
+                }, omit: noedit
             },
             {
-                title: "Restore", func: async function () {
+                title: "Restore from file", func: async function () {
                     const [fileHandle] = await window.showOpenFilePicker();
                     const file = await fileHandle.getFile();
                     const text = await file.text();
@@ -98,19 +98,18 @@ function buildMenu() {
                 title: "Copy settings", func: async function () {
                     let text = preProcessExportSettings();
                     navigator.clipboard.writeText(text);
-                    window.alert("Settings copied to clipboard");
-                }
+                    CbAlert("Settings copied to clipboard");
+                }, omit: noedit
             },
             {
                 title: "Paste settings", func: async function () {
                     let text = await navigator.clipboard.readText();
-                    if (!window.confirm("Paste settings?")) {
-                        return;
-                    }
-                    processImportedSettings(text);
+                    CbConfirm("Paste settings?", () => {
+                        processImportedSettings(text); 
+                    });
                 }
             },
-            {title: "Preview", url: "/pagelist/pagelist.html" + hash},
+            {title: "Preview", url: "../pagelist/pagelist.html" + hash},
         ];
         return m;
     };
@@ -119,7 +118,7 @@ function buildMenu() {
         swr.unregister();
         const pathname = location.pathname.split("/")[1];
         caches.delete(pathname + "/" + cacheName);
-        document.body.innerHTML = "Resetting " + cacheName;
+        document.body.innerHTML = "Resetting " + pathname + "/" + cacheName;
     }
 
 

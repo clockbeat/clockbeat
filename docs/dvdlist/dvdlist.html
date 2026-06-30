@@ -317,16 +317,12 @@
 					menuList.unshift(
 						{
 							title: "Find ...", func: e => {
-								CbPrompt(
+								CbPrompt("Find", "", frontPage, 
 									e => {
-										if (e.type == "close") {
-											frontPage();
-											return;
-										}
 										if (e.type == "input") {
 											locateName(e.target.value);
 										}
-									}, { input: "text", capture: ["input", "close"] });
+									});
 								return true;
 							}
 						}

@@ -57,9 +57,8 @@
 </head>
 
 <body>
-	<div id="headtitle"></div>
-
-	<div id="subfrom">
+	<div id="headtitle" style="position: fixed; width: 100%;"></div>
+	<div id="subfrom" style="padding-top: 4em;">
 		<div style="clear: left;">
 			<div id="historylist" style="text-align: initial; ">
 			</div>
@@ -71,6 +70,9 @@
 		"use strict"
 
 		let dvdList;
+		let rows = [];
+		let findDvd = [];
+		let highlightedRows = [];
 
 		console.clear();
 		console.log("starting");
@@ -92,6 +94,12 @@
 			//document.getElementById("historylist").innerHTML = "";
 			frontPage();
 		});
+
+		// window.addEventListener("scroll", (event) => {
+		// 	if (!promptContext.selfScroll) {
+		// 		page.findruler.style.top = "-100px";
+		// 	}
+		// });
 
 		let pageSelection = decodeURIComponent(location.hash).replace("#", "");
 
@@ -117,6 +125,11 @@
 
 			dvdList.countries.sort();
 			dvdList.genres.sort();
+
+			dvdList.movies.findIndex((row, ix) => {
+				let title = row.title.toLowerCase().match(/[a-zA-Z0-9 ]/g)?.join('');
+				findDvd.push(title);
+			});
 
 			let genres = () => {
 				let glist = [
@@ -227,8 +240,62 @@
 				document.body.innerHTML = "Resetting " + cacheName;
 			}
 
+			function locateName(name) {
+				highlightedRows.forEach(n => {
+					rows[n].style.backgroundColor = "transparent";
+				});
+
+				if (!name) {
+					return;
+				}
+
+				highlightedRows = [];
+
+				let allFirst = [];
+				let allWord = [];
+				let allDone = new Set();
+				name = name.toLowerCase().match(/[a-zA-Z0-9 ]/g)?.join('');
+				name = name.replace(/^the /i, "");
+				if (!name) {
+					return;
+				}
+				findDvd.forEach((title, ix) => {
+					if (title.includes(" " + name)) {
+						allWord.push(ix);
+					}
+					if (title.substring(0, 4) == "the ") {
+						title = title.substring(4);
+					}
+					if (title.startsWith(name)) {
+						allFirst.push(ix);
+					}
+				});
+				let pos = allFirst.length ? allFirst[0] :
+					allWord.length ? allWord[0] : -1;
+
+				if (pos >= 0) {
+					rows[Math.max(pos - 5, 0)].scrollIntoView();
+
+					allFirst.forEach(n => {
+						rows[n].style.backgroundColor = "lightgreen";
+						highlightedRows.push(n);
+						allDone.add(n);
+					});
+
+					allWord.forEach(n => {
+						if (allDone.has(n)) return;
+						rows[n].style.backgroundColor = "yellow";
+						highlightedRows.push(n);
+						allDone.add(n);
+					});
+
+				}
+			}
+
 			CbMakeMenu(() => {
-				return [
+				let hash = location.hash;
+
+				let menuList = [
 					{
 						title: "Show all", func: e => {
 							pageSelection = {};
@@ -245,7 +312,29 @@
 					{
 						title: "Country", submenu: countries
 					}];
-			}, resetMe);
+
+				if (hash == "" || hash == "#{}") {
+					menuList.unshift(
+						{
+							title: "Find ...", func: e => {
+								CbPrompt(
+									e => {
+										if (e.type == "close") {
+											frontPage();
+											return;
+										}
+										if (e.type == "input") {
+											locateName(e.target.value);
+										}
+									}, { input: "text", capture: ["input", "close"] });
+								return true;
+							}
+						}
+					)
+				}
+
+				return menuList;
+			}, resetMe, { position: "fixed" });
 
 			frontPage();
 		}
@@ -278,12 +367,15 @@
 
 		function frontPage() {
 			console.log(pageSelection);
+			rows = [];
 			let selections = Object.values(pageSelection).join(", ");
 			page.headtitle.innerHTML = "DVDs " + selections;
 			page.headtitle.style.backgroundColor = "lightgrey";
 			page.historylist.innerHTML = "";
 			let table = document.createElement("table");
 			table.style.width = "100%";
+			table.style.borderCollapse = "collapse";
+			page.historylist.appendChild(table);
 			let genresSet = new Set();
 			let countriesSet = new Set();
 			sortMovies();
@@ -339,8 +431,9 @@
 				row.appendChild(year);
 
 				row.style.margin = "0.5em";
+				rows.push(row);
 
-				page.historylist.appendChild(row);
+				//page.historylist.appendChild(row);
 
 			});
 			if (pageSelection.country) {

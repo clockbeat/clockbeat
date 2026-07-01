@@ -1,9 +1,11 @@
 "use strict"
 
-let cacheName = /*time!*/ "6a44ba20";
+let cacheName = /*time!*/ "6a44d167";
 
 let projectFiles = /*files!*/ ["dvdlist.html", "dvdlist.svg", "manifest.json", "sw.js", "version.js"];
 
+projectFiles.push("/common/menu2.js");
+projectFiles.push("/common/storage.js");
 
 function stringToColour(string) {
     let hash = 0;

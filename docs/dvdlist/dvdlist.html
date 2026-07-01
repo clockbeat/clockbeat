@@ -91,15 +91,8 @@
 		});
 
 		window.addEventListener("hashchange", () => {
-			//document.getElementById("historylist").innerHTML = "";
 			frontPage();
 		});
-
-		// window.addEventListener("scroll", (event) => {
-		// 	if (!promptContext.selfScroll) {
-		// 		page.findruler.style.top = "-100px";
-		// 	}
-		// });
 
 		let pageSelection = decodeURIComponent(location.hash).replace("#", "");
 
@@ -274,7 +267,11 @@
 					allWord.length ? allWord[0] : -1;
 
 				if (pos >= 0) {
-					rows[Math.max(pos - 5, 0)].scrollIntoView();
+					if (pos > 5) {
+						rows[pos - 5].scrollIntoView();
+					} else {
+						window.scrollTo(0, 0);
+					}
 
 					allFirst.forEach(n => {
 						rows[n].style.backgroundColor = "lightgreen";
@@ -317,10 +314,13 @@
 					menuList.unshift(
 						{
 							title: "Find ...", func: e => {
-								CbPrompt("Find", "", frontPage, 
+								CbPrompt("Find", "", frontPage,
 									e => {
 										if (e.type == "input") {
 											locateName(e.target.value);
+										}
+										if (e.type == "close") {
+											frontPage();
 										}
 									});
 								return true;

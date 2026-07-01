@@ -233,7 +233,7 @@ function CbModal(func, profile) {
 
     if (profile.input == "OK") {
         let inp = document.createElement("input");
-        inp.style.cssText = "font-size: 120%;";
+        inp.style.cssText = "font-size: 16pt";
         inp.type = "button";
         inp.value = "OK";
         inp.onclick = e => {

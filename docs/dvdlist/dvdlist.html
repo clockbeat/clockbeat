@@ -407,9 +407,6 @@
 
 				let title = document.createElement("span");
 				let titleText = video.title;
-				if (video.type == "tv") {
-					titleText += " | TV &times;" + video.number_of_episodes; 
-				}
 				title.innerHTML = titleText;
 				title.style.cursor = "pointer";
 				title.onclick = () => {
@@ -421,7 +418,12 @@
 				let hoursMins = document.createElement("td");
 				hoursMins.style.verticalAlign = "middle";
 				hoursMins.style.minWidth = "3em";
-				hoursMins.innerHTML = video.hoursMins;
+				if (video.type == "tv") {
+					hoursMins.innerHTML = "13&times;" + video.runtime + "&nbsp;";
+					row.style.backgroundColor = "#efefff";
+				} else {
+					hoursMins.innerHTML = video.hoursMins;
+				}
 				row.appendChild(hoursMins);
 
 				let year = document.createElement("td");

@@ -419,7 +419,7 @@
 				hoursMins.style.verticalAlign = "middle";
 				hoursMins.style.minWidth = "3em";
 				if (video.type == "tv") {
-					hoursMins.innerHTML = "13&times;" + video.runtime + "&nbsp;";
+					hoursMins.innerHTML = "" + video.number_of_episodes + "&times;" + video.runtime + "&nbsp;";
 					row.style.backgroundColor = "#efefff";
 				} else {
 					hoursMins.innerHTML = video.hoursMins;

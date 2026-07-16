@@ -124,7 +124,7 @@
 				findDvd.push(title);
 			});
 
-			let genres = () => {
+			let genres = (controls) => {
 				let glist = [
 					{
 						title: "-All-", func: x => {
@@ -146,15 +146,15 @@
 							return true;
 						}
 					};
-					if ((ix + 2) % 12 == 0) {
-						gn.break = true;
-					}
 					glist.push(gn)
 				});
+				console.log(controls);
+				controls.style.columnCount = 2;
+				controls.style.minWidth = "60vw";
 				return glist;
 			};
 
-			let countries = () => {
+			let countries = (controls) => {
 				let clist = [
 					{
 						title: "-All-", func: x => {
@@ -176,15 +176,15 @@
 							return true;
 						}
 					};
-					if ((ix + 2) % 12 == 0) {
-						ctr.break = true;
-					}
 					clist.push(ctr);
 				});
+				console.log(controls);
+				controls.style.columnCount = 2;
+				controls.style.minWidth = "60vw";
 				return clist;
 			}
 
-			let sortTypes = () => {
+			let sortTypes = (controls) => {
 				let clist = [
 					{
 						title: "Sort by title", func: e => {
@@ -289,7 +289,7 @@
 				}
 			}
 
-			CbMakeMenu(() => {
+			CbMakeMenu((controls) => {
 				let hash = location.hash;
 
 				let menuList = [
@@ -328,7 +328,6 @@
 						}
 					)
 				}
-
 				return menuList;
 			}, resetMe, { position: "fixed" });
 
@@ -419,7 +418,7 @@
 				hoursMins.style.verticalAlign = "middle";
 				hoursMins.style.minWidth = "3em";
 				if (video.type == "tv") {
-					hoursMins.innerHTML = "" + video.number_of_episodes + "&times;" + video.runtime + "&nbsp;";
+					hoursMins.innerHTML = "" + video.episodes + "&times;" + video.runtime + "&nbsp;";
 					row.style.backgroundColor = "#efefff";
 				} else {
 					hoursMins.innerHTML = video.hoursMins;

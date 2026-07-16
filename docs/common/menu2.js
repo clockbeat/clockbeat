@@ -21,7 +21,22 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
     let menuDiv;
     let mainMenu = {func: menuFunc}; //sub menus also have parentMenu:
     let secretCount = 0;
-
+    let menuDivStyle = `
+        position: fixed;
+        top: 0px;
+        left: 3em;
+        min-width: 40vw;
+        max-height: 70vh;
+        text-align: left;
+        box-shadow: grey 10px 5px 5px;
+        border-style: solid;
+        border-width: 1px;
+        padding: 0.5em;
+        background-color: white;
+        user-select: none;
+        columns: auto 20vw;
+        padding-top: 1em;
+        `
     let img = document.createElement("img");
     img.style.position = profile.position ?? "absolute";
     img.style.top = 0;
@@ -53,18 +68,9 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
 
     menuDiv = document.createElement("div");
     menuDiv.id = "cbMenuDiv";
-    menuDiv.style.position = "fixed";
-    menuDiv.style.top = 0;
-    menuDiv.style.left = "3em";
-    menuDiv.style.minWidth = "30vw";
+    menuDiv.style.cssText = menuDivStyle;
     menuDiv.style.display = "none";
-    menuDiv.style.textAlign = "left";
-    menuDiv.style.boxShadow = "10px 5px 5px grey";
-    menuDiv.style.borderStyle = "solid";
-    menuDiv.style.borderWidth = "1px";
-    menuDiv.style.padding = "0.5em";
-    menuDiv.style.backgroundColor = "white";
-    menuDiv.style.userSelect = "none";
+
     menuDiv.onclick = e => {
         //menuDiv.style.display = "block";
         e.stopPropagation();
@@ -73,8 +79,8 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
 
 
     function closeMenu() {
-        menuDiv.style.display = "none";
         resetMenu();
+        menuDiv.style.display = "none";
         window.commonMenuOpen = false;
     }
 
@@ -83,11 +89,13 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
     }
 
     function updateMenu(menu) {
+        menuDiv.style.cssText = menuDivStyle;
         if (!menu) {
             menu = mainMenu;
         }
-        let items = menu.func();
-        //if (menu.parentMenu) {
+        let controls = {style: {}};
+        let items = menu.func(controls);
+
         items.unshift({
             title: "&#x21a9;", css: "font-size: 200%", func: e => {
                 if (menu.parentMenu) {
@@ -97,15 +105,15 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
                 }
             }
         });
-        //}
+
+        if (controls.style) {
+            for (let key in controls.style) {
+                menuDiv.style[key] = controls.style[key];    
+            }
+        } 
 
         menuDiv.innerHTML = "";
-        let itemsCol;
-        let firstItem = true;
-        //  = document.createElement("div");
-        // itemsCol.style.display = "inline-block";
-        // itemsCol.style.marginRight = "2em";
-        // menuDiv.appendChild(itemsCol);
+
         items.forEach(item => {
             if (window.location.pathname.endsWith(item.url)) {
                 //Don't show current page
@@ -113,19 +121,6 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
             }
             if (item.omit) {
                 return;
-            }
-            let menuItemDiv = document.createElement("div");
-            if (item.css) {
-                menuItemDiv.style.cssText = item.css ?? "";
-            } else {
-                menuItemDiv.style.marginTop = "1em";
-            }
-            if (firstItem || item.break) {
-                itemsCol = document.createElement("div");
-                itemsCol.style.display = "inline-block";
-                itemsCol.style.margin = "0.5em";
-                menuDiv.appendChild(itemsCol);
-                firstItem = false;
             }
             let menuItem;
             if (item.url) {
@@ -149,14 +144,18 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
                 console.log("Invalid menu item", item);
                 return;
             }
-            menuItem.innerHTML = item.title;
-            menuItem.style.textDecoration = "none";
-            menuItem.className = "menu-item";
-            menuItemDiv.appendChild(menuItem);
-            itemsCol.appendChild(menuItemDiv);
-            menuItemDiv.onclick = e => {
-                window.commonMenuOpen = false;
-            };
+            menuItem.innerHTML = item.title + "\n\n";
+            menuItem.style.cssText = `
+                text-decoration: none;
+                display: block;
+                white-space: pre-wrap;
+            `
+            //menuItemDiv.appendChild(menuItem);
+            menuDiv.appendChild(menuItem);
+            //menuDiv.appendChild(document.createElement("br"));
+            // menuDiv.onclick = e => {
+            //     window.commonMenuOpen = false;
+            // };
         });
     }
 }

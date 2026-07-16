@@ -8,6 +8,7 @@
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	<link rel="stylesheet" href="shareto.css">
 	<script src="storage.js"></script>
+	<script src="/common/menu2.js"></script>
 	<script src="common.js"></script>
 </head>
 
@@ -46,6 +47,8 @@
 		let dests = storage.require("destinations", []);
 
 		let buttons = document.getElementById("buttons");
+
+		buildMenu();
 
 		document.getElementById("History").onclick = (e => {
 			if (!window.commonMenuOpen) {

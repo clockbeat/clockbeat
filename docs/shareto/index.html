@@ -8,29 +8,19 @@
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	<link rel="stylesheet" href="shareto.css">
 	<script src="storage.js"></script>
+	<script src="/common/menu2.js"></script>
 	<script src="common.js"></script>
 	<script src="version.js"></script>
 	<script>
-		let swCacheName;
+		let swr;
 		try {
 			console.clear();
 			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
 				window.addEventListener("load", () => {
 					navigator.serviceWorker.register('sw.js')
 						.then(reg => {
+							swr = reg;
 							console.log("Service worker registered");
-							navigator.serviceWorker.addEventListener("message", (event) => {
-								if (event.type == "message") {
-									if (event.data.name) {
-										swCacheName = event.data.name;
-										if (swCacheName !== cacheName) {
-											reg.update();
-											console.log(swCacheName, cacheName, "Service worker updated");
-										}
-									}
-								}
-							});
-							reg.active.postMessage("name");
 						})
 						.catch(err => console.error(`Service Worker Error: ${err}`));
 				});
@@ -58,7 +48,7 @@
 	<button id="export">Backup</button>
 	<input id="import" type="file" accept=".json" style="display: none;" aria-label="load" />
 	<button id="importproxy">Restore</button>
-	<br><br>Version 
+	<br><br>Version
 	<script>
 		console.clear();
 		const page = {};
@@ -73,6 +63,8 @@
 
 		let ver = document.createTextNode(cacheName);
 		document.body.appendChild(ver);
+
+		buildMenu();
 
 		page.importproxy.onclick = e => {
 			page.import.click();

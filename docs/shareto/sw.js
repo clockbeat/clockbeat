@@ -2,20 +2,28 @@ importScripts("version.js");
 
 const contentToCache = projectFiles
 
+const pathname = self.location.pathname.split("/")[1];
+cacheName = pathname + "/" + cacheName;
+console.log(cacheName);
+
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets
+    console.log("activate", cacheName);
     e.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
-                cacheNames.map(cache => {
-                    if (cache !== cacheName) {
-                        return caches.delete(cache);
+                cacheNames.map(name => {
+                    if (name !== cacheName) {
+                        if (name.startsWith(pathname)) {
+                            return caches.delete(name);
+                        }
                     }
                 })
             );
         })
     );
- });
+    self.clients.claim();
+});
 
 self.addEventListener("install", (e) => {
     self.skipWaiting();

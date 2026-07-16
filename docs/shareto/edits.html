@@ -8,6 +8,7 @@
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	<link rel="stylesheet" href="shareto.css">
 	<script src="storage.js"></script>
+	<script src="/common/menu2.js"></script>
 	<script src="common.js"></script>
 </head>
 
@@ -34,10 +35,12 @@
 		});
 
 		const storage = new CbStorage("shareto");
-		let edits = storage.require("edits", {"artitle": [], "arurl": [], "extra": []});
+		let edits = storage.require("edits", { "artitle": [], "arurl": [], "extra": [] });
 		Object.keys(edits).forEach(key => {
 			refreshList(key);
 		});
+
+		buildMenu();
 
 		page.applyartitle.onclick = e => {
 			applyEdit(page.artitle.value, "artitle");

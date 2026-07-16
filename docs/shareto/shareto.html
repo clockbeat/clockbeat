@@ -8,29 +8,19 @@
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	<link rel="stylesheet" href="shareto.css">
 	<script src="storage.js"></script>
+	<script src="/common/menu2.js"></script>
 	<script src="common.js"></script>
 	<script src="version.js"></script>
 	<script>
-		let swCacheName;
+		let swr;
 		try {
 			console.clear();
 			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
 				window.addEventListener("load", () => {
 					navigator.serviceWorker.register('sw.js')
 						.then(reg => {
+							swr = reg;
 							console.log("Service worker registered");
-							navigator.serviceWorker.addEventListener("message", (event) => {
-								if (event.type == "message") {
-									if (event.data.name) {
-										swCacheName = event.data.name;
-										if (swCacheName !== cacheName) {
-											reg.update();
-											console.log(swCacheName, cacheName, "Service worker updated");
-										}
-									}
-								}
-							});
-							reg.active.postMessage("name");
 						})
 						.catch(err => console.error(`Service Worker Error: ${err}`));
 				});
@@ -79,7 +69,7 @@
 			if (histAgeIndex !== -1) {
 				histAge.splice(histAgeIndex, 1);
 			}
-			history[histhash] = {title: page.title.value, url: page.url.value};
+			history[histhash] = { title: page.title.value, url: page.url.value };
 			histAge.unshift(histhash);
 			while (histAge.length > 100) {
 				let key = histAge.pop();
@@ -126,11 +116,12 @@
 
 		destinationSet(page.toqueue, "Queue")
 
+		buildMenu();
 
 		page.title.oninput = page.url.oninput = e => {
 			let item = history[histhash];
 			page.revert.style.display = "none";
-			if (page.title.value !== item.title || page.url.value !== item.url){
+			if (page.title.value !== item.title || page.url.value !== item.url) {
 				page.revert.style.display = "inline";
 				if (item !== undefined) {
 					revert.onclick = e => {

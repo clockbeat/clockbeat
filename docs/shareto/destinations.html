@@ -8,6 +8,7 @@
 	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	<link rel="stylesheet" href="shareto.css">
 	<script src="storage.js"></script>
+	<script src="/common/menu2.js"></script>
 	<script src="common.js"></script>
 </head>
 
@@ -19,7 +20,9 @@
 	<textarea id="url" wrap="soft" style="height: 10vh;"></textarea>
 	<div><input id="apply" type="button" value="Apply"></div>
 	<div>&nbsp;</div>
-	<div id="destlist" style="display: grid; grid-template-columns: 7fr 1fr; gap: 2vw; grid-auto-rows: auto; text-align: initial;"></div>
+	<div id="destlist"
+		style="display: grid; grid-template-columns: 7fr 1fr; gap: 2vw; grid-auto-rows: auto; text-align: initial;">
+	</div>
 
 	<script type="text/javascript">
 		console.clear();
@@ -32,6 +35,8 @@
 		const storage = new CbStorage("shareto");
 		let dests = storage.require("destinations", []);
 		refreshList();
+
+		buildMenu();
 
 		page.apply.onclick = e => {
 			let url = page.url.value.replace(/\r|\n|\t/g, "");
@@ -83,7 +88,7 @@
 				del.style.gridColumn = "span 1";
 				del.style.cursor = "pointer";
 				del.style.marginLeft = "1em";
-				del.style.fontSize ="150%";
+				del.style.fontSize = "150%";
 				del.innerHTML = "&#9447;";
 				del.onclick = e => {
 					console.log(ix);

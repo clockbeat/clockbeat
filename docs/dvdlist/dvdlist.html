@@ -73,6 +73,7 @@
 		let rows = [];
 		let findDvd = [];
 		let highlightedRows = [];
+		let pageSelection = {};
 
 		console.clear();
 		console.log("starting");
@@ -90,17 +91,32 @@
 			console.error(e);
 		});
 
-		window.addEventListener("hashchange", () => {
-			frontPage();
-		});
+		//This seems to be duplicated by popstate
+		// window.addEventListener("hashchange", () => {
+		// 	getHashAsJson();
+		// 	frontPage();
+		// });
 
-		let pageSelection = decodeURIComponent(location.hash).replace("#", "");
+		window.addEventListener("popstate", () => {
+			getHashAsJson();
+			console.log("popstate");
+			frontPage();
+		});		
 
 		const page = {};
 		const all = document.querySelectorAll("*[id]");
 		all.forEach((val) => {
 			page[val.id] = val;
 		});
+
+		function getHashAsJson() {
+			let pageSelectionHash = decodeURIComponent(location.hash).replace("#", "");
+			try {
+				pageSelection = JSON.parse(pageSelectionHash);
+			} catch (e) {
+				pageSelection = {};
+			}
+		}
 
 		function preProcess() {
 
@@ -110,11 +126,7 @@
 			let newWin = false;
 			let menu = [];
 
-			try {
-				pageSelection = JSON.parse(pageSelection);
-			} catch (e) {
-				pageSelection = {};
-			}
+			getHashAsJson();
 
 			dvdList.countries.sort();
 			dvdList.genres.sort();

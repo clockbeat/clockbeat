@@ -101,7 +101,7 @@
 			getHashAsJson();
 			console.log("popstate");
 			frontPage();
-		});		
+		});
 
 		const page = {};
 		const all = document.querySelectorAll("*[id]");
@@ -246,13 +246,17 @@
 			}
 
 			function locateName(name) {
-				highlightedRows.forEach(n => {
-					rows[n].style.backgroundColor = "transparent";
-				});
-
 				if (!name) {
+					rows.forEach(row => {
+						row.style.display = "table-row";
+						row.style.backgroundColor = "initial";
+					});
 					return;
 				}
+
+				rows.forEach(row => {
+					row.style.display = "none";
+				});
 
 				highlightedRows = [];
 
@@ -288,6 +292,7 @@
 					allFirst.forEach(n => {
 						rows[n].style.backgroundColor = "lightgreen";
 						highlightedRows.push(n);
+						rows[n].style.display = "inherit";
 						allDone.add(n);
 					});
 
@@ -295,6 +300,7 @@
 						if (allDone.has(n)) return;
 						rows[n].style.backgroundColor = "yellow";
 						highlightedRows.push(n);
+						rows[n].style.display = "inherit";
 						allDone.add(n);
 					});
 
@@ -326,13 +332,37 @@
 					menuList.unshift(
 						{
 							title: "Find ...", func: e => {
+								let clickPoint;
 								CbPrompt("Find", "", frontPage,
 									e => {
 										if (e.type == "input") {
 											locateName(e.target.value);
 										}
+										if (e.type == "click") {
+											clickPoint = { x: e.x, y: e.y };
+											console.log(clickPoint);
+										}
+										let clickRow;
 										if (e.type == "close") {
+											if (clickPoint) {
+												document.elementsFromPoint(clickPoint.x, clickPoint.y).forEach(el => {
+													if (el.className == "histRow") {
+														clickRow = el.dataset.rowNo;
+													}
+													console.log(el);
+												});
+												console.log(clickRow);
+											}
 											frontPage();
+											if (clickRow) {
+												rows[clickRow - 1].style.backgroundColor = "lightgreen";
+												if (clickRow > 6) {
+													clickRow -= 6;
+													rows[clickRow].scrollIntoView();
+												} else {
+													page.historylist.scrollTo(0, 0);
+												}
+											}
 										}
 									});
 								return true;
@@ -405,6 +435,8 @@
 					});
 				}
 				let row = document.createElement("tr");
+				row.className = "histRow";
+				row.dataset.rowNo = video.rowNo;
 
 				table.appendChild(row);
 

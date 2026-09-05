@@ -93,7 +93,8 @@
 			inp.type = "button";
 			destinationSet(inp, dest.name);
 			inp.onclick = e => {
-				let loc = dest.url.replace("$title", encodeURIComponent(page.title.value)).replace("$url", encodeURIComponent(page.url.value));
+				let urlpage = page.url.value.replace(/^https?:\/\//, "");
+				let loc = dest.url.replace("$title", encodeURIComponent(page.title.value)).replace("$url", encodeURIComponent(page.url.value)).replace("$page", encodeURIComponent(urlpage));
 				try {
 					let url = new URL(loc);
 					console.log(loc);

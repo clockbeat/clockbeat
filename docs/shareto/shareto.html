@@ -94,7 +94,7 @@
 			destinationSet(inp, dest.name);
 			inp.onclick = e => {
 				let urlpage = page.url.value.replace(/^https?:\/\//, "");
-				let loc = dest.url.replace("$title", encodeURIComponent(page.title.value)).replace("$url", encodeURIComponent(page.url.value)).replace("$page", encodeURIComponent(urlpage));
+				let loc = dest.url.replace("$title", encodeURIComponent(page.title.value)).replace("$url", encodeURIComponent(page.url.value)).replace("$page", urlpage);
 				try {
 					let url = new URL(loc);
 					console.log(loc);

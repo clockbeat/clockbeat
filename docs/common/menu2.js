@@ -25,6 +25,7 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
         position: fixed;
         top: 0px;
         left: 3em;
+        font-size: 80%;
         min-width: 40vw;
         max-height: 70vh;
         text-align: left;

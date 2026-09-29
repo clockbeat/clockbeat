@@ -24,6 +24,18 @@
 			font-weight: bold;
 			background-color: yellow;
 		}
+
+		.seen1 {
+			background-color: beige;
+		}
+
+		.seen2 {
+			background-color: rgb(221, 238, 126)
+		}
+
+		.seen3 {
+			background-color: lightgreen
+		}
 	</style>
 	<script>
 		"use strict"
@@ -74,13 +86,22 @@
 		let findDvd = [];
 		let highlightedRows = [];
 		let pageSelection = {};
+		let updateMenu = () => { };
+		let seenVideo;
+		let seenTd;
+		let seenDecode = ["Unseen", "Seen", "Part seen", "Seen DVD"];
+
+
+		let storage = new CbStorage("dvdlist");
+		let localuserdata = storage.getItem("userdata") ?? {};
+		storage.setItem("userdata", localuserdata);
 
 		console.clear();
 		console.log("starting");
 
 		let localFilters = { genres: [], countries: [] };
 
-		fetch("/test/dvddata.json").then(response => {
+		fetch("/test/dvddata.json").then(response => { //test is what live uses
 			response.json().then(data => {
 				dvdList = data;
 				console.log("dvddata.json");
@@ -90,12 +111,6 @@
 		}).catch(e => {
 			console.error(e);
 		});
-
-		//This seems to be duplicated by popstate
-		// window.addEventListener("hashchange", () => {
-		// 	getHashAsJson();
-		// 	frontPage();
-		// });
 
 		window.addEventListener("popstate", () => {
 			getHashAsJson();
@@ -134,7 +149,15 @@
 			dvdList.videos.findIndex((row, ix) => {
 				let title = row.title.toLowerCase().match(/[a-zA-Z0-9 ]/g)?.join('');
 				findDvd.push(title);
+				if (localuserdata[row.type + "#" + row.id]) {
+					if (JSON.stringify(row.userdata) == JSON.stringify(localuserdata[row.type + "#" + row.id])) {
+						delete localuserdata[row.type + "#" + row.id];
+					} else {
+						row.userdata = localuserdata[row.type + "#" + row.id]
+					}
+				}
 			});
+			storage.save();
 
 			let genres = (controls) => {
 				let glist = [
@@ -234,6 +257,32 @@
 				return clist;
 			}
 
+			let admin = (controls) => {
+				let clist = [
+					{
+						title: "Download user data", func: async e => {
+							let userDataDump = {};
+							dvdList.videos.forEach(dvd => {
+								if (dvd.userdata) {
+									userDataDump[dvd.type + "#" + dvd.id] = dvd.userdata;
+								}
+							});
+							let text = JSON.stringify(userDataDump);
+							let filename = `dvduserdata.json`;
+							const fileHandle = await window.showSaveFilePicker({
+								suggestedName: filename
+							});
+							const writable = await fileHandle.createWritable();
+							await writable.write(text);
+							await writable.close();
+
+							return true; //to close menu
+						}
+					}
+				];
+				return clist;
+			}
+
 			function setHash() {
 				location.hash = JSON.stringify(pageSelection);
 			}
@@ -307,7 +356,7 @@
 				}
 			}
 
-			CbMakeMenu((controls) => {
+			updateMenu = CbMakeMenu((controls) => {
 				let hash = location.hash;
 
 				let menuList = [
@@ -326,6 +375,9 @@
 					},
 					{
 						title: "Country", submenu: countries
+					},
+					{
+						title: "Admin", submenu: admin
 					}];
 
 				if (hash == "" || hash == "#{}") {
@@ -401,6 +453,50 @@
 			}
 		}
 
+		function seenUpdate(type) {
+			if (seenVideo) {
+				if (!seenVideo.userdata) {
+					seenVideo.userdata = {};
+				}
+				seenVideo.userdata.seen = type;
+				seenTd.className = "seen" + type;
+				let id = seenVideo.type + "#" + seenVideo.id;
+				localuserdata[id] = localuserdata[id] ?? {};
+				localuserdata[id].seen = type;
+				storage.save();
+			}
+		}
+
+		let seenTypes = {
+			func: (controls, menuDiv) => {
+				let clist = [
+					{
+						title: "Set as " + seenDecode[0], func: e => {
+							seenUpdate(0);
+							return true; //close menu
+						}
+					}, {
+						title: "Set as " + seenDecode[1], func: e => {
+							seenUpdate(1);
+							return true; //close menu
+						}
+					}, {
+						title: "Set as " + seenDecode[2], func: e => {
+							seenUpdate(2);
+							return true; //close menu
+						}
+					}, {
+						title: "Set as " + seenDecode[3], func: e => {
+							seenUpdate(3);
+							return true; //close menu
+						}
+					}
+				];
+				controls.menuDiv.style.display = "block";
+				return clist;
+			}
+		}
+
 
 		function frontPage() {
 			console.log(pageSelection);
@@ -438,6 +534,8 @@
 				row.className = "histRow";
 				row.dataset.rowNo = video.rowNo;
 
+				let userdata = video.userdata ?? { seen: 0 };
+
 				table.appendChild(row);
 
 				let mainRow = document.createElement("td");
@@ -473,6 +571,14 @@
 				year.style.verticalAlign = "middle";
 				year.style.paddingRight = "0.5em";
 				year.innerHTML = video.year;
+				year.className = "seen" + userdata.seen;
+				year.style.cursor = "pointer";
+				year.onclick = e => {
+					seenVideo = video;
+					seenTd = year;
+					updateMenu(seenTypes);
+					e.stopPropagation();
+				}
 				row.appendChild(year);
 
 				row.style.margin = "0.5em";

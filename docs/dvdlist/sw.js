@@ -9,26 +9,6 @@ cacheName = pathname + "/" + cacheName;
 console.log(cacheName);
 let iconResponse;
 
-async function makeCustomFavIcon(text, color) {
-    text = text ?? ""
-    let canvas = new OffscreenCanvas(192, 192);
-    let context = canvas.getContext("2d");
-    context.fillStyle = color;
-    context.fillRect(0, 0, 192, 192);
-    context.fillStyle = "black";
-    context.textAlign = "left";
-    context.textBaseline = "middle";
-    context.font = "100px sans-serif";
-    context.fillText(text.substring(0, 2), 4, 130);
-    let blob = await canvas.convertToBlob({type: "image/png"}); //.then(blob => //{
-    iconResponse = new Response(blob, {
-        headers: {
-            "content-type": "image/png",
-        }
-    });
-    console.log("Icon created");
-}
-
 self.addEventListener("activate", (e) => {
     // Remove unwanted cached assets
     console.log("activate", cacheName);
@@ -69,14 +49,6 @@ async function updateCache(request) {
         return Response.redirect(url + "#" + str, 302);
     }
 
-    if (url.includes(stringForColour)) {
-        let hash = new URL(url).hash.replace("#", "");
-        let color = stringToColour(hash);
-        await makeCustomFavIcon(hash, color);
-        const cache = await caches.open(cacheName);
-        await cache.put("/favicon.png", iconResponse.clone());
-    }
-
     console.log(url, iconResponse);
     if (url.includes("favicon.png") && iconResponse) {
         console.log(url + " from iconResponse");
@@ -108,12 +80,4 @@ self.addEventListener("fetch", (e) => {
         let response = await updateCache(request);
         return response;
     })());
-});
-
-self.addEventListener('message', (event) => {
-    console.log("message to sw", event.data);
-    if (event.data.icon) {
-        makeCustomFavIcon(event.data.title, event.data.color);
-        event.source.postMessage({icon: true});
-    }
 });

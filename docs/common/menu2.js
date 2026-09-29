@@ -31,7 +31,8 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
         box-shadow: grey 10px 5px 5px;
         border-style: solid;
         border-width: 1px;
-        padding: 0.5em;
+        border-radius: 0.5em;
+        padding-left: 0.2em;
         background-color: white;
         user-select: none;
         columns: auto 20vw;
@@ -93,7 +94,7 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
         if (!menu) {
             menu = mainMenu;
         }
-        let controls = {style: {}};
+        let controls = {style: {}, menuDiv};
         let items = menu.func(controls);
 
         items.unshift({
@@ -158,6 +159,7 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
             // };
         });
     }
+    return updateMenu;
 }
 
 function CbModal(func, profile) {

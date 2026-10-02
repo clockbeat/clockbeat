@@ -257,17 +257,21 @@
 				return clist;
 			}
 
+			function getUserDataAsJSON() {
+				let userDataDump = {};
+				dvdList.videos.forEach(dvd => {
+					if (dvd.userdata) {
+						userDataDump[dvd.type + "#" + dvd.id] = dvd.userdata;
+					}
+				});
+				return JSON.stringify(userDataDump);
+			}
+
 			let admin = (controls) => {
 				let clist = [
 					{
 						title: "Download user data", func: async e => {
-							let userDataDump = {};
-							dvdList.videos.forEach(dvd => {
-								if (dvd.userdata) {
-									userDataDump[dvd.type + "#" + dvd.id] = dvd.userdata;
-								}
-							});
-							let text = JSON.stringify(userDataDump);
+							let text = getUserDataAsJSON();
 							let filename = `dvduserdata.json`;
 							const fileHandle = await window.showSaveFilePicker({
 								suggestedName: filename
@@ -277,6 +281,13 @@
 							await writable.close();
 
 							return true; //to close menu
+						}
+					},
+					{
+						title: "Copy user data to clipboard", func: async function () {
+							let text = getUserDataAsJSON();
+							navigator.clipboard.writeText(text);
+							CbAlert("Settings copied to clipboard");
 						}
 					}
 				];

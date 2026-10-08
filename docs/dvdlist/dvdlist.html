@@ -147,7 +147,6 @@
 
 			getHashAsJson();
 
-			dvdList.countries.sort();
 			dvdList.genres.sort();
 
 			dvdList.videos.findIndex((row, ix) => {
@@ -508,7 +507,6 @@
 			table.style.borderCollapse = "collapse";
 			page.historylist.appendChild(table);
 			let genresSet = new Set();
-			let countriesSet = new Set();
 			sortMovies();
 			dvdList.videos.forEach((video, ix) => {
 				if (pageSelection.genre) {

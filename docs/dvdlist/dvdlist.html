@@ -26,15 +26,19 @@
 		}
 
 		.seen1 {
-			background-color: beige;
+			background-color: rgb(255, 232, 197);
 		}
 
 		.seen2 {
-			background-color: rgb(221, 238, 126)
+			background-color: rgb(196, 248, 224)
 		}
 
 		.seen3 {
 			background-color: lightgreen
+		}
+
+		.seen99 {
+			background-color: rgb(255, 211, 253)
 		}
 	</style>
 	<script>
@@ -90,7 +94,7 @@
 		let seenVideo;
 		let seenTd;
 		let seenDecode = ["Unseen", "Seen", "Part seen", "Seen DVD"];
-
+		// seen: 99 = not set
 
 		let storage = new CbStorage("dvdlist");
 		let localuserdata = storage.getItem("userdata") ?? {};
@@ -99,13 +103,13 @@
 		console.clear();
 		console.log("starting");
 
-		let localFilters = { genres: [], countries: [] };
+		let localFilters = { genres: [] };
 
 		fetch("/test/dvddata.json").then(response => { //test is what live uses
 			response.json().then(data => {
 				dvdList = data;
 				console.log("dvddata.json");
-				localFilters = { genres: dvdList.genres, countries: dvdList.countries };
+				localFilters = { genres: dvdList.genres };
 				preProcess();
 			});
 		}).catch(e => {
@@ -155,6 +159,14 @@
 					} else {
 						row.userdata = localuserdata[row.type + "#" + row.id]
 					}
+					let type = row.userdata.seen ?? 0;
+					seenDecode.forEach(code => {
+						let cd = row.genres.indexOf(code);
+						if (cd >= 0) {
+							row.genres.splice(cd, 1);
+						}
+					});
+					row.genres.push(seenDecode[type]);
 				}
 			});
 			storage.save();
@@ -188,36 +200,6 @@
 				controls.style.minWidth = "60vw";
 				return glist;
 			};
-
-			let countries = (controls) => {
-				let clist = [
-					{
-						title: "-All-", func: x => {
-							if (pageSelection.country) {
-								delete pageSelection.country;
-								setHash();
-							}
-							return true;
-						}
-					}
-				];
-				localFilters.countries.forEach((country, ix) => {
-					let ctr = {
-						title: country, func: x => {
-							if (pageSelection.country != country) {
-								pageSelection.country = country;
-								setHash();
-							}
-							return true;
-						}
-					};
-					clist.push(ctr);
-				});
-				console.log(controls);
-				controls.style.columnCount = 2;
-				controls.style.minWidth = "60vw";
-				return clist;
-			}
 
 			let sortTypes = (controls) => {
 				let clist = [
@@ -260,9 +242,10 @@
 			function getUserDataAsJSON() {
 				let userDataDump = {};
 				dvdList.videos.forEach(dvd => {
-					if (dvd.userdata) {
-						userDataDump[dvd.type + "#" + dvd.id] = dvd.userdata;
+					if (!dvd.userdata) {
+						dvd.userdata = { seen: 0 };
 					}
+					userDataDump[dvd.type + "#" + dvd.id] = dvd.userdata;
 				});
 				return JSON.stringify(userDataDump);
 			}
@@ -284,8 +267,8 @@
 						}
 					},
 					{
-						title: "Copy user data to clipboard", func: async function () {
-							let text = getUserDataAsJSON();
+						title: "Copy local data to clipboard", func: async function () {
+							let text = JSON.stringify(localuserdata);
 							navigator.clipboard.writeText(text);
 							CbAlert("Settings copied to clipboard");
 						}
@@ -382,10 +365,7 @@
 						title: "Sort", submenu: sortTypes
 					},
 					{
-						title: "Genre", submenu: genres
-					},
-					{
-						title: "Country", submenu: countries
+						title: "Filter", submenu: genres
 					},
 					{
 						title: "Admin", submenu: admin
@@ -470,6 +450,13 @@
 					seenVideo.userdata = {};
 				}
 				seenVideo.userdata.seen = type;
+				seenDecode.forEach(code => {
+					let cd = seenVideo.genres.indexOf(code);
+					if (cd >= 0) {
+						seenVideo.genres.splice(cd, 1);
+					}
+				});
+				seenVideo.genres.push(seenDecode[type]);
 				seenTd.className = "seen" + type;
 				let id = seenVideo.type + "#" + seenVideo.id;
 				localuserdata[id] = localuserdata[id] ?? {};
@@ -528,18 +515,6 @@
 					if (!video.genres.includes(pageSelection.genre)) {
 						return;
 					}
-
-					video.country.forEach(country => {
-						countriesSet.add(country);
-					});
-				}
-				if (pageSelection.country) {
-					if (!video.country.includes(pageSelection.country)) {
-						return;
-					}
-					video.genres.forEach(genre => {
-						genresSet.add(genre);
-					});
 				}
 				let row = document.createElement("tr");
 				row.className = "histRow";
@@ -598,16 +573,6 @@
 				//page.historylist.appendChild(row);
 
 			});
-			if (pageSelection.country) {
-				localFilters.genres = [...genresSet];
-			} else {
-				localFilters.genres = dvdList.genres;
-			}
-			if (pageSelection.genre) {
-				localFilters.countries = [...countriesSet];
-			} else {
-				localFilters.countries = dvdList.countries;
-			}
 		}
 
 	</script>

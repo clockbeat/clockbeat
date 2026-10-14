@@ -8,6 +8,8 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
     // or: func - a function to execute
     // or: submenu - a function which will supply an array of menu objects
 
+    let mainMenu = {func: menuFunc}; //sub menus also have parentMenu:
+
     if (document.getElementById("cbMenuDiv")) {
         console.log("Menu updated");
         mainMenu = {func: menuFunc};  //untested
@@ -19,7 +21,6 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
     }
 
     let menuDiv;
-    let mainMenu = {func: menuFunc}; //sub menus also have parentMenu:
     let secretCount = 0;
     let menuDivStyle = `
         position: fixed;
@@ -110,9 +111,9 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
 
         if (controls.style) {
             for (let key in controls.style) {
-                menuDiv.style[key] = controls.style[key];    
+                menuDiv.style[key] = controls.style[key];
             }
-        } 
+        }
 
         menuDiv.innerHTML = "";
 
@@ -198,6 +199,12 @@ function CbModal(func, profile) {
         margin-top: 2px;
     `;
 
+    if (profile.style) {
+        for (let key in profile.style) {
+            promptDiv.style[key] = profile.style[key];
+        }
+    }
+
     if (profile.title) {
         let title = document.createElement("div");
         title.innerText = profile.title;
@@ -245,12 +252,17 @@ function CbModal(func, profile) {
     }
 
     promptDiv.onclick = e => {
-        promptDiv.close();
-        func(e, profile);
+        if (func(e, profile) !== false) {
+            promptDiv.close();
+        }
         e.stopPropagation();
     }
 
     promptDiv.onclose = e => {
+        func(e, profile);
+    }
+
+    promptDiv.oncancel = e => {
         func(e, profile);
     }
 
@@ -290,4 +302,26 @@ function CbConfirm(message, func, events) {
             events(e);
         }
     }, {title: message, input: "OK"});
+}
+
+//Only respond to button click
+function CbWarning(message, events) {
+    CbModal((e, profile) => {
+        if (e.type == "click" && e.target.type != "button") {
+            return false;
+        }
+        if (events) {
+            events(e);
+        }
+    }, {title: message, input: "OK", style: {"background-color": "pink"}});
+}
+
+function CbBytes(x) {
+    //modified from https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
+    const units = ['b', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
+    let l = 0, n = parseInt(x, 10) || 0;
+    while (n >= 1024 && ++l) {
+        n = n / 1024;
+    }
+    return (n.toFixed(n < 10 && l > 0 ? 1 : 0) + units[l]);
 }

@@ -35,7 +35,7 @@
 		});
 
 		const storage = new CbStorage("shareto");
-		let edits = storage.require("edits", { "artitle": [], "arurl": [], "extra": [] });
+		let edits = storage.require("edits", { "artitle": [], "arurl": [] });
 		Object.keys(edits).forEach(key => {
 			refreshList(key);
 		});

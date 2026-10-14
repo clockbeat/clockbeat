@@ -13,19 +13,7 @@
 </head>
 
 <body style="margin: 0;">
-	<h3>History</h3>
-	<div>
-		<div id="buttons" class="xbutton">
-			<span>
-				<input type="radio" id="History" name="histOption" checked style="display: none;" />
-				<label for="History">History</label>
-			</span>
-			<span>
-				<input type="radio" id="Queue" name="histOption" style="display: none;" />
-				<label for="Queue">Queued</label>
-			</span>
-		</div>
-	</div>
+	<h3>Queue</h3>
 	<div style="clear: left;">
 		<div id="historylist"
 			style="display: grid; grid-template-columns: 7fr 1fr; gap: 2vw; grid-auto-rows: auto; text-align: initial; ">
@@ -42,69 +30,21 @@
 		let search = Object.fromEntries(new URLSearchParams(location.search.replace("?", "")));
 
 		const storage = new CbStorage("shareto");
-		let history = storage.require("history", {});
-		let histAge = storage.require("histAge", []);
-		let dests = storage.require("destinations", []);
-
-		let buttons = document.getElementById("buttons");
+		let history = storage.require("queue", {});
 
 		buildMenu();
 
-		document.getElementById("History").onclick = (e => {
-			if (!window.commonMenuOpen) {
-				refreshList();
-			}
-		});
-		document.getElementById("Queue").onclick = (e => {
-			if (!window.commonMenuOpen) {
-				refreshList("Queue");
-			}
-		});
+		refreshList();
 
-		dests.forEach(dest => {
-			let li = document.createElement("span");
-			let radio = document.createElement("input");
-			let label = document.createElement("label");
-			radio.type = "radio";
-			radio.name = "histOption";
-			radio.id = dest.name;
-			radio.style.display = "none";
-			label.onclick = e => {
-				if (!window.commonMenuOpen) {
-					refreshList(dest.name);
-				}
-			}
-			label.htmlFor = dest.name;
-			label.innerHTML = dest.name;
-			var space = document.createTextNode(" ");
-			li.appendChild(space);
-			li.appendChild(radio);
-			li.appendChild(label);
-			buttons.appendChild(li);
-		});
-
-
-
-		refreshList(search.label);
-
-		function refreshList(label) {
-			if (label) {
-				document.getElementById(label).checked = true;
-			}
+		function refreshList() {
 			page.historylist.innerHTML = "";
-			histAge.forEach((key, ix) => {
+			Object.keys(history).forEach((key, ix) => {
 
 				let item = history[key];
-				if (label && !item[label]) {
-					return;
-				}
 
 				let itemSpan = document.createElement("span");
-				if (label) {
-					itemSpan.style.gridColumn = "span 1";
-				} else {
-					itemSpan.style.gridColumn = "span 2";
-				}
+				itemSpan.style.gridColumn = "span 1";
+
 
 				let title = document.createElement("span");
 				title.style.cursor = "pointer";
@@ -115,7 +55,7 @@
 				link.style.cursor = "pointer";
 				link.style.overflowWrap = "anywhere";
 				link.style.color = "blue";
-				link.innerHTML = item.url;
+				link.innerHTML = key;
 
 				let br = document.createTextNode(" ");
 				itemSpan.appendChild(title);
@@ -127,23 +67,23 @@
 
 				let del = document.createElement("span");
 				del.style.gridColumn = "span 1";
-				if (label) {
-					del.style.cursor = "pointer";
-					del.style.marginLeft = "1em";
-					del.style.fontSize = "150%";
-					del.innerHTML = "&#9447;";
-					del.onclick = e => {
-						if (!window.commonMenuOpen) {
-							console.log(ix);
-							item[label] = false;
-							storage.save();
-							refreshList(label);
-							e.stopPropagation();
-						}
+
+				del.style.cursor = "pointer";
+				del.style.marginLeft = "1em";
+				del.style.fontSize = "150%";
+				del.innerHTML = "&#9447;";
+				del.onclick = e => {
+					if (!window.commonMenuOpen) {
+						console.log("delete", key, history[key]);
+						delete history[key];
+						storage.save();
+						refreshList();
+						e.stopPropagation();
 					}
 				}
+
 				title.onclick = link.onclick = e => {
-					location = "shareto.html#history=" + key;
+					location = `shareto.html#name=${item.title}&description=${key}`;
 				}
 				page.historylist.appendChild(itemSpan);
 				page.historylist.appendChild(del);

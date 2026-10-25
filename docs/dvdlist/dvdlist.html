@@ -22,7 +22,26 @@
 			font-size: 1em;
 			padding: 1em;
 			font-weight: bold;
-			background-color: yellow;
+			background-color: lightgrey;
+		}
+
+		#rightChoiceEl {
+			float: right;
+			margin-right: 0.5em;
+			position: relative;
+			bottom: -0.8em;
+			margin: 0 0.9em 0.1em 0;
+			font-size: 110%;
+			border: 0;
+			background-color: unset;
+			color: rgb(145, 146, 146);
+			cursor: pointer;
+			padding-top: 0.5em;
+			border-width: 1px 1px 0 1px;
+			border-style: solid;
+			border-radius: 50% 50% 0% 0;
+			border-color: grey;
+			min-width: 3em;
 		}
 
 		.seen1 {
@@ -73,7 +92,10 @@
 </head>
 
 <body>
-	<div id="headtitle" style="position: fixed; width: 100%;"></div>
+	<div id="headtitle" style="position: fixed; width: 100%;">
+		<span id="headtitletext"></span>
+		<input id="rightChoiceEl" type="button" value="Year">
+	</div>
 	<div id="subfrom" style="padding-top: 4em;">
 		<div style="clear: left;">
 			<div id="historylist" style="text-align: initial; ">
@@ -93,8 +115,12 @@
 		let updateMenu = () => { };
 		let seenVideo;
 		let seenTd;
-		let seenDecode = ["Unseen", "Seen", "Part seen", "Seen DVD"];
+		let seenDecode = ["Unseen", "Seen", "Part", "DVD"];
+		seenDecode[99] = "?"
 		// seen: 99 = not set
+		let rightChoices = ["Year", "Seen", "Vol"];
+		let rightChoice = 0;
+		let seenGenres = ["Unseen", "Seen", "Part seen", "Seen DVD"]
 
 		let storage = new CbStorage("dvdlist");
 		let localuserdata = storage.getItem("userdata") ?? {};
@@ -104,12 +130,14 @@
 		console.log("starting");
 
 		let localFilters = { genres: [] };
+		let volumes = [];
 
 		fetch("/test/dvddata.json").then(response => { //test is what live uses
 			response.json().then(data => {
 				dvdList = data;
 				console.log("dvddata.json");
 				localFilters = { genres: dvdList.genres };
+				volumes = dvdList.volumes;
 				preProcess();
 			});
 		}).catch(e => {
@@ -137,6 +165,19 @@
 			}
 		}
 
+		function menuDiv(div) {
+			let changeCol = document.createElement("input");
+			changeCol.type = "button";
+			changeCol.value = "&#10559;";
+			div.appendChild(changeCol);
+		}
+
+		page.rightChoiceEl.onclick = e => {
+			rightChoice = (rightChoice + 1) % 3;
+			frontPage();
+			rightChoiceEl.value = rightChoices[rightChoice];
+		}
+
 		function preProcess() {
 
 			console.log("preProcess");
@@ -158,15 +199,15 @@
 					} else {
 						row.userdata = localuserdata[row.type + "#" + row.id]
 					}
-					let type = row.userdata.seen ?? 0;
-					seenDecode.forEach(code => {
-						let cd = row.genres.indexOf(code);
-						if (cd >= 0) {
-							row.genres.splice(cd, 1);
-						}
-					});
-					row.genres.push(seenDecode[type]);
+					// seenDecode.forEach(code => {
+					// 	let cd = row.genres.indexOf(code);
+					// 	if (cd >= 0) {
+					// 		row.genres.splice(cd, 1);
+					// 	}
+					// });
 				}
+				let seenType = row.userdata.seen ?? 99;
+				row.genres.push(seenGenres[seenType]);
 			});
 			storage.save();
 
@@ -266,10 +307,16 @@
 						}
 					},
 					{
-						title: "Copy local data to clipboard", func: async function () {
-							let text = JSON.stringify(localuserdata);
+						title: "Copy user data to clipboard", func: async function () {
+							let text = getUserDataAsJSON();
+							let len = CbBytes(text.length);
+							if (text.length >= 20000) {
+								navigator.clipboard.writeText("*** Failed - too long ***");
+								CbWarning(`Failed - too long ${len}`);
+								return;
+							}
 							navigator.clipboard.writeText(text);
-							CbAlert("Settings copied to clipboard");
+							CbAlert(`Copied to clipboard ${len}`);
 						}
 					}
 				];
@@ -456,13 +503,16 @@
 					}
 				});
 				seenVideo.genres.push(seenDecode[type]);
-				seenTd.className = "seen" + type;
+				//seenTd.className = "seen" + type;
 				let id = seenVideo.type + "#" + seenVideo.id;
 				localuserdata[id] = localuserdata[id] ?? {};
 				localuserdata[id].seen = type;
 				storage.save();
+				frontPage();
 			}
 		}
+
+		// &#10559; lower Left Semicircular Anticlockwise Arrow
 
 		let seenTypes = {
 			func: (controls, menuDiv) => {
@@ -499,8 +549,7 @@
 			console.log(pageSelection);
 			rows = [];
 			let selections = Object.values(pageSelection).join(", ");
-			page.headtitle.innerHTML = "DVDs " + selections;
-			page.headtitle.style.backgroundColor = "lightgrey";
+			page.headtitletext.innerHTML = "DVDs " + selections;
 			page.historylist.innerHTML = "";
 			let table = document.createElement("table");
 			table.style.width = "100%";
@@ -518,7 +567,7 @@
 				row.className = "histRow";
 				row.dataset.rowNo = video.rowNo;
 
-				let userdata = video.userdata ?? { seen: 0 };
+				let userdata = video.userdata ?? { seen: 99 };
 
 				table.appendChild(row);
 
@@ -551,19 +600,34 @@
 				}
 				row.appendChild(hoursMins);
 
-				let year = document.createElement("td");
-				year.style.verticalAlign = "middle";
-				year.style.paddingRight = "0.5em";
-				year.innerHTML = video.year;
-				year.className = "seen" + userdata.seen;
-				year.style.cursor = "pointer";
-				year.onclick = e => {
-					seenVideo = video;
-					seenTd = year;
-					updateMenu(seenTypes);
+
+				let rightCol = document.createElement("td");
+				rightCol.style.verticalAlign = "middle";
+				rightCol.style.paddingRight = "0.5em";
+				//rightCol.className = "seen" + userdata.seen;
+				rightCol.style.cursor = "pointer";
+				switch (rightChoice) {
+					case 0:
+						rightCol.innerHTML = video.year;
+						break;
+					case 1:
+						rightCol.innerHTML = seenDecode[userdata.seen];
+						break
+					case 2:
+						let vol = video.volume + Math.min(video.volumePos / volumes[video.volume], 0.9)
+						rightCol.innerHTML = vol.toFixed(1);
+						break;
+				}
+
+				rightCol.onclick = e => {
+					if (rightChoice == 1) {
+						seenVideo = video;
+						seenTd = rightCol;
+						updateMenu(seenTypes);
+					}
 					e.stopPropagation();
 				}
-				row.appendChild(year);
+				row.appendChild(rightCol);
 
 				row.style.margin = "0.5em";
 				rows.push(row);

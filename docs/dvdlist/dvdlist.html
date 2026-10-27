@@ -44,21 +44,6 @@
 			min-width: 3em;
 		}
 
-		.seen1 {
-			background-color: rgb(255, 232, 197);
-		}
-
-		.seen2 {
-			background-color: rgb(196, 248, 224)
-		}
-
-		.seen3 {
-			background-color: lightgreen
-		}
-
-		.seen99 {
-			background-color: rgb(255, 211, 253)
-		}
 	</style>
 	<script>
 		"use strict"
@@ -115,12 +100,14 @@
 		let updateMenu = () => { };
 		let seenVideo;
 		let seenTd;
-		let seenDecode = ["Unseen", "Seen", "Part", "DVD"];
+		let seenDecode = ["Not", "Seen", "Part", "DVD"];
 		seenDecode[99] = "?"
 		// seen: 99 = not set
 		let rightChoices = ["Year", "Seen", "Vol"];
 		let rightChoice = 0;
-		let seenGenres = ["Unseen", "Seen", "Part seen", "Seen DVD"]
+		let seenGenres = ["Unseen", "Seen", "Part seen", "Seen DVD"];
+
+		let highlights = ["", "fee", "efe", "eef"];
 
 		let storage = new CbStorage("dvdlist");
 		let localuserdata = storage.getItem("userdata") ?? {};
@@ -149,6 +136,10 @@
 			console.log("popstate");
 			frontPage();
 		});
+
+		function setHash() {
+			location.hash = JSON.stringify(pageSelection);
+		}
 
 		const page = {};
 		const all = document.querySelectorAll("*[id]");
@@ -190,6 +181,9 @@
 
 			dvdList.genres.sort();
 
+			let previousByType = {};
+			//tv: "-- Start --", movie: "-- Start --"
+
 			dvdList.videos.findIndex((row, ix) => {
 				let title = row.title.toLowerCase().match(/[a-zA-Z0-9 ]/g)?.join('');
 				findDvd.push(title);
@@ -199,15 +193,11 @@
 					} else {
 						row.userdata = localuserdata[row.type + "#" + row.id]
 					}
-					// seenDecode.forEach(code => {
-					// 	let cd = row.genres.indexOf(code);
-					// 	if (cd >= 0) {
-					// 		row.genres.splice(cd, 1);
-					// 	}
-					// });
 				}
 				let seenType = row.userdata.seen ?? 99;
 				row.genres.push(seenGenres[seenType]);
+				row.previous = previousByType[row.type] ?? "-- Start --";
+				previousByType[row.type] = row.title;
 			});
 			storage.save();
 
@@ -321,10 +311,6 @@
 					}
 				];
 				return clist;
-			}
-
-			function setHash() {
-				location.hash = JSON.stringify(pageSelection);
 			}
 
 			function resetMe() {
@@ -566,6 +552,10 @@
 				let row = document.createElement("tr");
 				row.className = "histRow";
 				row.dataset.rowNo = video.rowNo;
+				let backgroundColor = "unset";
+				if (video.highlight){
+					row.style.backgroundColor = "#" + highlights[video.highlight];
+				}
 
 				let userdata = video.userdata ?? { seen: 99 };
 
@@ -594,7 +584,8 @@
 				hoursMins.style.minWidth = "3em";
 				if (video.type == "tv") {
 					hoursMins.innerHTML = "" + video.episodes + "&times;" + video.runtime + "&nbsp;";
-					row.style.backgroundColor = "#efefff";
+					//row.style.backgroundColor = "#efefff";
+					title.innerHTML = title.innerHTML + " (tv)"
 				} else {
 					hoursMins.innerHTML = video.hoursMins;
 				}
@@ -620,10 +611,19 @@
 				}
 
 				rightCol.onclick = e => {
-					if (rightChoice == 1) {
-						seenVideo = video;
-						seenTd = rightCol;
-						updateMenu(seenTypes);
+					switch (rightChoice) {
+						case 0:
+							video.highlight = ((video.highlight ?? 0) + 1) % highlights.length;
+							frontPage();
+							break;
+						case 1:
+							seenVideo = video;
+							seenTd = rightCol;
+							updateMenu(seenTypes);
+							break
+						case 2:
+							CbAlert("After: " + video.previous);
+							break;
 					}
 					e.stopPropagation();
 				}
@@ -631,8 +631,6 @@
 
 				row.style.margin = "0.5em";
 				rows.push(row);
-
-				//page.historylist.appendChild(row);
 
 			});
 		}

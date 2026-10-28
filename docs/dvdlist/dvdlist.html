@@ -43,7 +43,6 @@
 			border-color: grey;
 			min-width: 3em;
 		}
-
 	</style>
 	<script>
 		"use strict"
@@ -100,8 +99,7 @@
 		let updateMenu = () => { };
 		let seenVideo;
 		let seenTd;
-		let seenDecode = ["Not", "Seen", "Part", "DVD"];
-		seenDecode[99] = "?"
+
 		// seen: 99 = not set
 		let rightChoices = ["Year", "Seen", "Vol"];
 		let rightChoice = 0;
@@ -482,13 +480,16 @@
 					seenVideo.userdata = {};
 				}
 				seenVideo.userdata.seen = type;
-				seenDecode.forEach(code => {
+
+				//TODO this is a muddle
+
+				seenGenres.forEach(code => {
 					let cd = seenVideo.genres.indexOf(code);
 					if (cd >= 0) {
 						seenVideo.genres.splice(cd, 1);
 					}
 				});
-				seenVideo.genres.push(seenDecode[type]);
+				seenVideo.genres.push(seenGenres[type]);
 				//seenTd.className = "seen" + type;
 				let id = seenVideo.type + "#" + seenVideo.id;
 				localuserdata[id] = localuserdata[id] ?? {};
@@ -504,22 +505,22 @@
 			func: (controls, menuDiv) => {
 				let clist = [
 					{
-						title: "Set as " + seenDecode[0], func: e => {
+						title: "Set as " + seenGenres[0], func: e => {
 							seenUpdate(0);
 							return true; //close menu
 						}
 					}, {
-						title: "Set as " + seenDecode[1], func: e => {
+						title: "Set as " + seenGenres[1], func: e => {
 							seenUpdate(1);
 							return true; //close menu
 						}
 					}, {
-						title: "Set as " + seenDecode[2], func: e => {
+						title: "Set as " + seenGenres[2], func: e => {
 							seenUpdate(2);
 							return true; //close menu
 						}
 					}, {
-						title: "Set as " + seenDecode[3], func: e => {
+						title: "Set as " + seenGenres[3], func: e => {
 							seenUpdate(3);
 							return true; //close menu
 						}
@@ -533,6 +534,8 @@
 
 		function frontPage() {
 			console.log(pageSelection);
+			let seenDecode = ["Not", "Seen", "Part", "DVD"];
+			seenDecode[99] = "?"
 			rows = [];
 			let selections = Object.values(pageSelection).join(", ");
 			page.headtitletext.innerHTML = "DVDs " + selections;
@@ -553,7 +556,7 @@
 				row.className = "histRow";
 				row.dataset.rowNo = video.rowNo;
 				let backgroundColor = "unset";
-				if (video.highlight){
+				if (video.highlight) {
 					row.style.backgroundColor = "#" + highlights[video.highlight];
 				}
 

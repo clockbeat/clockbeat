@@ -1,1 +1,78 @@
+<!DOCTYPE HTML>
+<html>
 
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+	<script src="/common/storage.js"></script>
+	<script src="/common/menu2.js"></script>
+	<script src="notepad.js"></script>
+	<script src="version.js"></script>
+	<script>
+		"use strict"
+		let swr;
+		try {
+			console.clear();
+			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+				window.addEventListener("load", () => {
+					navigator.serviceWorker.register('sw.js')
+						.then(reg => {
+							swr = reg;
+							console.log("Service worker registered");
+							navigator.serviceWorker.addEventListener("message", (event) => {
+								if (event.type == "message") {
+
+								}
+							});
+						})
+						.catch(err => console.error(`Service Worker Error: ${err}`));
+				});
+			}
+		} catch (e) {
+			console.error(e);
+		}			
+	</script>
+
+	<style>
+		body {
+			font-family: sans-serif;
+			font-size: 120%;
+			padding-top: 0em;
+			padding-bottom: 5em;
+			margin: 0;
+			margin-top: 4em;
+		}
+
+		#headtitle {
+			text-align: center;
+			font-size: 1.5em;
+			padding: 0.5em;
+			font-weight: bold;
+			background-color: rgb(237, 214, 248);
+			position: fixed;
+			width: 100%;
+			top: 0;
+		}
+
+		#content {
+			white-space: pre-wrap;
+			overflow-wrap: break-word;
+			min-height: 100vh;
+			width: 95%;
+			border: none;
+			outline: none;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="headtitle">Notepad</div>
+	<textarea id="content"></textarea>
+	<!--/div-->
+	<script>
+		runit(); 
+	</script>
+</body>
+
+</html>

@@ -12,16 +12,21 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
 
     if (document.getElementById("cbMenuDiv")) {
         console.log("Menu updated");
-        mainMenu = {func: menuFunc};  //untested
+        mainMenu = {func: menuFunc};
         return;
     }
 
     if (!profile) {
         profile = {};
     }
+    if (!profile.theme) {
+        profile.theme = {};
+    }
 
     let menuDiv;
     let secretCount = 0;
+    let themeColor = profile.theme.themecolor ?? [255, 255, 255];
+    let menuColor = CbColorMode(themeColor, 80);
     let menuDivStyle = `
         position: fixed;
         top: 0px;
@@ -33,9 +38,9 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
         box-shadow: grey 10px 5px 5px;
         border-style: solid;
         border-width: 1px;
-        border-radius: 0.5em;
+        border-radius: 0.4em;
         padding-left: 0.2em;
-        background-color: white;
+        background-color: ${menuColor};
         user-select: none;
         columns: auto 20vw;
         padding-top: 1em;
@@ -55,6 +60,7 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
             if (secretCount >= 5 && secretFunc) {
                 secretFunc();
             }
+            resetMenu();
             e.stopPropagation();
             return;
         }
@@ -136,12 +142,14 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
                     if (item.func(item)) {
                         closeMenu();
                     }
+                    secretCount = 0;
                 }
             } else if (item.submenu) {
                 menuItem = document.createElement("a");
                 menuItem.href = "javascript:void(0)";
                 menuItem.onclick = e => {
                     updateMenu({func: item.submenu, parentMenu: menu});
+                    secretCount = 0;
                 }
             } else {
                 console.log("Invalid menu item", item);
@@ -166,7 +174,22 @@ function CbMakeMenu(menuFunc, secretFunc, profile) {
 
 function CbModal(func, profile) {
 
-    //TODO profile only with xxx-event functions
+    if (!profile) {
+        profile = {};
+    }
+    if (!profile.theme) {
+        profile.theme = {};
+    }
+
+    let themeColor = profile.theme.themecolor ?? CbModal.themeColor ?? [127, 127, 127];
+    let promptColor = CbColorMode(themeColor, 80);
+    let buttonColor = CbColorMode(themeColor, 0);
+    //Store theme color on function object so not needed on calls
+    CbModal.themeColor = themeColor;
+
+    if (!func) {
+        return; //To just set colors
+    }
 
     let promptDiv = document.getElementById("cbModalDiv");
     let capture = [];
@@ -192,9 +215,9 @@ function CbModal(func, profile) {
         box-shadow: grey 10px 5px 5px;
         border-style: solid;
         border-width: 1px;
-        border-radius: 0.5em;
+        border-radius: 0.4em;
         padding: 0.5em;
-        background-color: lightgrey;
+        background-color: ${promptColor};
         user-select: none;
         margin-top: 2px;
     `;
@@ -245,6 +268,8 @@ function CbModal(func, profile) {
         inp.style.cssText = "font-size: 16pt";
         inp.type = "button";
         inp.value = "OK";
+        inp.style.backgroundColor = buttonColor;
+        inp.style.borderRadius = "0.4em";
         inp.onclick = e => {
             func(e);
         }
@@ -314,6 +339,20 @@ function CbWarning(message, events) {
             events(e);
         }
     }, {title: message, input: "OK", style: {"background-color": "pink"}});
+}
+
+function CbColorMode(fromColorArray, percent) {
+    let res = "rgb(";
+    let adj = percent / 100;
+    fromColorArray.forEach(primary => {
+        if (adj > 0) {
+            res += primary + ((255 - primary) * adj);
+        } else {
+            res += primary + (primary * adj); //reduce
+        }
+        res += ", ";
+    });
+    return res + "255)";
 }
 
 function CbBytes(x) {

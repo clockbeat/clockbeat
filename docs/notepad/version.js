@@ -1,4 +1,4 @@
-let cacheName = /*time!*/ "6af41a20";
+let cacheName = /*time!*/ "6af44916";
 
 let projectFiles = /*files!*/ ["manifest.json", "notepad.html", "notepad.js", "notepad.svg", "sw.js", "version.js"];
 

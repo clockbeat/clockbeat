@@ -63,12 +63,23 @@
 			border: none;
 			outline: none;
 		}
+
+		#filedata {
+			position: absolute;
+			right: 2em;
+			top: 1em;
+			margin-right: 2em;
+			font-size: 30%;
+			text-align: right;
+		}
 	</style>
 </head>
 
 <body>
-	<div id="headtitle">Notepad</div>
-	<textarea id="content"></textarea>
+	<div id="headtitle">Notepad
+			<div id="filedata"></div>
+	</div>
+	<textarea id="content" spellcheck="false"></textarea>
 	<!--/div-->
 	<script>
 		runit(); 

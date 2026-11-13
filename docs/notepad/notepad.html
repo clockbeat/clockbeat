@@ -13,7 +13,8 @@
 		"use strict"
 		let swr;
 		try {
-			console.clear();
+			//console.clear();
+			console.log("----------- new page ---------------");
 			if ('serviceWorker' in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
 				window.addEventListener("load", () => {
 					navigator.serviceWorker.register('sw.js')
@@ -77,7 +78,11 @@
 
 <body>
 	<div id="headtitle">Notepad
-			<div id="filedata"></div>
+			<div id="filedata">
+				<div id="filename"></div>
+				<div id="filetime"></div>
+				<div id="filechange"></div>
+			</div>
 	</div>
 	<textarea id="content" spellcheck="false"></textarea>
 	<!--/div-->

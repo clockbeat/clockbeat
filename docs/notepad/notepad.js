@@ -46,7 +46,9 @@ function thenRunIt(dataCache) {
         let currentHash = hash(page.content.value)
         hashchanged = (currentHash !== filehash);
         let short = shortDateTime(parseInt(filetime, 10));
-        page.filedata.innerHTML = filename + "<br>" + short + "<br>" + (hashchanged ? "Changed" : "");
+        page.filename.innerHTML = filename;
+        page.filetime.innerHTML = short;
+        page.filechange.innerHTML = hashchanged ? "Changed" : "";
     }
 
     window.addEventListener("beforeunload", e => {
@@ -76,7 +78,7 @@ function thenRunIt(dataCache) {
                 }
             }
         ));
-        console.log("Done save to cache");
+        console.log("Done save to data cache");
     }
 
     page.content.addEventListener("input", e => {

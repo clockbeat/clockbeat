@@ -24,15 +24,19 @@ function thenRunIt(dataCache) {
         page[val.id] = val;
     });
 
-    let modified = x => {
+    function modified() {
         setTimeout(x => {
             page.content.style.height = "";
             page.content.style.height = page.content.scrollHeight + "px";
         }, 1);
+    }
+
+    function timedUpdate() {
         clearTimeout(pacedCacheTimeout);
         pacedCacheTimeout = setTimeout(x => {
             saveToCache(page.content.value);
             updateFileInfo();
+            console.log("timed update");
         }, 1000);
     };
 
@@ -83,6 +87,7 @@ function thenRunIt(dataCache) {
 
     page.content.addEventListener("input", e => {
         modified();
+        timedUpdate();
     });
 
     async function showLastFile() {

@@ -220,6 +220,7 @@ function CbModal(func, profile) {
         background-color: ${promptColor};
         user-select: none;
         margin-top: 2px;
+        font-size: initial;
     `;
 
     if (profile.style) {
@@ -236,7 +237,7 @@ function CbModal(func, profile) {
 
     if (profile.input == "text") {
         let inp = document.createElement("input");
-        inp.style.cssText = "font-size: 16pt";
+        inp.style.cssText = "font-size: 120%";
         inp.type = "text";
         inp.onclick = e => {
             func(e, profile);
@@ -265,7 +266,7 @@ function CbModal(func, profile) {
 
     if (profile.input == "OK") {
         let inp = document.createElement("input");
-        inp.style.cssText = "font-size: 16pt";
+        inp.style.cssText = "font-size: 120%";
         inp.type = "button";
         inp.value = "OK";
         inp.style.backgroundColor = buttonColor;

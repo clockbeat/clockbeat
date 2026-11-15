@@ -34,9 +34,9 @@ function thenRunIt(dataCache) {
     function timedUpdate() {
         clearTimeout(pacedCacheTimeout);
         pacedCacheTimeout = setTimeout(x => {
-            saveToCache(page.content.value);
+            //saveToCache(page.content.value);
             updateFileInfo();
-            console.log("timed update");
+            //console.log("timed update");
         }, 1000);
     };
 
@@ -50,9 +50,9 @@ function thenRunIt(dataCache) {
         let currentHash = hash(page.content.value)
         hashchanged = (currentHash !== filehash);
         let short = shortDateTime(parseInt(filetime, 10));
-        page.filename.innerHTML = filename;
-        page.filetime.innerHTML = short;
-        page.filechange.innerHTML = hashchanged ? "Changed" : "";
+        page.filename.innerHTML = filename ? filename : "&nbsp;";
+        page.filetime.innerHTML = short ? short : "&nbsp;"
+        page.filechange.innerHTML = hashchanged ? "Changed" : "&nbsp;"
     }
 
     window.addEventListener("beforeunload", e => {
@@ -151,7 +151,7 @@ function thenRunIt(dataCache) {
         let day = shortDayNames[date.getDay()];
         let month = shortMonthNames[date.getMonth()];
 
-        let dayString = `${day} ${dd} ${month} `;
+        let dayString = `${dd} ${month} `;
         if (dayDiff == 0) {
             dayString = "";
         } else if (dayDiff < 6) {

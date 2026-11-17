@@ -1,9 +1,8 @@
 "use strict"
 
-let cacheName = /*time!*/ "6ae1bc9e";
+let cacheName = /*time!*/ "6afc79c7";
 
 let projectFiles = /*files!*/ ["dvdlist.html", "dvdlist.svg", "manifest.json", "sw.js", "version.js"];
 
-projectFiles.push("/common/menu2.js");
-projectFiles.push("/common/storage.js");
+
 

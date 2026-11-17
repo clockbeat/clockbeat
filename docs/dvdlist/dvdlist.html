@@ -91,7 +91,7 @@
 	<script type="text/javascript">
 		"use strict"
 
-		let dvdList;
+		let dvdList = { videos: [], genres: [], volumes: [] };
 		let rows = [];
 		let findDvd = [];
 		let highlightedRows = [];
@@ -99,6 +99,7 @@
 		let updateMenu = () => { };
 		let seenVideo;
 		let seenTd;
+		const datakey = "_data_";
 
 		// seen: 99 = not set
 		let rightChoices = ["Year", "Seen", "Vol"];
@@ -117,17 +118,34 @@
 		let localFilters = { genres: [] };
 		let volumes = [];
 
-		fetch("/test/dvddata.json").then(response => { //test is what live uses
-			response.json().then(data => {
-				dvdList = data;
-				console.log("dvddata.json");
-				localFilters = { genres: dvdList.genres };
-				volumes = dvdList.volumes;
-				preProcess();
-			});
-		}).catch(e => {
-			console.error(e);
-		});
+		//fetch("/test/dvddata.json").then(response => { //test is what live uses
+
+		(async () => {
+			try {
+				let dataCache = await caches.open(datakey);
+				let response = await dataCache.match("/dvddata.json");
+				if (!response) {
+					response = await fetch("/test/dvddata.json");
+					if (response && response.status == 200) {
+						dataCache.put("/dvddata.json", response.clone());
+					} else {
+						localFilters = { genres: ["no dvddata"] };
+						volumes = [];
+						preProcess();
+						return;
+					}
+				}
+				response.json().then(data => {
+					dvdList = data;
+					console.log("dvddata.json");
+					localFilters = { genres: dvdList.genres };
+					volumes = dvdList.volumes;
+					preProcess();
+				});
+			} catch (e) {
+				console.error(e, "dvddata.json");
+			}
+		})();
 
 		window.addEventListener("popstate", () => {
 			getHashAsJson();

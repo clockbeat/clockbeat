@@ -1,0 +1,15 @@
+{
+  "name": "Clock",
+  "short_name": "Clock",
+  "start_url": "/clock/index.html",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color":"#000000",
+  "orientation":  "any",
+  "manifest_version": 3,
+  "icons": [
+    {
+      "src": "media/clock.svg",
+      "type": "image/svg+xml"
+    }]
+}

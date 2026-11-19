@@ -1,3 +1,9 @@
-let cacheName = /*time!*/ "67447073";
+"use strict"
 
-let projectFiles = /*files!*/ ["index.html", "sw.js", "version.js", "js/clock.js", "js/moveit.js", "js/storage.js", "js/suntimes.js", "media/bong.mp3", "media/clock.svg", "media/tick.mp3"]
+let version = /*time!*/ "6afec30e";
+
+let projectFiles = /*files!*/ ["device.html", "index.html", "manifest.json", "sw.js", "version.js", "js/clockextras.js", "js/clock.js", "js/suntimes.js", "media/bong.mp3", "media/clock.svg", "media/tick.mp3", "css/clock.css"]
+
+let cacheName = version;
+
+let noCache = ["sw.js", "version.js"]; //allow cache, but try to load if online

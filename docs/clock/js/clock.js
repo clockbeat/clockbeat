@@ -1,5 +1,9 @@
 "use strict";
 
+const longDayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const shortMonthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const shortDayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 let storage = new CbStorage("clock");
 
 let vals = storage.getStorage();
@@ -15,16 +19,23 @@ if (Object.keys(vals).length == 0) {
     });
 }
 
-let {colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime, tick, show} = storage.getStorage();
+let {colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime, tick, show, disableAlarm} = storage.getStorage();
 
-let bgColor = colors.bg;
+let bgColor = colors[0].bg;
+let fgColor = colors[0].color;
+
 
 let descriptions = {
     dawn: "Dawn",
     dusk: "Dusk"
 }
 
+show = show ? show : "ampm";
+
 let alarmPlay = 0;
+let alarmPlaying = false;
+let alarmMissed = false;
+let alarmQuiet = 0;
 let chimeOn = false;
 let bong = new Audio("media/bong.mp3");
 let tickSound = new Audio("media/tick.mp3");
@@ -38,9 +49,77 @@ var randomColor = "000000";
 let bgRand = [];
 let colorRand = [];
 let dayOfMonth = ";"
-let alertStub = () => { };
+let logEvents = {};
+let notScrolled = true;
+let untouchTimer;
+let timeAdjust = 0;
+
+let runItStub = () => { };
+let everySecondStub = () => { };
+let moreDomLoaded = e => { };
+let chimeEnded = () => { };
 
 bong.preservesPitch = false;
+
+bong.addEventListener("ended", (event) => {
+    alarmPlay -= 1;
+    alarmPlaying = true;
+    if (alarmPlay > 0) {
+        bong.volume = 1 / (alarmQuiet + 1);
+        if (alarmQuiet > 0) {
+            alarmQuiet--;
+        }
+        chimeEnded();
+        bong.play();
+    } else {
+        chimeEnded = () => { };
+        alarmPlay = 0;
+        alarmPlaying = false;
+        alarmQuiet = 0;
+        bong.volume = 1;
+    }
+});
+
+function setMinAlarmPlay(count) {
+    if (alarmPlay <= count) {
+        alarmPlay = count;
+        return true;
+    }
+    return false;
+}
+
+function logEvent(str, jsonData) {
+    if (!jsonData) {
+        jsonData = {name: "system", text1: str};
+        console.log(str);
+    }
+    let date = new Date().toLocaleString();
+    let eventList = logEvents[jsonData.name];
+    if (!eventList) {
+        eventList = logEvents[jsonData.name] = [];
+    }
+    jsonData.date = date;
+    eventList.push(jsonData);
+    if (eventList.length > 40) {
+        eventList.shift();
+    }
+    viewLog(jsonData.name);
+}
+
+function viewLog(name) {
+    let eventList = logEvents[name] ?? [];
+    let allLines = name + "\n\n";
+    eventList.forEach(ev => {
+        Object.values(ev).reverse().forEach(v => {
+            if (v != name) {
+                allLines += v + " ";
+            }
+        });
+        allLines += "\n";
+    });
+    page.log.value = allLines;
+    page.log.scrollTo(0, page.log.scrollHeight);
+}
 
 const beforeUnloadHandler = (event) => {
     event.preventDefault();
@@ -53,22 +132,37 @@ document.addEventListener("pointerdown", e => {
 
 document.addEventListener("DOMContentLoaded", e => {
     getElementsAsPage();
+    try {
+        let x = version;
+    } catch (e) {
+        console.log("No version");
+        let version = "?"
+    }
+    logEvent("Started - version " + version);
     setTimeout(() => {
         window.scroll(0, 0);
     }, 1000);
 
     document.addEventListener("pointerdown", doScroll);
     document.addEventListener("pointerup", doScroll);
-    document.addEventListener("pointermove", doScroll);
+    //document.addEventListener("pointermove", doScroll);
+    document.addEventListener("scroll", (event) => {
+        notScrolled = (window.scrollY == 0);
+        page.main.style.display = notScrolled ? "block" : "none";
+        page.overlay.style.display = notScrolled ? "block" : "none";
+        if (!notScrolled) {
+            clearTimeout(untouchTimer);
+            page.overlay.className = ""; //so no animation
+        }
+    });
 
     window.addEventListener("beforeunload", beforeUnloadHandler);
 
-    let ver = document.createTextNode(cacheName);
-    page.settings.appendChild(ver);
+    moreDomLoaded(e)
+    getElementsAsPage();
 
-    screen.orientation.addEventListener("change", switchDimensions);
-
-    window.onresize = switchDimensions;
+    document.documentElement.style.setProperty("--bgColor", bgColor);
+    document.documentElement.style.setProperty("--fgColor", fgColor);
 
     runIt();
 });
@@ -80,12 +174,9 @@ function getElementsAsPage() {
     });
 }
 
-let oncePerSecond = () => {
-
-}
-
 function runIt() {
-    console.clear();
+    //console.clear();
+    console.log(storage.getStorage());
 
     let setWakelock = async () => {
         try {
@@ -119,34 +210,43 @@ function runIt() {
     page.chimeend.value = chimeend;
     page.chimetype.value = chime;
     page.ticktype.value = tick;
+    page.disablealarm.checked = disableAlarm;
 
-    page[show].checked = true;
+    page.disablealarm.onchange = e => {
+        disableAlarm = e.target.checked;
+        store();
+    }
+
     page.show.onchange = e => {
         show = e.target.value;
         store();
     }
 
+    page.alarmlabel.onpointerdown = e => {
+        e.stopPropagation();
+    }
+
     page.hr24.checked = !!hr24;
 
     function currentTime() {
-        let date = new Date();
+        let date = new Date(Date.now() + timeAdjust);
         let hh = date.getHours();
         let mm = date.getMinutes();
-        let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        let months = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sep", "Oct", "Nov", "Dec"]
-        let suffixes = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"];
+        let days = longDayNames;
+        let months = shortMonthNames;
+        //let suffixes = ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"];
         let chimePlay = false;
 
         let {time, time24Hour, session} = formatTime(hh, mm);
 
         if (show == "date") {
-            let monthDay = date.getDate();
-            let suffix = suffixes[monthDay % 10]
-            if (monthDay > 10 && monthDay < 14) {
-                suffix = "th";
-            }
+            //let monthDay = date.getDate();
+            let suffix = ""; //suffixes[monthDay % 10]
+            // if (monthDay > 10 && monthDay < 14) {
+            //     suffix = "th";
+            // }
             session = date.getDate() + suffix + " " + months[date.getMonth()];
-            days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            days = shortDayNames;
         }
 
         if (oldTime !== time) {
@@ -154,7 +254,10 @@ function runIt() {
             page.clockhead.innerText = days[date.getDay()] + "   " + session;
             if (alarmOn && alarmTime == time24Hour) {
                 //console.log("Alarm");
-                alarmPlay = 600; //seconds max
+                setMinAlarmPlay(120); //bongs max
+                bong.playbackRate = 2;
+                alarmQuiet = 20;
+                logEvent("alarm");
             }
 
             if (chimestart && chimeend) {
@@ -164,6 +267,7 @@ function runIt() {
                 if (chime && chimeOn) {
                     let mod = mm % chime;
                     if (mod == 0) {
+                        bong.playbackRate = 1;
                         chimePlay = true;
                     }
                 }
@@ -177,29 +281,25 @@ function runIt() {
                     currentColor = n;
                 }
             }
-            calculateDawnAndDusk();
-            if (colors[currentColor].color == colors[currentColor].bg) {
-                //  Math.floor(Math.random()*16777215).toString(16);
-                randomColorPart("r");
-                randomColorPart("g");
-                randomColorPart("b");
-                randomColorComposite(bgRand);
-                randomColorComposite(colorRand);
-            }
 
-            if (colors[currentColor].color != colors[currentColor].bg) {
-                page.main.style.transitionDuration = "10s";
-                page.main.style.color = colors[currentColor].color;
-                bgColor = page.main.style.backgroundColor = colors[currentColor].bg;
+            if (show == "black") {
+                page.main.style.transitionDuration = "0s";
+                bgColor = page.main.style.backgroundColor = "black";
+                fgColor = page.main.style.color = "black";
             } else {
-                page.main.style.transitionDuration = "60s";
-                bgColor = page.main.style.backgroundColor = bgRand["str"];
-                page.main.style.color = colorRand["str"];
-                console.log(bgRand["str"], colorRand["str"]);
+                calculateDawnAndDusk();
+                page.main.style.transitionDuration = "10s";
+                fgColor = page.main.style.color = colors[currentColor].color;
+                bgColor = page.main.style.backgroundColor = colors[currentColor].bg;
+                page.overlay.style.transitionDuration = "10s";
+                page.overlay.style.color = colors[currentColor].color;
+                page.overlay.style.backgroundColor = colors[currentColor].bg;
+                document.documentElement.style.setProperty("--bgColor", bgColor);
+                document.documentElement.style.setProperty("--fgColor", fgColor);
             }
         }
 
-        if (page.disablealarm.checked) {
+        if (disableAlarm) {
             page.alarmlabel.style.display = "none";
             page.alarm.checked = false;
             alarmTime = "";
@@ -212,30 +312,26 @@ function runIt() {
         }
 
         if (userInteract) {
-            alertStub(page, bong);
-            if (alarmPlay > 0 || chimePlay) {
-                bong.playbackRate = 1;
+            if ((alarmPlay > 0 || chimePlay) && !alarmPlaying) {
+                alarmPlaying = true;
+                bong.volume = 1 / (alarmQuiet + 1);
+                if (alarmQuiet > 0) {
+                    alarmQuiet--;
+                }
                 bong.play();
-                alarmPlay--;
+                alarmMissed ||= alarmPlay > 0; //avoid clearing on chime
             } else if (chimeOn && (mm % tick) == 0 && oldTime != time) {
                 tickSound.play();
             }
         }
+        everySecondStub(oldTime, time, page.clockhead.innerText, time24Hour);
         oldTime = time;
         setTimeout(function () {currentTime()}, 1000);
     }
     currentTime();
+
+    runItStub();
     //end of runIt
-}
-
-function randomColorPart(part) {
-    bgRand[part] = Math.floor(Math.random() * 256);
-    colorRand[part] = Math.floor((bgRand[part] + 64 + (Math.random() * 128)) % 256);
-}
-
-function randomColorComposite(c) {
-    let comp = (c["r"] << 16) + (c["g"] << 8) + c["b"];
-    c["str"] = "#" + comp.toString(16);
 }
 
 function formatTime(hh, mm) {
@@ -254,10 +350,6 @@ function formatTime(hh, mm) {
 
     let time = hh + ":" + mm;
     let time24Hour = hhx + ":" + mm;
-
-    if (show == "date") {
-
-    }
 
     return {time, time24Hour, session};
 }
@@ -337,13 +429,19 @@ function checkForChime() {
 }
 
 function store() {
-    storage.assignStorage({colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime, tick, show});
+    storage.assignStorage({colors, currentColor, alarmOn, alarmTime, latitude, longitude, hr24, chimestart, chimeend, chime, tick, show, disableAlarm});
     oldTime = "";
 }
 
-function doScroll() {
+function doScroll(e) {
     clearTimeout(scrollTimeout);
+    alarmMissed = false;
+    alarmPlay = 0;
+    alarmMissed = false;
     scrollTimeout = window.setTimeout(() => {
+        document.activeElement.blur();
+        page.runit.focus();
+        page.runit.blur(); //all this dance to deal with time inputs
         window.scroll(0, 0);
         calcCurrentColor();
     }, 30000);
@@ -430,20 +528,9 @@ function goToWork() {
     page.runit.style.fontSize = "4vw";
     page.runit.style.float = "right";
     page.runit.value = "Full screen";
+    page.overlay.style.pointerEvents = "initial";
     runIt();
     store();
-
-    switchDimensions();
-}
-
-function switchDimensions() {
-    console.log("switchDimensions");
-    document.body.style.display = "none";
-    tickSound.play();
-    document.body.style.backgroundColor = bgColor;
-    setTimeout(() => {
-        document.body.style.display = "block";
-    }, 1000); //promise.resolve doesn't work
 }
 
 function calculateDawnAndDusk() {
@@ -479,6 +566,7 @@ function setAlarm(checked) {
     }
     if (!alarmOn) {
         alarmPlay = 0;
+        alarmMissed = false;
     }
     store();
 }

@@ -133,7 +133,7 @@ if (html) {
                 td.innerHTML = "&#9776;";
                 if (r == 0) {
                     tr.className = "b";
-                    td.innerHTML = "&#10006;"
+                    td.innerHTML = "&#10006;"; //x
                 }
             }
         }
@@ -174,7 +174,7 @@ if (currentKey == "html0" && hitsString) {
             }
         }
         td = document.getElementById("r" + n + "c" + 5);
-        td.innerHTML = "&#10006;";
+        td.innerHTML = "&#10006;"; //x
     }
     charPtr = 0;
     for (; n < trs.length; n++) {
@@ -232,7 +232,7 @@ input.oninput = function (e) {
             return;
         }
         let tr = selected.parentElement;
-        document.getElementById(tr.id + "c5").innerHTML = "&#10006;";
+        document.getElementById(tr.id + "c5").innerHTML = "&#10006;"; //x
         tr.className = "a";
         for (let n = 0; n < 5; n++) {
             let td = document.getElementById(tr.id + "c" + n);
@@ -251,11 +251,14 @@ input.oninput = function (e) {
 function applyTdOnClick(td) {
     let {r, c} = splitTdId(td.id);
     let tr = td.parentElement;
-    if (c == 5) {
+    if (c == 5) { //side icon
         td.onclick = e => {
             if (tr.className == "") {
+                //make solution line
                 tr.className = "b";
-                td.innerHTML = "&#10006;"
+                td.innerHTML = "&#10006;"; //x
+                tr.remove();
+                table.prepend(tr);
             } else {
                 console.log(r, "del");
                 for (let cx = 0; cx < 5; cx++) {
@@ -266,12 +269,12 @@ function applyTdOnClick(td) {
                 tr.remove();
                 tr.className == "a";
                 table.appendChild(tr);
-                td.innerHTML = "&#9776;";
+                td.innerHTML = "&#9776;"; //hamburger
                 tr.className = "";
             }
             save();
         };
-    } else {
+    } else { //body square
         td.onclick = e => {
             console.log(r, c);
             input.value = "";

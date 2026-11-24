@@ -40,8 +40,14 @@ function thenRunIt(dataCache) {
         }, 1000);
     };
 
-    function updatePage(text) {
-        page.content.value = text;
+    function updatePage(text, withUndo) {
+        if (withUndo) {
+            page.content.focus();
+            document.execCommand("selectAll", true, null);
+            document.execCommand("insertText", false, text);
+        } else {
+            page.content.value = text;
+        }
         updateFileInfo();
         modified();
     }
@@ -90,6 +96,21 @@ function thenRunIt(dataCache) {
         timedUpdate();
     });
 
+    window.addEventListener('resize', e => {
+        modified();
+    });
+
+    page.content.addEventListener("keydown", e => {
+        if (e.key == "Tab") {
+            e.preventDefault();
+            let ta = page.content;
+            const start = ta.selectionStart;
+            const end = ta.selectionEnd;
+            ta.value = ta.value.substring(0, start) + '\t' + ta.value.substring(end);
+            ta.selectionStart = ta.selectionEnd = start + 1;
+        }
+    });
+
     async function showLastFile() {
         const cachedResponse = await caches.match(lastFile);
         if (cachedResponse) {
@@ -109,7 +130,6 @@ function thenRunIt(dataCache) {
         filename = "";
         filehash = hash("");
         filetime = 0;
-        hashchanged = false;
         updatePage("");
         return true;
     }
@@ -128,6 +148,8 @@ function thenRunIt(dataCache) {
     function hash(string) {
         let hash = 0;
         for (const char of string) {
+            //transfer of text into textbox removes CR so ignore
+            if (char == "\r") continue;
             hash = (hash << 5) - hash + char.charCodeAt(0);
             hash |= 0; // Constrain to 32bit integer
         }
@@ -184,7 +206,6 @@ function thenRunIt(dataCache) {
             filename = file.name;
             filetime = file.lastModified
             filehash = hash(text);
-            hashchanged = false;
             updatePage(text)
             await saveToCache(text);
         } catch (e) {
@@ -242,10 +263,10 @@ function thenRunIt(dataCache) {
             }
         }
         content = "{\"localStorage\": {\n" + content + "\n\n}}";
-        updatePage(content);
-        filename = "localStorage";
+        filename = "localStorage.json";
         filehash = hash(content);
         filetime = new Date().getTime();
+        updatePage(content);
         return true; //to close menu
     }
 
@@ -260,7 +281,6 @@ function thenRunIt(dataCache) {
             CbAlert("Updated " + keys.join(", "));
             filehash = hash(page.content.value);
             filetime = new Date().getTime();
-            hashchanged = false;
             updateFileInfo();
             return true;
         }
@@ -389,6 +409,9 @@ function thenRunIt(dataCache) {
             setTimeout(() => {
                 CbConfirm("Save to " + fname, async () => {
                     let text = page.content.value;
+                    if (fname.startsWith("/")) {
+                        fname = fname.slice(1);
+                    }
                     saveToCache(text, "/" + fname);
                     filename = fname;
                     filehash = hash(text);
@@ -409,12 +432,65 @@ function thenRunIt(dataCache) {
                     let text = page.content.value;
                     try {
                         text = JSON.stringify(JSON.parse(text), null, "    ");
-                        updatePage(text);
-                    } catch {
+                        updatePage(text, true);
+                    } catch (ex) {
+                        console.log(ex);
                         //Not JSON
                     }
                     modified();
                     return true; //to close menu
+                }
+            }, {
+                title: "HEX", func: e => {
+                    let text = page.content.value;
+                    text = "0: " + text.split('').map((char, ix) => {
+                        let space = " ";
+                        if (ix % 8 == 7) {
+                            space = "\n" + (ix + 1) + ": ";
+                        }
+                        return char.charCodeAt(0).toString(16).padStart(2, '0') + space;
+                    }).join('');
+                    updatePage(text, true);
+                    modified();
+                    return true; //to close menu
+                }
+            }, {
+                title: "To web page", func: async e => {
+                    const tempCache = "/notepad/temp";
+                    let dataCache = await caches.open(tempCache);
+                    await dataCache.put("temp.html", new Response(page.content.value, {
+                        headers: {
+                            "Content-Type": "text/html"
+                        }
+                    }));
+                    window.open("temp.html", "notepad/temp");
+                    setTimeout(e => {
+                        caches.delete(tempCache);
+                    }, 1000);
+                }
+            }
+        ];
+        return clist;
+    }
+
+    // ******************** UNDO REDO MENU ******************
+
+    let undoRedoMenu = (controls) => {
+        controls.style = {
+            columns: 3,
+            fontSize: "100%",
+            minWidth: "60vw"
+        }
+        let clist = [
+            {
+                title: "Undo", func: e => {
+                    document.execCommand("undo", true, null);
+                    return false; //to not close menu
+                }
+            }, {
+                title: "Redo", func: e => {
+                    document.execCommand("redo", true, null);
+                    return false; //to not close menu
                 }
             }
         ];
@@ -430,6 +506,7 @@ function thenRunIt(dataCache) {
             {title: "Local storage", submenu: localStorageMenu},
             {title: "Cache", submenu: cacheMenu},
             {title: "Format", submenu: format},
+            {title: "Undo Redo", submenu: undoRedoMenu},
         ]
         return menuItems;
     };

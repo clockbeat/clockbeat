@@ -1,12 +1,8 @@
 "use strict"
 
-importScripts("version.js");
+//Here because its location is critical to the scope of the service worker
+importScripts("/common/swbase.js");
 
-const contentToCache = projectFiles
-
-const pathname = self.location.pathname.split("/")[1];
-cacheName = pathname + "/" + cacheName;
-console.log(cacheName);
 let iconResponse;
 
 async function makeCustomFavIcon(text, color) {
@@ -29,51 +25,13 @@ async function makeCustomFavIcon(text, color) {
     console.log("Icon created");
 }
 
-self.addEventListener("activate", (e) => {
-    // Remove unwanted cached assets
-    console.log("activate", cacheName);
-    e.waitUntil(
-        caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(name => {
-                    if (name !== cacheName) {
-                        if (name.startsWith(pathname)) {
-                            return caches.delete(name);
-                        }
-                    }
-                })
-            );
-        })
-    );
-    self.clients.claim();
-});
+swExtras.beforeGet = async url => {
 
-self.addEventListener("install", (e) => {
-    self.skipWaiting();
-    e.waitUntil(
-        (async () => {
-            const cache = await caches.open(cacheName);
-            console.log("Caching all content");
-            await cache.addAll(contentToCache);
-        })()
-    );
-});
-
-async function updateCache(request) {
-
-    let url = request.url;
-    if (request.method == "POST") {
-        console.log(url + " redirect");
-        const formData = await request.formData();
-        let str = new URLSearchParams(formData).toString()
-        return Response.redirect(url + "#" + str, 302);
-    }
-
-    if (url.includes(stringForColour)) {
+    if (url.includes(stringForColour)) { //defined in version.js
         let hash = new URL(url).hash.replace("#", "");
-        let color = stringToColour(hash);
+        let color = stringToColour(hash); //defined in version.js
         await makeCustomFavIcon(hash, color);
-        const cache = await caches.open(cacheName);
+        const cache = await caches.open(localCacheName);
         await cache.put("/favicon.png", iconResponse.clone());
     }
 
@@ -82,38 +40,12 @@ async function updateCache(request) {
         console.log(url + " from iconResponse");
         return iconResponse.clone();
     }
-
-    const cachedResponse = await caches.match(url);
-    if (cachedResponse) {
-        console.log(url + " from cache");
-        return cachedResponse;
-    }
-
-    try {
-        const response = await fetch(request);
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-        }
-        const cache = await caches.open(cacheName)
-        await cache.put(request, response.clone());
-        return response;
-    } catch (e) {
-        return new Response();
-    }
 }
 
-self.addEventListener("fetch", (e) => {
-    e.respondWith((async () => {
-        let request = e.request;
-        let response = await updateCache(request);
-        return response;
-    })());
-});
-
-self.addEventListener('message', (event) => {
+swExtras.message = (event) => {
     console.log("message to sw", event.data);
     if (event.data.icon) {
         makeCustomFavIcon(event.data.title, event.data.color);
         event.source.postMessage({icon: true});
     }
-});
+};

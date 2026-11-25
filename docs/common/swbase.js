@@ -3,7 +3,7 @@
 let swExtras = {
     fetchIfPossible: ["version.js", "sw.js"],
     cacheAsNoCache: {common: "common"},
-    beforeGet: url => { },
+    beforeGet: async url => { },
     message: e => { }
 };
 
@@ -61,17 +61,17 @@ async function fetchAndCache(request) {
         return await fetch(request);
     }
 
-    let extraResponse = swExtras.beforeGet();
+    let extraResponse = await swExtras.beforeGet(url);
     if (extraResponse) {
         return extraResponse;
     }
 
     //--- request.cache ----
-    //if no-store, skip fetching from cache, will fetch but won't cache
-    //if reload, skip fetching from cache, will fetch and cache
-    //if no-cache, fetch from cache only if offline, or will fetch and cache
+    //if cb-no-store, skip fetching from cache, will fetch but won't cache
+    //if cb-reload, skip fetching from cache, will fetch and cache
+    //if cb-no-cache, fetch from cache only if offline, or will fetch and cache
 
-    let cacheType = request.cache;
+    let cacheType = request.headers["cb-cache"];
     //cacheType is only used locally
 
     let baseDirectory = new URL(request.url).pathname.split("/")[1];
@@ -79,24 +79,24 @@ async function fetchAndCache(request) {
     if (baseDirectory != pathname) {
         if (swExtras.cacheAsNoCache[baseDirectory]) {
             cacheToUse = swExtras.cacheAsNoCache[baseDirectory];
-            cacheType = "no-cache"; //fetch and cache
-            console.log("no-cache to ", cacheToUse , request.url);
+            cacheType = "cb-no-cache"; //fetch and cache
+            console.log("cb-no-cache to ", cacheToUse , request.url);
         } else {
-            cacheType = "no-store"; //fetch, don't cache
-            console.log("no-store to ", cacheToUse , request.url);
+            cacheType = "cb-no-store"; //fetch, don't cache
+            console.log("cb-no-store to ", cacheToUse , request.url);
         }
     }
 
     swExtras.fetchIfPossible.forEach(url => {
         if (request.url.includes(url)) {
-            cacheType = "no-cache";
+            cacheType = "cb-no-cache";
         }
     });
-    if (cacheType != "no-store" || cacheType != "reload") {
-        if (cacheType != "no-cache" || !navigator.online) {
+    if (cacheType != "cb-no-store" || cacheType != "cb-reload") {
+        if (cacheType != "cb-no-cache" || !navigator.online) {
             const cachedResponse = await caches.match(request);
             if (cachedResponse) {
-                console.log(url + " from cache");
+                console.log(request + " from cache");
                 return cachedResponse;
             }
         }
@@ -108,13 +108,13 @@ async function fetchAndCache(request) {
         if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
         }
-        if (cacheType != "no-store") {
+        if (cacheType != "cb-no-store") {
             const cache = await caches.open(cacheToUse);
             await cache.put(request, response.clone());
         }
         return response;
     } catch (e) {
-        console.error(e);
+        console.error(e, request);
         return new Response();
     }
 }
@@ -129,5 +129,4 @@ self.addEventListener("fetch", (e) => {
 self.addEventListener('message', (event) => {
     swExtras.message(event);
 });
-
 

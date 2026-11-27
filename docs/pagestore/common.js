@@ -97,15 +97,21 @@ function buildMenu(noedit) {
             {
                 title: "Copy settings", func: async function () {
                     let text = preProcessExportSettings();
+                    let len = CbBytes(text.length);
+                    if (text.length >= 20000) {
+                        navigator.clipboard.writeText("*** Failed - too long ***");
+                        CbWarning(`Failed - too long ${len}`);
+                        return;
+                    }
                     navigator.clipboard.writeText(text);
-                    CbAlert("Settings copied to clipboard");
+                    CbAlert(`Copied to clipboard ${len}`);
                 }, omit: noedit
             },
             {
                 title: "Paste settings", func: async function () {
                     let text = await navigator.clipboard.readText();
                     CbConfirm("Paste settings?", () => {
-                        processImportedSettings(text); 
+                        processImportedSettings(text);
                     });
                 }
             },
@@ -115,6 +121,10 @@ function buildMenu(noedit) {
     };
 
     function resetMe() {
+        if (typeof swr == 'undefined') {
+            alert("Not here");
+            return;
+        }
         swr.unregister();
         const pathname = location.pathname.split("/")[1];
         caches.delete(pathname + "/" + cacheName);
